@@ -1,8 +1,30 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharposhop.AvaloniaUI", "Presentation\Sharposhop.AvaloniaUI\Sharposhop.AvaloniaUI.csproj", "{A400715B-D316-4912-ADC2-0C6FC14D8736}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{C831F23A-F57D-446E-A206-097EF6E97A80}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application", "{87B4E791-5E84-4708-A0DB-0849308DA634}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharposhop.Core", "Application\Sharposhop.Core\Sharposhop.Core.csproj", "{69D951A6-273D-4017-BEE8-EEC9EC7DA08F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A400715B-D316-4912-ADC2-0C6FC14D8736}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A400715B-D316-4912-ADC2-0C6FC14D8736}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A400715B-D316-4912-ADC2-0C6FC14D8736}.Debug|Any CPU.ActiveCfg = Debug|64-bit
+		{A400715B-D316-4912-ADC2-0C6FC14D8736}.Debug|Any CPU.Build.0 = Debug|64-bit
+		{69D951A6-273D-4017-BEE8-EEC9EC7DA08F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69D951A6-273D-4017-BEE8-EEC9EC7DA08F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69D951A6-273D-4017-BEE8-EEC9EC7DA08F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69D951A6-273D-4017-BEE8-EEC9EC7DA08F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A400715B-D316-4912-ADC2-0C6FC14D8736} = {C831F23A-F57D-446E-A206-097EF6E97A80}
+		{69D951A6-273D-4017-BEE8-EEC9EC7DA08F} = {87B4E791-5E84-4708-A0DB-0849308DA634}
 	EndGlobalSection
 EndGlobal
