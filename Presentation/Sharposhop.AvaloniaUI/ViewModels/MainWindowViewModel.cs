@@ -5,6 +5,7 @@ using ReactiveUI;
 using Sharposhop.AvaloniaUI.Tools;
 using Sharposhop.Core.Bitmap;
 using Sharposhop.Core.Loading;
+using Sharposhop.Core.Saving;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;
 
@@ -49,7 +50,7 @@ public class MainWindowViewModel : ViewModelBase
         _bitmapUpdater.Update(image);
     }
 
-    public async Task SaveImageAsync(Window window)
+    public async Task SaveImageBmpAsync(Window window)
     {
         var dialog = new SaveFileDialog
         {
@@ -61,6 +62,36 @@ public class MainWindowViewModel : ViewModelBase
         if (string.IsNullOrEmpty(result))
             return;
 
-        await _saver.SaveAsync(ImageViewModel.BitmapImage, result);
+        await _saver.SaveAsync(ImageViewModel.BitmapImage, result, SaveMode.Bmp);
+    }
+
+    public async Task SaveImageP5Async(Window window)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filters = _dialogConfiguration.SaveFilters.ToList(),
+        };
+
+        var result = await dialog.ShowAsync(window);
+
+        if (string.IsNullOrEmpty(result))
+            return;
+
+        await _saver.SaveAsync(ImageViewModel.BitmapImage, result, SaveMode.P5);
+    }
+
+    public async Task SaveImageP6Async(Window window)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filters = _dialogConfiguration.SaveFilters.ToList(),
+        };
+
+        var result = await dialog.ShowAsync(window);
+
+        if (string.IsNullOrEmpty(result))
+            return;
+
+        await _saver.SaveAsync(ImageViewModel.BitmapImage, result, SaveMode.P6);
     }
 }

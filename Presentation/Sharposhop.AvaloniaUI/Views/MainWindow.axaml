@@ -6,7 +6,7 @@
         xmlns:v="clr-namespace:Sharposhop.AvaloniaUI.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Sharposhop.AvaloniaUI.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/logo.SH.SH.ico"
         Title="Sharposhop.AvaloniaUI">
 
     <Design.DataContext>
@@ -19,7 +19,11 @@
             <Menu>
                 <MenuItem Header="_File">
                     <MenuItem Header="_Open" Click="LoadFileButton_OnClick"/>
-                    <MenuItem Header="_Save" Click="SaveFileButton_Clicked"/>
+                    <MenuItem Header="_Save">
+                        <MenuItem Header="_BMP" Click="SaveFileBmpButton_Clicked"/>
+                        <MenuItem Header="_PNM P5" Click="SaveFileP5Button_Clicked"/>
+                        <MenuItem Header="_PNM P6" Click="SaveFileP6Button_Clicked"/>
+                    </MenuItem>
                 </MenuItem>
             </Menu>
             

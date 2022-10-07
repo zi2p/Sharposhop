@@ -4,9 +4,11 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="BmpSharp" Version="0.2.0" />
       <PackageReference Include="SkiaSharp" Version="2.88.1-preview.108" />
       <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="2.88.3" />
     </ItemGroup>
