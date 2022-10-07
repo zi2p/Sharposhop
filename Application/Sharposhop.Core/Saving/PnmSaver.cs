@@ -29,7 +29,7 @@ public class PnmSaver : IImageSaver
     {
         var header = new StringBuilder();
         header.Append("P5\n");
-        header.Append($"{bitmap.Height} {bitmap.Width}\n");
+        header.Append($"{bitmap.Width} {bitmap.Height}\n");
         header.Append("255\n");
 
         var bytes = new byte[bitmap.Height * bitmap.Width];
@@ -52,7 +52,7 @@ public class PnmSaver : IImageSaver
     {
         var header = new StringBuilder();
         header.Append("P6\n");
-        header.Append($"{bitmap.Height} {bitmap.Width}\n");
+        header.Append($"{bitmap.Width} {bitmap.Height}\n");
         header.Append("255\n");
 
         var bytes = new byte[bitmap.Height * bitmap.Width * 3];
