@@ -11,7 +11,6 @@ public class PnmSaver : IImageSaver
     {
         if (mode == SaveMode.Bmp) throw WrongFileFormatException.ImageTypeNotSupported();
 
-        
         using var imgStream = new SKManagedStream(image.Stream);
         using var skData = SKData.Create(image.Stream);
         using var codec = SKCodec.Create(skData);
