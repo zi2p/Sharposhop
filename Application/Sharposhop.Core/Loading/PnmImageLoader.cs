@@ -37,9 +37,11 @@ public class PnmImageLoader : IImageLoader
         if (format != "P5" && format != "P6")
             throw WrongFileFormatException.ImageTypeNotSupported();
 
-        SkipSpaces(fileStream);
+        SkipSpaceChar(fileStream);
 
         var b = fileStream.ReadByte();
+
+        // Skip comments
         while (b == '#')
         {
             SkipLine(fileStream);
@@ -48,12 +50,12 @@ public class PnmImageLoader : IImageLoader
 
         fileStream.Seek(-1, SeekOrigin.Current);
 
-        var width = ReadNumber(fileStream);
-        SkipSpaces(fileStream);
-        var height = ReadNumber(fileStream);
-        SkipSpaces(fileStream);
+        var width = ReadNum(fileStream);
+        SkipSpaceChar(fileStream);
+        var height = ReadNum(fileStream);
+        SkipSpaceChar(fileStream);
 
-        var maxColor = ReadNumber(fileStream);
+        var maxColor = ReadNum(fileStream);
         _ = fileStream.ReadByte();
 
         if (format == "P5")
@@ -76,13 +78,11 @@ public class PnmImageLoader : IImageLoader
         throw WrongFileFormatException.IncorrectFileContent();
     }
 
-    private void SkipSpaces(Stream content)
+    private void SkipSpaceChar(Stream content)
     {
         while (true)
         {
             var b = content.ReadByte();
-            if (b == -1)
-                throw new EndOfStreamException();
 
             if (b is ' ' or '\t' or '\r' or '\n')
                 continue;
@@ -103,20 +103,17 @@ public class PnmImageLoader : IImageLoader
         }
     }
 
-    private int ReadNumber(Stream content)
+    private int ReadNum(Stream content)
     {
         var number = new StringBuilder();
-
         while (true)
         {
             var b = content.ReadByte();
-            if (b == -1)
-                throw new EndOfStreamException();
 
             if (b is < '0' or > '9')
                 break;
 
-            number.Append((char) b);
+            number.Append((char)b);
         }
 
         content.Seek(-1, SeekOrigin.Current);
