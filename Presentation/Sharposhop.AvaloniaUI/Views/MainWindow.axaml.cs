@@ -14,6 +14,12 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     private void LoadFileButton_OnClick(object? sender, RoutedEventArgs e)
         => ViewModel?.LoadImageAsync(this);
 
-    private void SaveFileButton_Clicked(object? sender, RoutedEventArgs e)
-        => ViewModel?.SaveImageAsync(this);
+    private void SaveFileBmpButton_Clicked(object? sender, RoutedEventArgs e)
+        => ViewModel?.SaveImageBmpAsync(this);
+
+    private void SaveFileP5Button_Clicked(object? sender, RoutedEventArgs e)
+        => ViewModel?.SaveImageP5Async(this);
+    
+    private void SaveFileP6Button_Clicked(object? sender, RoutedEventArgs e)
+        => ViewModel?.SaveImageP6Async(this);
 }

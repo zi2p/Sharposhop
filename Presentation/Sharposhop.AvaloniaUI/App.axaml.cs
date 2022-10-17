@@ -13,6 +13,8 @@ using Sharposhop.AvaloniaUI.ViewModels;
 using Sharposhop.AvaloniaUI.Views;
 using Sharposhop.Core.Bitmap;
 using Sharposhop.Core.Loading;
+using Sharposhop.Core.Saving;
+using Sharposhop.Core.Tools;
 using SkiaSharp;
 using Splat.Microsoft.Extensions.DependencyInjection;
 
@@ -37,7 +39,7 @@ public partial class App : Application
             {
                 Extensions =
                 {
-                    "bmp",
+                    "*",
                 },
             },
         };
@@ -48,7 +50,7 @@ public partial class App : Application
             {
                 Extensions =
                 {
-                    "bmp",
+                    "*",
                 },
             },
         };
@@ -59,13 +61,15 @@ public partial class App : Application
 
         collection.AddSingleton<IBitmapImage>(bitmapImageProxy);
         collection.AddSingleton<IBitmapUpdater>(bitmapImageProxy);
-        
-        // TODO: Replace with custom loader implementation
-        collection.AddSingleton<IImageLoader, SkiaImageLoader>();
-        collection.AddSingleton<IImageSaver, DummyImageSaver>();
+
+        collection.AddSingleton<IImageLoader, LoaderProxy>();
+        collection.AddSingleton<IImageSaver, SaverProxy>();
+        collection.AddSingleton<LoaderFactory>();
 
         collection.AddScoped<ImageViewModel>();
         collection.AddScoped<MainWindowViewModel>();
+
+        collection.AddSingleton<IExceptionSink, MessageBoxExceptionSink>();
 
         var provider = collection.BuildServiceProvider();
         provider.UseMicrosoftDependencyResolver();
