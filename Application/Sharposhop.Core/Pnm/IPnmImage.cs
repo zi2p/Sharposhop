@@ -1,20 +1,13 @@
-﻿using SkiaSharp;
+﻿using Sharposhop.Core.Enumeration;
+using Sharposhop.Core.Model;
+using Sharposhop.Core.Normalization;
 
 namespace Sharposhop.Core.Pnm;
 
 public interface IPnmImage
 {
-    PnmType Type { get; }
     int Height { get; }
     int Width { get; }
-    int MaxColor { get; }
-    byte[] Bytes { get; }
 
-    SKColor GetColor(int x, int y);
-}
-
-public enum PnmType
-{
-    Gray,
-    Colored
+    ColorTriplet[] AsTriplets(IEnumerationStrategy enumerationStrategy, INormalizer normalizer);
 }

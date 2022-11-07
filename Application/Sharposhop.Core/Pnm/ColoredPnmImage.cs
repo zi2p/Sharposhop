@@ -1,31 +1,38 @@
-﻿using SkiaSharp;
+﻿using Sharposhop.Core.Enumeration;
+using Sharposhop.Core.Model;
+using Sharposhop.Core.Normalization;
 
 namespace Sharposhop.Core.Pnm;
 
 public class ColoredPnmImage : IPnmImage
 {
-    public ColoredPnmImage(int height, int width, int maxColor, byte[] bytes)
+    private readonly byte[] _bytes;
+
+    public ColoredPnmImage(int height, int width, byte[] bytes)
     {
         Height = height;
         Width = width;
-        MaxColor = maxColor;
-        Bytes = bytes;
+        _bytes = bytes;
     }
 
-    public PnmType Type => PnmType.Colored;
     public int Height { get; }
     public int Width { get; }
-    public int MaxColor { get; }
-    public byte[] Bytes { get; }
 
-    public SKColor GetColor(int x, int y)
+    public ColorTriplet[] AsTriplets(IEnumerationStrategy enumerationStrategy, INormalizer normalizer)
     {
-        y *= 3;
-        x *= 3;
-        var blue = Bytes[y * Width + x];
-        var green = Bytes[y * Width + x + 1];
-        var red = Bytes[y * Width + x + 2];
+        var array = new ColorTriplet[Height * Width];
+        var index = 0;
 
-        return new SKColor(red, green, blue, 255);
+        foreach (var (x, y) in enumerationStrategy.Enumerate(Width, Height))
+        {
+            var first = normalizer.Normalize(_bytes[index++]);
+            var second = normalizer.Normalize(_bytes[index++]);
+            var third = normalizer.Normalize(_bytes[index++]);
+
+            var continuousIndex = enumerationStrategy.AsContinuousIndex(x, y, Width, Height);
+            array[continuousIndex] = new ColorTriplet(first, second, third);
+        }
+
+        return array;
     }
 }

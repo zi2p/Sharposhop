@@ -1,21 +1,20 @@
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
 using Microsoft.Extensions.DependencyInjection;
+using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.AvaloniaUI.Tools;
 using Sharposhop.AvaloniaUI.ViewModels;
 using Sharposhop.AvaloniaUI.Views;
-using Sharposhop.Core.Bitmap;
+using Sharposhop.Core.BitmapImages;
+using Sharposhop.Core.ChannelFilters;
+using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Loading;
-using Sharposhop.Core.Saving;
+using Sharposhop.Core.Model;
+using Sharposhop.Core.Normalization;
+using Sharposhop.Core.SchemeConverters;
 using Sharposhop.Core.Tools;
-using SkiaSharp;
 using Splat.Microsoft.Extensions.DependencyInjection;
 
 namespace Sharposhop.AvaloniaUI;
@@ -29,41 +28,37 @@ public partial class App : Application
         var collection = new ServiceCollection();
         collection.UseMicrosoftDependencyResolver();
 
-        var stream = new MemoryStream();
-        var streamBitmapImage = new StreamBitmapImage(stream, 0);
+        var deNormalizer = new SimpleDeNormalizer();
+        collection.AddSingleton<IDeNormalizer>(deNormalizer);
+        collection.AddSingleton<INormalizer, SimpleNormalizer>();
+
+        var enumerationStrategy = new RowByRowEnumerationStrategy();
+        collection.AddSingleton<IEnumerationStrategy>(enumerationStrategy);
+
+        var streamBitmapImage = new RowByRowArrayBitmapImage(0, 0, Array.Empty<ColorTriplet>());
+        var schemeConverter = new PassthroughSchemeConverter();
+        var channelFilter = new PassthroughChannelFilter(deNormalizer);
+
         var bitmapImageProxy = new BitmapImageProxy(streamBitmapImage);
+        var schemeConverterProxy = new BitmapImageSchemeConverterProxy(bitmapImageProxy, schemeConverter);
 
-        var openFilters = new[]
-        {
-            new FileDialogFilter
-            {
-                Extensions =
-                {
-                    "*",
-                },
-            },
-        };
+        var channelFilterProxy = new BitmapImageChannelFilterProxy
+        (
+            schemeConverterProxy,
+            channelFilter,
+            enumerationStrategy
+        );
 
-        var saveFilters = new[]
-        {
-            new FileDialogFilter
-            {
-                Extensions =
-                {
-                    "*",
-                },
-            },
-        };
+        collection.AddSingleton<IBitmapImageUpdater>(bitmapImageProxy);
+        collection.AddSingleton<ISchemeConverterUpdater>(schemeConverterProxy);
+        collection.AddSingleton<ISchemeConverterProvider>(schemeConverterProxy);
+        collection.AddSingleton<IChannelFilterUpdater>(channelFilterProxy);
+        collection.AddSingleton<IBitmapImageSaver>(channelFilterProxy);
+        collection.AddSingleton<IBitmapImage>(channelFilterProxy);
 
-        var dialogConfiguration = new DialogConfiguration(openFilters, saveFilters);
+        collection.AddSingleton<SchemeContext>();
 
-        collection.AddSingleton(dialogConfiguration);
-
-        collection.AddSingleton<IBitmapImage>(bitmapImageProxy);
-        collection.AddSingleton<IBitmapUpdater>(bitmapImageProxy);
-
-        collection.AddSingleton<IImageLoader, LoaderProxy>();
-        collection.AddSingleton<IImageSaver, SaverProxy>();
+        collection.AddSingleton<IImageLoader, PnmImageLoader>();
         collection.AddSingleton<LoaderFactory>();
 
         collection.AddScoped<ImageViewModel>();
@@ -87,13 +82,9 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var viewModel = _provider.GetRequiredService<MainWindowViewModel>();
+            var context = _provider.GetRequiredService<SchemeContext>();
 
-            var window = new MainWindow
-            {
-                ViewModel = viewModel,
-            };
-
-            // window.ImageView.ViewModel = viewModel.ImageViewModel;
+            var window = new MainWindow(context, viewModel);
 
             desktop.MainWindow = window;
         }

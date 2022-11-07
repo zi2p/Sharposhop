@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using ReactiveUI;
-using Sharposhop.AvaloniaUI.Tools;
-using Sharposhop.Core.Bitmap;
+using Sharposhop.Core.BitmapImages;
 using Sharposhop.Core.Loading;
-using Sharposhop.Core.Saving;
 using Sharposhop.Core.Tools;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;
@@ -14,9 +13,8 @@ namespace Sharposhop.AvaloniaUI.ViewModels;
 public class MainWindowViewModel : ViewModelBase
 {
     private readonly IImageLoader _loader;
-    private readonly IImageSaver _saver;
-    private readonly IBitmapUpdater _bitmapUpdater;
-    private readonly DialogConfiguration _dialogConfiguration;
+    private readonly IBitmapImageSaver _saver;
+    private readonly IBitmapImageUpdater _bitmapImageUpdater;
     private readonly IExceptionSink _exceptionSink;
 
     private bool _isEnabled;
@@ -24,19 +22,21 @@ public class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel(
         ImageViewModel imageViewModel,
         IImageLoader loader,
-        DialogConfiguration dialogConfiguration,
-        IImageSaver saver,
-        IBitmapUpdater bitmapUpdater,
+        IBitmapImageSaver saver,
+        IBitmapImageUpdater bitmapImageUpdater,
         IExceptionSink exceptionSink)
     {
         ImageViewModel = imageViewModel;
         _loader = loader;
-        _dialogConfiguration = dialogConfiguration;
         _saver = saver;
-        _bitmapUpdater = bitmapUpdater;
+        _bitmapImageUpdater = bitmapImageUpdater;
         _exceptionSink = exceptionSink;
 
-        ImageViewModel.BitmapChanged += () => this.RaisePropertyChanged(nameof(ImageViewModel));
+        ImageViewModel.BitmapChanged += () =>
+        {
+            this.RaisePropertyChanged(nameof(ImageViewModel));
+            return Task.CompletedTask;
+        };
 
         _isEnabled = true;
     }
@@ -59,67 +59,40 @@ public class MainWindowViewModel : ViewModelBase
         {
             var dialog = new OpenFileDialog();
 
-            var result = await dialog.ShowAsync(window);
+            var result = await Dispatcher.UIThread.InvokeAsync(() => dialog.ShowAsync(window));
 
             if (result is not { Length: not 0 })
                 return;
 
-            var image = await _loader.LoadImageAsync(result[0]);
-            _bitmapUpdater.Update(image);
+            await using var stream = File.OpenRead(result[0]);
+            var image = await _loader.LoadImageAsync(stream);
+
+            await _bitmapImageUpdater.UpdateAsync(image);
         });
     }
 
-    public Task SaveImageBmpAsync(Window window)
+    public Task SaveImageAsync(Window window)
     {
         return ExecuteSafeAsync(async () =>
         {
             var dialog = new SaveFileDialog();
 
-            var result = await dialog.ShowAsync(window);
+            var result = await Dispatcher.UIThread.InvokeAsync(() => dialog.ShowAsync(window));
 
             if (string.IsNullOrEmpty(result))
                 return;
 
-            await _saver.SaveAsync(ImageViewModel.BitmapImage, result, SaveMode.Bmp);
+            var stream = File.OpenWrite(result);
+            _saver.SaveTo(stream);
         });
     }
 
-    public Task SaveImageP5Async(Window window)
-    {
-        return ExecuteSafeAsync(async () =>
-        {
-            var dialog = new SaveFileDialog();
-
-            var result = await dialog.ShowAsync(window);
-
-            if (string.IsNullOrEmpty(result))
-                return;
-
-            await _saver.SaveAsync(ImageViewModel.BitmapImage, result, SaveMode.P5);
-        });
-    }
-
-    public Task SaveImageP6Async(Window window)
-    {
-        return ExecuteSafeAsync(async () =>
-        {
-            var dialog = new SaveFileDialog();
-
-            var result = await dialog.ShowAsync(window);
-
-            if (string.IsNullOrEmpty(result))
-                return;
-
-            await _saver.SaveAsync(ImageViewModel.BitmapImage, result, SaveMode.P6);
-        });
-    }
-
-    private async Task ExecuteSafeAsync(Func<Task> action)
+    public async Task ExecuteSafeAsync(Func<Task> action)
     {
         try
         {
             IsEnabled = false;
-            await action.Invoke();
+            await Task.Run(action);
         }
         catch (Exception e)
         {

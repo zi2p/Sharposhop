@@ -1,8 +1,8 @@
-using Sharposhop.Core.Bitmap;
+using Sharposhop.Core.BitmapImages;
 
 namespace Sharposhop.Core.Loading;
 
 public interface IImageLoader
 {
-    Task<IBitmapImage> LoadImageAsync(string path);
+    Task<IBitmapImage> LoadImageAsync(Stream data);
 }

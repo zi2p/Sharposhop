@@ -13,7 +13,7 @@ public class MessageBoxExceptionSink : IExceptionSink
         Dispatcher.UIThread.Post(() =>
         {
             IMsBoxWindow<ButtonResult> message = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow("Error occured", exception.Message);
+                .GetMessageBoxStandardWindow("Error occured", exception.Message + exception.StackTrace);
         
             message.Show();
         });

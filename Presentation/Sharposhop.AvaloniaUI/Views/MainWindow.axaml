@@ -3,7 +3,6 @@
         xmlns:vm="using:Sharposhop.AvaloniaUI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:v="clr-namespace:Sharposhop.AvaloniaUI.Views"
         xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Sharposhop.AvaloniaUI.Views.MainWindow"
@@ -13,40 +12,40 @@
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
-    
+
     <Panel>
-        <StackPanel ZIndex="10" 
-                    Orientation="Vertical" 
-                    IsVisible="{Binding !IsEnabled}" 
-                    HorizontalAlignment="Center" 
+        <StackPanel ZIndex="10"
+                    Orientation="Vertical"
+                    IsVisible="{Binding !IsEnabled}"
+                    HorizontalAlignment="Center"
                     VerticalAlignment="Center">
-            
+
             <progRing:ProgressRing Width="20"
                                    Height="20"
                                    HorizontalAlignment="Right"
                                    Margin="5,5,5,5"
                                    IsActive="True"
-                                   Foreground="Red" />
+                                   Foreground="White"/>
         </StackPanel>
-        
-        <StackPanel Orientation="Vertical">
-            <StackPanel Orientation="Horizontal">
-            
-                <Menu>
-                    <MenuItem Header="_File">
-                        <MenuItem Header="_Open" Click="LoadFileButton_OnClick"/>
-                        <MenuItem Header="_Save">
-                            <MenuItem Header="_BMP" Click="SaveFileBmpButton_Clicked"/>
-                            <MenuItem Header="_PNM P5" Click="SaveFileP5Button_Clicked"/>
-                            <MenuItem Header="_PNM P6" Click="SaveFileP6Button_Clicked"/>
-                        </MenuItem>
-                    </MenuItem>
-                </Menu>
-            
-            </StackPanel>
-        
-            <Image Source="{Binding ImageViewModel.Bitmap}" Stretch="Uniform" StretchDirection="DownOnly"/>
-        </StackPanel>
+
+        <Grid ColumnDefinitions="*" RowDefinitions="Auto, *">
+            <Menu Name="Menu">
+                <Menu.Styles>
+                    <Style Selector="MenuItem">
+                        <Setter Property="Header" Value="{Binding Header}" />
+                        <Setter Property="Items" Value="{Binding Items}" />
+                        <Setter Property="Command" Value="{Binding Command}" />
+                        <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
+                    </Style>
+                </Menu.Styles>
+            </Menu>
+
+            <Image Grid.Column="0" Grid.Row="1"
+                   Source="{Binding ImageViewModel.Bitmap}"
+                   Stretch="Uniform"
+                   StretchDirection="Both" 
+                   Margin="30"/>
+        </Grid>
     </Panel>
 
 </Window>
