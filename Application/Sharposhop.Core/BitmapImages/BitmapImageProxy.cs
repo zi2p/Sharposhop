@@ -1,41 +1,46 @@
+using Sharposhop.Core.Exceptions;
 using Sharposhop.Core.Model;
 
 namespace Sharposhop.Core.BitmapImages;
 
 public sealed class BitmapImageProxy : IBitmapImage, IBitmapImageUpdater
 {
-    private IBitmapImage _image;
+    private IBitmapImage? _image;
 
-    public BitmapImageProxy(IBitmapImage image)
+    public BitmapImageProxy(IBitmapImage? image = null)
     {
+        if (image is null)
+            return;
+
         _image = image;
 
         image.BitmapChanged += OnBitmapChanged;
     }
 
-    public int Width => _image.Width;
-    public int Height => _image.Height;
+    public IBitmapImage Image => _image ?? throw BitmapImageProxyException.NoImageLoaded();
 
-    public ColorTriplet this[int x, int y] 
-        => _image[x, y];
+    public int Width => Image.Width;
+    public int Height => Image.Height;
+
+    public ColorTriplet this[int x, int y] => Image[x, y];
 
     public event Func<Task>? BitmapChanged;
 
     public Task UpdateAsync(IBitmapImage image)
     {
-        _image.BitmapChanged -= OnBitmapChanged;
-        _image.Dispose();
+        Image.BitmapChanged -= OnBitmapChanged;
+        Image.Dispose();
 
         _image = image;
         _image.BitmapChanged += OnBitmapChanged;
 
-       return OnBitmapChanged();
+        return OnBitmapChanged();
     }
 
     public void Dispose()
     {
-        _image.BitmapChanged -= OnBitmapChanged;
-        _image.Dispose();
+        Image.BitmapChanged -= OnBitmapChanged;
+        Image.Dispose();
     }
 
     private Task OnBitmapChanged()

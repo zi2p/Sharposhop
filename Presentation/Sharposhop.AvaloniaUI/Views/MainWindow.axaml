@@ -17,7 +17,7 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Panel Margin="0 25 0 0">
+    <Panel>
         <StackPanel ZIndex="10"
                     Orientation="Vertical"
                     IsVisible="{Binding !IsEnabled}"
@@ -28,11 +28,17 @@
                                    Height="70"
                                    Margin="5,5,5,5"
                                    IsActive="True"
-                                   Foreground="White"/>
-            
+                                   Foreground="White" />
+
         </StackPanel>
 
-        <Grid ColumnDefinitions="*" RowDefinitions="*, Auto">
+        <StackPanel ZIndex="9"
+                    IsVisible="{Binding !IsEnabled}"
+                    Background="Black"
+                    Opacity="0.6">
+        </StackPanel>
+
+        <Grid ColumnDefinitions="*" RowDefinitions="*, Auto"  Margin="0 25 0 0">
 
             <Image Grid.Column="0" Grid.Row="0"
                    Source="{Binding ImageViewModel.Bitmap}"
@@ -41,7 +47,7 @@
                    Margin="30" />
 
             <Menu Grid.Column="0" Grid.Row="1"
-                  Name="Menu" 
+                  Name="Menu"
                   MinHeight="40">
                 <Menu.Styles>
                     <Style Selector="MenuItem">
