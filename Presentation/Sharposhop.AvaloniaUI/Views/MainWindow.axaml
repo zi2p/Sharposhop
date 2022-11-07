@@ -4,47 +4,55 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="500"
         x:Class="Sharposhop.AvaloniaUI.Views.MainWindow"
         Icon="/Assets/logo.SH.SH.ico"
-        Title="Sharposhop.AvaloniaUI">
+        Title="Sharposhop"
+        TransparencyLevelHint="AcrylicBlur"
+        ExtendClientAreaToDecorationsHint="True"
+        Width="1000"
+        Height="1000">
 
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Panel>
+    <Panel Margin="0 25 0 0">
         <StackPanel ZIndex="10"
                     Orientation="Vertical"
                     IsVisible="{Binding !IsEnabled}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center">
 
-            <progRing:ProgressRing Width="20"
-                                   Height="20"
-                                   HorizontalAlignment="Right"
+            <progRing:ProgressRing Width="70"
+                                   Height="70"
                                    Margin="5,5,5,5"
                                    IsActive="True"
                                    Foreground="White"/>
+            
         </StackPanel>
 
-        <Grid ColumnDefinitions="*" RowDefinitions="Auto, *">
-            <Menu Name="Menu">
+        <Grid ColumnDefinitions="*" RowDefinitions="*, Auto">
+
+            <Image Grid.Column="0" Grid.Row="0"
+                   Source="{Binding ImageViewModel.Bitmap}"
+                   Stretch="Uniform"
+                   StretchDirection="Both"
+                   Margin="30" />
+
+            <Menu Grid.Column="0" Grid.Row="1"
+                  Name="Menu" 
+                  MinHeight="40">
                 <Menu.Styles>
                     <Style Selector="MenuItem">
                         <Setter Property="Header" Value="{Binding Header}" />
                         <Setter Property="Items" Value="{Binding Items}" />
                         <Setter Property="Command" Value="{Binding Command}" />
                         <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
+                        <Setter Property="Padding" Value="10" />
                     </Style>
                 </Menu.Styles>
             </Menu>
-
-            <Image Grid.Column="0" Grid.Row="1"
-                   Source="{Binding ImageViewModel.Bitmap}"
-                   Stretch="Uniform"
-                   StretchDirection="Both" 
-                   Margin="30"/>
         </Grid>
     </Panel>
 
