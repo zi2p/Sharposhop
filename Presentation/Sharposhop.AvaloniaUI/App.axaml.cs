@@ -35,11 +35,10 @@ public partial class App : Application
         var enumerationStrategy = new RowByRowEnumerationStrategy();
         collection.AddSingleton<IEnumerationStrategy>(enumerationStrategy);
 
-        var streamBitmapImage = new RowByRowArrayBitmapImage(0, 0, Array.Empty<ColorTriplet>());
         var schemeConverter = new PassthroughSchemeConverter();
         var channelFilter = new PassthroughChannelFilter(deNormalizer);
 
-        var bitmapImageProxy = new BitmapImageProxy(streamBitmapImage);
+        var bitmapImageProxy = new BitmapImageProxy();
         var schemeConverterProxy = new BitmapImageSchemeConverterProxy(bitmapImageProxy, schemeConverter);
 
         var channelFilterProxy = new BitmapImageChannelFilterProxy
