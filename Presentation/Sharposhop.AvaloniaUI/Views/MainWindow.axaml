@@ -38,27 +38,28 @@
                     Opacity="0.6">
         </StackPanel>
 
-        <Grid ColumnDefinitions="*" RowDefinitions="*, Auto"  Margin="0 25 0 0">
+        <Grid ColumnDefinitions="*" RowDefinitions="*, Auto" Margin="0 25 0 0">
 
             <Image Grid.Column="0" Grid.Row="0"
                    Source="{Binding ImageViewModel.Bitmap}"
                    Stretch="Uniform"
-                   StretchDirection="Both"
-                   Margin="30" />
+                   StretchDirection="Both" />
 
-            <Menu Grid.Column="0" Grid.Row="1"
-                  Name="Menu"
-                  MinHeight="40">
-                <Menu.Styles>
-                    <Style Selector="MenuItem">
-                        <Setter Property="Header" Value="{Binding Header}" />
-                        <Setter Property="Items" Value="{Binding Items}" />
-                        <Setter Property="Command" Value="{Binding Command}" />
-                        <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
-                        <Setter Property="Padding" Value="10" />
-                    </Style>
-                </Menu.Styles>
-            </Menu>
+            <StackPanel Grid.Column="0" Grid.Row="1"
+                        HorizontalAlignment="Center">
+                <Menu Name="Menu"
+                      MinHeight="50">
+                    <Menu.Styles>
+                        <Style Selector="MenuItem">
+                            <Setter Property="Header" Value="{Binding Header}" />
+                            <Setter Property="Items" Value="{Binding Items}" />
+                            <Setter Property="Command" Value="{Binding Command}" />
+                            <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
+                            <Setter Property="Padding" Value="15" />
+                        </Style>
+                    </Menu.Styles>
+                </Menu>
+            </StackPanel>
         </Grid>
     </Panel>
 
