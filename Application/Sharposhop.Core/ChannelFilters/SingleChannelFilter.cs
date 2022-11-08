@@ -20,9 +20,9 @@ public class SingleChannelFilter : IChannelFilter
     {
         return _channel switch
         {
-            Channel.First => triplet with { Second = 0, Third = 0 },
-            Channel.Second => triplet with { First = 0, Third = 0 },
-            Channel.Third => triplet with { First = 0, Second = 0 },
+            Channel.First => triplet with { Second = triplet.First, Third = triplet.First },
+            Channel.Second => triplet with { First = triplet.Second, Third = triplet.Second },
+            Channel.Third => triplet with { First = triplet.Third, Second = triplet.Third },
             _ => throw new ArgumentOutOfRangeException(),
         };
     }
