@@ -45,9 +45,12 @@ public class SingleChannelFilter : IChannelFilter
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine("P5");
-        builder.AppendLine($"{image.Width} {image.Height}");
-        builder.AppendLine("255");
+        builder.Append("P5");
+        builder.Append((char)10);
+        builder.Append($"{image.Width} {image.Height}");
+        builder.Append((char)10);
+        builder.Append("255");
+        builder.Append((char)10);
 
         var header = builder.ToString();
         var headerBytes = Encoding.UTF8.GetBytes(header);
