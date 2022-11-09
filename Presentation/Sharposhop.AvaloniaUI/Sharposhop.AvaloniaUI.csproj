@@ -8,9 +8,9 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <Configurations>Release;Debug</Configurations>
         <Platforms>64-bit</Platforms>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <ItemGroup>
-        <Folder Include="Models" />
         <Folder Include="Models\" />
         <AvaloniaResource Include="Assets\**" />
         <None Remove=".gitignore" />
@@ -24,11 +24,12 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="0.10.18" />
+        <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.18" />
         <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.18" />
         <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
-        <PackageReference Include="Deadpikle.AvaloniaProgressRing" Version="0.9.7" />
+        <PackageReference Include="Deadpikle.AvaloniaProgressRing" Version="0.9.8" />
         <PackageReference Include="MessageBox.Avalonia" Version="2.1.0" />
         <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="2.88.3" />
         <PackageReference Include="Splat.Microsoft.Extensions.DependencyInjection" Version="14.4.1" />

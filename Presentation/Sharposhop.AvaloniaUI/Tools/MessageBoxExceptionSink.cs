@@ -1,7 +1,6 @@
 using System;
 using Avalonia.Threading;
-using MessageBox.Avalonia.BaseWindows.Base;
-using MessageBox.Avalonia.Enums;
+using Sharposhop.AvaloniaUI.Views;
 using Sharposhop.Core.Tools;
 
 namespace Sharposhop.AvaloniaUI.Tools;
@@ -12,9 +11,7 @@ public class MessageBoxExceptionSink : IExceptionSink
     {
         Dispatcher.UIThread.Post(() =>
         {
-            IMsBoxWindow<ButtonResult> message = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow("Error occured", exception.Message);
-        
+            var message = new ErrorWindow("Error occured", exception.Message, exception.StackTrace);
             message.Show();
         });
     }
