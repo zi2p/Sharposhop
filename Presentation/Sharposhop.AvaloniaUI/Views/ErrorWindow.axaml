@@ -53,7 +53,7 @@
                     Spacing="5">
 
             <Button Click="ToggleStacktrace">Toggle Stacktrace</Button>
-            <Button Click="Dismiss">Ok</Button>
+            <Button Click="Dismiss">Ok :(</Button>
         </StackPanel>
     </Grid>
 
