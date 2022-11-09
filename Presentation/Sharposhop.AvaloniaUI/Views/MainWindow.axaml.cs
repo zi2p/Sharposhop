@@ -18,25 +18,32 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
         InitializeComponent();
 
-        var rgb = new SchemeSelectorComponent("RGB", schemeContext,
+        var rgb = new SchemeSelectorComponent("RGB", "Red", "Green", "Blue",
+            schemeContext,
             x => x.CreateConverter<PassthroughSchemeConverter>());
 
-        var hsl = new SchemeSelectorComponent("HSL", schemeContext,
+        var hsl = new SchemeSelectorComponent("HSL", "Hue", "Saturation", "Lightness",
+            schemeContext,
             x => x.CreateConverter<HslSchemeConverter>());
 
-        var hsv = new SchemeSelectorComponent("HSV", schemeContext,
+        var hsv = new SchemeSelectorComponent("HSV", "Hue", "Saturation", "Value",
+            schemeContext,
             x => x.CreateConverter<HsvSchemeConverter>());
 
-        var soo = new SchemeSelectorComponent("YCbCr.601", schemeContext,
+        var soo = new SchemeSelectorComponent("YCbCr.601", "Y", "Cb", "Cr",
+            schemeContext,
             x => x.CreateConverter<YCbCr601SchemeConverter>());
 
-        var son = new SchemeSelectorComponent("YCbCr.709", schemeContext,
+        var son = new SchemeSelectorComponent("YCbCr.709", "Y", "Cb", "Cr", 
+            schemeContext,
             x => x.CreateConverter<YCbCr709SchemeConverter>());
 
-        var y = new SchemeSelectorComponent("YCoCg", schemeContext,
+        var y = new SchemeSelectorComponent("YCoCg", "Y", "Co", "Cg",
+            schemeContext,
             x => x.CreateConverter<YCoCgSchemeConverter>());
 
-        var cmy = new SchemeSelectorComponent("CMY", schemeContext,
+        var cmy = new SchemeSelectorComponent("CMY", "Cyan", "Magenta", "Yellow", 
+            schemeContext,
             x => x.CreateConverter<CmySchemeConverter>());
 
         ViewModel = viewModel;
@@ -91,15 +98,15 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             {
                 Command = ReactiveCommand.CreateFromTask(() => ExecuteSafeAsync(component.SchemeSelectedAsync)),
             },
-            new MenuItemViewModel("_First")
+            new MenuItemViewModel($"_{component.FirstComponentName}")
             {
                 Command = ReactiveCommand.CreateFromTask(() => ExecuteSafeAsync(component.FirstChannelSelectedAsync)),
             },
-            new MenuItemViewModel("_Second")
+            new MenuItemViewModel($"_{component.SecondComponentName}")
             {
                 Command = ReactiveCommand.CreateFromTask(() => ExecuteSafeAsync(component.SecondChannelSelectedAsync)),
             },
-            new MenuItemViewModel("_Third")
+            new MenuItemViewModel($"_{component.ThirdComponentName}")
             {
                 Command = ReactiveCommand.CreateFromTask(() => ExecuteSafeAsync(component.ThirdChannelSelectedAsync)),
             },

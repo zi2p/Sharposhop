@@ -14,15 +14,25 @@ public class SchemeSelectorComponent
 
     public SchemeSelectorComponent(
         string title,
+        string firstComponentName,
+        string secondComponentName,
+        string thirdComponentName,
         SchemeContext context,
         Func<SchemeContext, ISchemeConverter> converterFactory)
     {
         _context = context;
         _converterFactory = converterFactory;
+        FirstComponentName = firstComponentName;
+        SecondComponentName = secondComponentName;
+        ThirdComponentName = thirdComponentName;
         Title = $"_{title}";
     }
 
     public string Title { get; }
+
+    public string FirstComponentName { get; }
+    public string SecondComponentName { get; }
+    public string ThirdComponentName { get; }
 
     public async Task SchemeSelectedAsync()
     {
