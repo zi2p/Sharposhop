@@ -28,8 +28,11 @@ public sealed class BitmapImageProxy : IBitmapImage, IBitmapImageUpdater
 
     public Task UpdateAsync(IBitmapImage image)
     {
-        Image.BitmapChanged -= OnBitmapChanged;
-        Image.Dispose();
+        if (_image is not null)
+        {
+            _image.BitmapChanged -= OnBitmapChanged;
+            _image.Dispose();
+        }
 
         _image = image;
         _image.BitmapChanged += OnBitmapChanged;
