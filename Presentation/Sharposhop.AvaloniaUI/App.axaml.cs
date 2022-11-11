@@ -11,7 +11,6 @@ using Sharposhop.Core.BitmapImages;
 using Sharposhop.Core.ChannelFilters;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Loading;
-using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 using Sharposhop.Core.SchemeConverters;
 using Sharposhop.Core.Tools;
