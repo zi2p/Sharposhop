@@ -20,15 +20,9 @@ public class YCbCr601SchemeConverter : ISchemeConverter
         var g = _deNormalizer.DeNormalize(triplet.Second);
         var b = _deNormalizer.DeNormalize(triplet.Third);
 
-        var a = 0.229f;
-        var b1 = 0.587f;
-        var c = 0.114f;
-        var d = 1.772f;
-        var e = 1.402f;
-
-        var y = (a * r + b1 * g + c * b) / 255;
-        var cb = ((b - y) / d) / 255;
-        var cr = ((r - y) / e) / 255;
+        var y = (0.229f * r + 0.587f * g + 0.114f * b) / 255;
+        var cb = (-0.1687f * r - 0.3313f * g + 0.5f * b + 128) / 255;
+        var cr = (0.5f * r - 0.4187f * g - 0.0813f * b + 128) / 255;
 
         return new ColorTriplet(y, cb, cr);
     }
@@ -39,15 +33,9 @@ public class YCbCr601SchemeConverter : ISchemeConverter
         var cb = _deNormalizer.DeNormalize(triplet.Second);
         var cr = _deNormalizer.DeNormalize(triplet.Third);
 
-        var a = 0.229f;
-        var b1 = 0.587f;
-        var c = 0.114f;
-        var d = 1.772f;
-        var e = 1.402f;
-
-        var r = (y + e * cr) / 255;
-        var g = (y - a * e / b1 * cr - c * d / b1 * cb) / 255;
-        var b = (y + d * cb) / 255;
+        var r = (y + 1.402f * (cr - 128)) / 255;
+        var g = (y - 0.34414f * (cb - 128) - 0.71414f * (cr - 128)) / 255;
+        var b = (y + 1.772f * (cb - 128)) / 255;
 
         return new ColorTriplet(r, g, b);
     }
