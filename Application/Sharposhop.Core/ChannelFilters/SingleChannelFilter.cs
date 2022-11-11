@@ -2,6 +2,7 @@ using System.Text;
 using Sharposhop.Core.BitmapImages;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
+using Sharposhop.Core.SchemeConverters;
 
 namespace Sharposhop.Core.ChannelFilters;
 
@@ -27,18 +28,23 @@ public class SingleChannelFilter : IChannelFilter
         };
     }
 
-    public void Write(Stream stream, ColorTriplet triplet)
+    public void Write(Stream stream, ColorTriplet triplet, ISchemeConverter converter)
     {
-        var fraction = _channel switch
+        var (first, second, third) = converter.Extract(triplet);
+        
+        var value = _channel switch
         {
-            Channel.First => triplet.First,
-            Channel.Second => triplet.Second,
-            Channel.Third => triplet.Third,
+            Channel.First => first,
+            Channel.Second => second,
+            Channel.Third => third,
             _ => throw new ArgumentOutOfRangeException(),
         };
 
-        var value = _deNormalizer.DeNormalize(fraction);
         stream.WriteByte(value);
+    }
+
+    public void Write(Stream stream, ColorTriplet triplet)
+    {
     }
 
     public void WriteHeader(Stream stream, IBitmapImage image)

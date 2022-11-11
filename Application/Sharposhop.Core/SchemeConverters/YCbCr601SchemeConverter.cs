@@ -1,3 +1,4 @@
+using MathNet.Numerics.LinearAlgebra.Single;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 
@@ -5,41 +6,71 @@ namespace Sharposhop.Core.SchemeConverters;
 
 public class YCbCr601SchemeConverter : ISchemeConverter
 {
-    SimpleNormalizer _normalizer = new SimpleNormalizer();
-    SimpleDeNormalizer _deNormalizer = new SimpleDeNormalizer();
+    private readonly IDeNormalizer _deNormalizer;
+    private readonly INormalizer _normalizer;
+
+    public YCbCr601SchemeConverter(IDeNormalizer deNormalizer, INormalizer normalizer)
+    {
+        _deNormalizer = deNormalizer;
+        _normalizer = normalizer;
+    }
+
     public ColorTriplet Convert(ColorTriplet triplet)
     {
-        var R = _deNormalizer.DeNormalize(triplet.First.Value);
-        var G = _deNormalizer.DeNormalize(triplet.Second.Value);
-        var B = _deNormalizer.DeNormalize(triplet.Third.Value);
-        
-        float yValue, cbValue, crValue = new float();
-        yValue = (float) (0.257 * R + 0.504 * G + 0.098 * B + 16);
-        cbValue = (float) (-0.148 * R - 0.291 * G + 0.439 * B + 128);
-        crValue = (float) (0.439 * R - 0.368 * G - 0.071 * B + 128);
-        
-        yValue = _normalizer.Normalize((byte)yValue);
-        cbValue = _normalizer.Normalize((byte)cbValue);
-        crValue = _normalizer.Normalize((byte)crValue);
-        
-        return new ColorTriplet(new Fraction(yValue), new Fraction(cbValue), new Fraction(crValue));
+        var r = _deNormalizer.DeNormalize(triplet.First);
+        var g = _deNormalizer.DeNormalize(triplet.Second);
+        var b = _deNormalizer.DeNormalize(triplet.Third);
+
+        var matrix = new DenseMatrix(3, 3, new[]
+        {
+            0.257f, 0.504f, 0.098f,
+            -0.148f, -0.291f, 0.439f,
+            0.439f, -0.368f, -0.071f,
+        }).Transpose();
+
+        var vector = new DenseVector(new float[] { r, g, b });
+
+        var left = new DenseVector(new float[] { 16f, 128f, 128f });
+
+        var result = left + matrix * vector;
+
+        var denominator = 240 - 16f;
+
+        return new ColorTriplet(
+            (result[0] - 16) / (235 - 16),
+            (result[1] - 16) / denominator,
+            (result[2] - 16) / denominator);
     }
 
     public ColorTriplet Revert(ColorTriplet triplet)
     {
-        var Y = _deNormalizer.DeNormalize(triplet.First.Value);
-        var Cb = _deNormalizer.DeNormalize(triplet.Second.Value);
-        var Cr = _deNormalizer.DeNormalize(triplet.Third.Value);
-        
-        float rValue, gValue, bValue = new float();
-        rValue = (float) (1.164 * (Y - 16) + 1.596 * (Cr - 128));
-        gValue = (float) (1.164 * (Y - 16) - 0.392 * (Cb - 128) - 0.813 * (Cr - 128));
-        bValue = (float) (1.164 * (Y - 16 + 2.017 * (Cb - 128)));
+        var y = triplet.First * (235 - 16) + 16;
+        var cb = triplet.Second * (240 - 16) + 16;
+        var cr = triplet.Third * (240 - 16) + 16;
 
-        rValue = _normalizer.Normalize((byte)rValue);
-        gValue = _normalizer.Normalize((byte)gValue);
-        bValue = _normalizer.Normalize((byte)bValue);
+        var matrix = new DenseMatrix(3, 3, new[]
+        {
+            1.164f, 0f, 1.596f,
+            1.164f, -0.392f, -0.813f,
+            1.164f, 2.017f, 0f,
+        }).Transpose();
+
+        var vector = new DenseVector(new[] { y - 16, cb - 128, cr - 128 });
+
+        var result = matrix * vector;
+
+        return new ColorTriplet(
+            _normalizer.Normalize((byte)result[0]),
+            _normalizer.Normalize((byte)result[1]),
+            _normalizer.Normalize((byte)result[2]));
+    }
+
+    public (byte, byte, byte) Extract(ColorTriplet triplet)
+    {
+        var y = (byte)(triplet.First * (235 - 16) + 16);
+        var cb = (byte)(triplet.Second * (240 - 16) + 16);
+        var cr = (byte)(triplet.Third * (240 - 16) + 16);
         
-        return new ColorTriplet(new Fraction(rValue), new Fraction(gValue), new Fraction(bValue));
+        return (y, cb, cr);
     }
 }

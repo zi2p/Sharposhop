@@ -82,7 +82,7 @@ public class MainWindowViewModel : ViewModelBase
             if (string.IsNullOrEmpty(result))
                 return;
 
-            var stream = File.OpenWrite(result);
+            await using var stream = File.OpenWrite(result);
             _saver.SaveTo(stream);
         });
     }

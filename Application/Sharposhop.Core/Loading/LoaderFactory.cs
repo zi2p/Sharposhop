@@ -20,7 +20,7 @@ public class LoaderFactory
     {
         return type switch
         {
-            ImageFileTypes.Bmp => new SkiaImageLoader(_normalizer, _schemeConverterProvider),
+            // ImageFileTypes.Bmp => new SkiaImageLoader(_normalizer, _schemeConverterProvider),
             ImageFileTypes.Pnm => new PnmImageLoader(_normalizer, _schemeConverterProvider),
             ImageFileTypes.Other or _ => throw WrongFileFormatException.ImageTypeNotSupported()
         };

@@ -5,146 +5,102 @@ namespace Sharposhop.Core.SchemeConverters;
 
 public class HslSchemeConverter : ISchemeConverter
 {
-    SimpleNormalizer _normalizer = new SimpleNormalizer();
-    SimpleDeNormalizer _deNormalizer = new SimpleDeNormalizer();
+    private readonly IDeNormalizer _deNormalizer;
+
+    public HslSchemeConverter(IDeNormalizer deNormalizer)
+    {
+        _deNormalizer = deNormalizer;
+    }
+
     public ColorTriplet Convert(ColorTriplet triplet)
     {
-        var R = _deNormalizer.DeNormalize(triplet.First.Value);
-        var G = _deNormalizer.DeNormalize(triplet.Second.Value);
-        var B = _deNormalizer.DeNormalize(triplet.Third.Value);
-        
-        var maxcolor = Math.Max(R, G);
-        maxcolor = Math.Max(maxcolor, B);
-        var mincolor = Math.Min(R, G);
-        mincolor = Math.Min(mincolor, B);
-        float hValue, sValue = new float();
-        var lValue = (float)((maxcolor + mincolor) / 2);
+        var max = Math.Max(triplet.First, Math.Max(triplet.Second, triplet.Third));
+        var min = Math.Min(triplet.First, Math.Min(triplet.Second, triplet.Third));
 
-        if (maxcolor == mincolor)
+        var l = (max + min) / 2;
+        var s = (max - min) / (1 - Math.Abs(1 - (max + min)));
+
+        float h = 0;
+
+        if (max == min)
         {
-            hValue = 0;
-            sValue = 0;
+            h = 0;
         }
-        else
+        else if (max == triplet.First && triplet.Second >= triplet.Third)
         {
-            if (lValue < 127.5)
-            {
-                sValue = 255 * (maxcolor - mincolor) / (maxcolor + mincolor);    
-            }
-            else
-            {
-                sValue = 255 * (maxcolor - mincolor) / (510 - (maxcolor + mincolor));
-            }
-
-            if (R == maxcolor)
-            {
-                hValue = (G - B) / (maxcolor - mincolor);
-            }
-
-            if (G == maxcolor)
-            {
-                hValue = 120 + (B-R) / (maxcolor - mincolor);
-            }
-            else
-            {
-                hValue = 240 + (R-G) / (maxcolor - mincolor);
-            }
-
-            if (hValue < 0)
-            {
-                hValue += 360;
-            }
-
-            if (hValue > 360)
-            {
-                hValue -= 360;
-            }
+            h = 60 * (triplet.Second - triplet.Third) / (max - min);
+        }
+        else if (max == triplet.First && triplet.Second < triplet.Third)
+        {
+            h = 60 * (triplet.Second - triplet.Third) / (max - min) + 360;
+        }
+        else if (max == triplet.Second)
+        {
+            h = 60 * (triplet.Third - triplet.First) / (max - min) + 120;
+        }
+        else if (max == triplet.Third)
+        {
+            h = 60 * (triplet.First - triplet.Second) / (max - min) + 240;
         }
 
-        hValue = _normalizer.Normalize((byte)hValue);
-        sValue = _normalizer.Normalize((byte)sValue);
-        lValue = _normalizer.Normalize((byte)lValue);
+        h /= 360;
 
-        return new ColorTriplet(new Fraction(hValue), new Fraction(sValue), new Fraction(lValue));
+        return new ColorTriplet(h, s, l);
     }
 
     public ColorTriplet Revert(ColorTriplet triplet)
     {
-        var H = _deNormalizer.DeNormalize(triplet.First.Value);
-        var S = _deNormalizer.DeNormalize(triplet.Second.Value);
-        var L = _deNormalizer.DeNormalize(triplet.Third.Value);
-        
-        float rValue, gValue, bValue = new float();
-        var temp2 = new float();
-        if (S == 0)
+        var c = (1 - Math.Abs(2 * triplet.Third - 1)) * triplet.Second;
+        var x = c * (1 - Math.Abs((triplet.First * 6) % 2 - 1));
+        var m = triplet.Third - c / 2;
+
+        float r = 0, g = 0, b = 0;
+
+        if (triplet.First < 1f / 6)
         {
-            rValue = L;
-            gValue = rValue;
-            bValue = gValue;
+            r = c;
+            g = x;
+            b = 0;
         }
-        else
+        else if (triplet.First < 2f / 6)
         {
-            if (L < 127.5)
-            {
-                temp2 = L * (255 + S) / 255;
-            }
-            else
-            {
-                temp2 = (L+ S) - L * S / 255;
-            }
-
-            var temp1 = 2 *L - temp2;
-            var temp3 = temp2 - temp1;
-
-            
-            // convert R
-            var hValue = H + 120;
-
-            if (hValue >= 360)
-            {
-                hValue -= 360;
-            }
-
-            rValue = hValue switch
-            {
-                < 60 => temp1 + temp3 * hValue / 60,
-                < 180 and >= 60 => temp2,
-                < 240 and >= 180 => temp1 + temp3 * (4 - hValue / 60),
-                _ => temp1
-            };
-            
-            // convert G
-            hValue = H;
-
-            gValue = hValue switch
-            {
-                < 60 => temp1 + temp3 * hValue / 60,
-                < 180 and >= 60 => temp2,
-                < 240 and >= 180 => temp1 + temp3 * (4 - hValue / 60),
-                _ => temp1
-            };
-            
-            // convert B
-            hValue = H - 120;
-
-            if (hValue < 0)
-            {
-                hValue += 360;
-            }
-            
-            bValue = hValue switch
-            {
-                < 60 => temp1 + temp3 * hValue / 60,
-                < 180 and >= 60 => temp2,
-                < 240 and >= 180 => temp1 + temp3 * (4 - hValue / 60),
-                _ => temp1
-            };
+            r = x;
+            g = c;
+            b = 0;
         }
-        
-        rValue = _normalizer.Normalize((byte)rValue);
-        gValue = _normalizer.Normalize((byte)gValue);
-        bValue = _normalizer.Normalize((byte)bValue);
+        else if (triplet.First < 3f / 6)
+        {
+            r = 0;
+            g = c;
+            b = x;
+        }
+        else if (triplet.First < 4f / 6)
+        {
+            r = 0;
+            g = x;
+            b = c;
+        }
+        else if (triplet.First < 5f / 6)
+        {
+            r = x;
+            g = 0;
+            b = c;
+        }
+        else if (triplet.First < 6f / 6)
+        {
+            r = c;
+            g = 0;
+            b = x;
+        }
 
-        return new ColorTriplet(new Fraction(rValue), new Fraction(gValue), new Fraction(bValue));
+        return new ColorTriplet(r + m, g + m, b + m);
+    }
+
+    public (byte, byte, byte) Extract(ColorTriplet triplet)
+    {
+        return (
+            _deNormalizer.DeNormalize(triplet.First),
+            _deNormalizer.DeNormalize(triplet.Second),
+            _deNormalizer.DeNormalize(triplet.Third));
     }
 }

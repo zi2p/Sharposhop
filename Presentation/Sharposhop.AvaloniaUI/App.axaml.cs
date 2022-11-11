@@ -35,7 +35,7 @@ public partial class App : Application
         var enumerationStrategy = new RowByRowEnumerationStrategy();
         collection.AddSingleton<IEnumerationStrategy>(enumerationStrategy);
 
-        var schemeConverter = new PassthroughSchemeConverter();
+        var schemeConverter = new PassthroughSchemeConverter(deNormalizer);
         var channelFilter = new PassthroughChannelFilter(deNormalizer);
 
         var bitmapImageProxy = new BitmapImageProxy();
@@ -45,7 +45,8 @@ public partial class App : Application
         (
             schemeConverterProxy,
             channelFilter,
-            enumerationStrategy
+            enumerationStrategy,
+            schemeConverterProxy
         );
 
         collection.AddSingleton<IBitmapImageUpdater>(bitmapImageProxy);

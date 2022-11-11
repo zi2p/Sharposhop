@@ -5,133 +5,92 @@ namespace Sharposhop.Core.SchemeConverters;
 
 public class HsvSchemeConverter : ISchemeConverter
 {
-    SimpleNormalizer _normalizer = new SimpleNormalizer();
-    SimpleDeNormalizer _deNormalizer = new SimpleDeNormalizer();
+    private readonly IDeNormalizer _deNormalizer;
+
+    public HsvSchemeConverter(IDeNormalizer deNormalizer)
+    {
+        _deNormalizer = deNormalizer;
+    }
+
     public ColorTriplet Convert(ColorTriplet triplet)
     {
-        var R = _deNormalizer.DeNormalize(triplet.First.Value);
-        var G = _deNormalizer.DeNormalize(triplet.Second.Value);
-        var B = _deNormalizer.DeNormalize(triplet.Third.Value);
-        
-        var maxcolor = Math.Max(R, G);
-        maxcolor = Math.Max(maxcolor, B);
-        var mincolor = Math.Min(R, G);
-        mincolor = Math.Min(mincolor, B);
-        float hValue, sValue, vValue = new float();
+        var max = Math.Max(triplet.First, Math.Max(triplet.Second, triplet.Third));
+        var min = Math.Min(triplet.First, Math.Min(triplet.Second, triplet.Third));
 
-        vValue = maxcolor;
-        hValue = 0;
+        var v = max;
+        var s = max is 0 ? 0 : 1 - min / max;
+        float h = 0;
 
-        if (maxcolor == mincolor)
+        if (max == min)
         {
-            hValue = 0;
+            h = 0;
         }
-        
-        else if (maxcolor == R && G >= B)
+        else if (max == triplet.First && triplet.Second >= triplet.Third)
         {
-            hValue = 60 * (G - B) / (maxcolor - mincolor);
+            h = 60 * (triplet.Second - triplet.Third) / (max - min);
         }
-        
-        else if (maxcolor == R && G < B)
+        else if (max == triplet.First && triplet.Second < triplet.Third)
         {
-            hValue = 60 * (G - B) / (maxcolor - mincolor) + 360;
+            h = 60 * (triplet.Second - triplet.Third) / (max - min) + 360;
         }
-        
-        else if (maxcolor == G)
+        else if (max == triplet.Second)
         {
-            hValue = 60 * (B - R) / (maxcolor - mincolor) + 120;
+            h = 60 * (triplet.Third - triplet.First) / (max - min) + 120;
         }
-        
-        else if (maxcolor == B)
+        else if (max == triplet.Third)
         {
-            hValue = 60 * (R - G) / (maxcolor - mincolor) + 240;
+            h = 60 * (triplet.First - triplet.Second) / (max - min) + 240;
         }
 
-        if (maxcolor == 0)
-        {
-            sValue = 0;
-        }
-        else
-        {
-            sValue = (maxcolor - mincolor) / maxcolor;
-        }
+        h /= 360;
 
-        hValue = _normalizer.Normalize((byte)hValue);
-        sValue = _normalizer.Normalize((byte)sValue);
-        vValue = _normalizer.Normalize((byte)vValue);
-
-        return new ColorTriplet(new Fraction(hValue), new Fraction(sValue), new Fraction(vValue));
+        return new ColorTriplet(h, s, v);
     }
 
     public ColorTriplet Revert(ColorTriplet triplet)
     {
-        var H = _deNormalizer.DeNormalize(triplet.First.Value);
-        var S = _deNormalizer.DeNormalize(triplet.Second.Value);
-        var V = _deNormalizer.DeNormalize(triplet.Third.Value);
-        
-        float rValue, gValue, bValue = new float();
-        var i = 0;
-        var hValue = H;
+        var h = triplet.First * 360;
+        var s = triplet.Second;
+        var v = triplet.Third;
 
-        if (S / 100 == 0)
-        {
-            rValue = V / 100;
-            gValue = rValue;
-            bValue = gValue;
-        }
-        else 
-        {
-            hValue = (byte) (hValue / 60);
-            i = hValue;
-            var temp1 = hValue - i;
-            float temp2, temp3, temp4 = new float();
- 
-            temp2 = V / 100 * (1 - S / 100);
-            temp3 = V / 100 * (1 - S / 100 * temp1);
-            temp4 = V / 100 * (1 - S / 100 * (1 - temp1));
-            
-            switch(i)
-            {
-                case 0: 
-                    rValue = V / 100; 
-                    gValue = temp4; 
-                    bValue = temp2; 
-                    break;
-                case 1: 
-                    rValue = temp3; 
-                    gValue = V / 100; 
-                    bValue = temp2; 
-                    break;
-                case 2: 
-                    rValue = temp2; 
-                    gValue = V / 100; 
-                    bValue = temp4; 
-                    break;
-                case 3: 
-                    rValue = temp2; 
-                    gValue = temp3; 
-                    bValue = V / 100; 
-                    break;
-                case 4: 
-                    rValue = temp4; 
-                    gValue = temp2; 
-                    bValue = V / 100; 
-                    break;
-                default: 
-                    rValue = V / 100; 
-                    gValue = temp2; 
-                    bValue = temp3; 
-                    break;
-            }
-        }
-        rValue *= 100;
-        gValue *= 100;
-        bValue *= 100;
+        var c = v * s;
+        var x = c * (1 - Math.Abs(h / 60 % 2 - 1));
+        var m = v - c;
 
-        rValue = _normalizer.Normalize((byte)rValue);
-        gValue = _normalizer.Normalize((byte)gValue);
-        bValue = _normalizer.Normalize((byte)bValue);
-        
-        return new ColorTriplet(new Fraction(rValue), new Fraction(gValue), new Fraction(bValue));
+        float r;
+        float g;
+        float b;
+
+        switch (h)
+        {
+            case < 60:
+                (r, g, b) = (c, x, 0);
+                break;
+            case < 120:
+                (r, g, b) = (x, c, 0);
+                break;
+            case < 180:
+                (r, g, b) = (0, c, x);
+                break;
+            case < 240:
+                (r, g, b) = (0, x, c);
+                break;
+            case < 300:
+                (r, g, b) = (x, 0, c);
+                break;
+            default:
+                (r, g, b) = (c, 0, x);
+                break;
+        }
+
+        return new ColorTriplet(r + m, g + m, b + m);
+    }
+
+    public (byte, byte, byte) Extract(ColorTriplet triplet)
+    {
+        return (
+            _deNormalizer.DeNormalize(triplet.First),
+            _deNormalizer.DeNormalize(triplet.Second),
+            _deNormalizer.DeNormalize(triplet.Third));
     }
 }
