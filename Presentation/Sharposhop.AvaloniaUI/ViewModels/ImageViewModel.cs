@@ -6,11 +6,8 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using ReactiveUI;
 using Sharposhop.Core.BitmapImages;
-using Sharposhop.Core.ChannelFilters;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Normalization;
-using Sharposhop.Core.SchemeConverters;
-using SkiaSharp;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;
 

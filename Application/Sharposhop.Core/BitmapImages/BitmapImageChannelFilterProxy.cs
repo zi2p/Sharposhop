@@ -1,6 +1,7 @@
 using Sharposhop.Core.ChannelFilters;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Model;
+using Sharposhop.Core.SchemeConverters;
 
 namespace Sharposhop.Core.BitmapImages;
 
@@ -8,16 +9,19 @@ public sealed class BitmapImageChannelFilterProxy : IBitmapImage, IChannelFilter
 {
     private readonly IEnumerationStrategy _enumerationStrategy;
     private readonly IBitmapImage _image;
+    private readonly ISchemeConverterProvider _converterProvider;
     private IChannelFilter _filter;
 
     public BitmapImageChannelFilterProxy(
         IBitmapImage image,
         IChannelFilter filter,
-        IEnumerationStrategy enumerationStrategy)
+        IEnumerationStrategy enumerationStrategy,
+        ISchemeConverterProvider converterProvider)
     {
         _image = image;
         _filter = filter;
         _enumerationStrategy = enumerationStrategy;
+        _converterProvider = converterProvider;
 
         _image.BitmapChanged += OnBitmapChanged;
     }
@@ -42,7 +46,7 @@ public sealed class BitmapImageChannelFilterProxy : IBitmapImage, IChannelFilter
         foreach (var (x, y) in _enumerationStrategy.Enumerate(Width, Height))
         {
             var triplet = _image[x, y];
-            _filter.Write(stream, triplet);
+            _filter.Write(stream, triplet, _converterProvider.Converter);
         }
     }
 

@@ -2,6 +2,7 @@ using System.Text;
 using Sharposhop.Core.BitmapImages;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
+using Sharposhop.Core.SchemeConverters;
 
 namespace Sharposhop.Core.ChannelFilters;
 
@@ -17,11 +18,13 @@ public class PassthroughChannelFilter : IChannelFilter
     public ColorTriplet Filter(ColorTriplet triplet)
         => triplet;
 
-    public void Write(Stream stream, ColorTriplet triplet)
+    public void Write(Stream stream, ColorTriplet triplet, ISchemeConverter converter)
     {
-        stream.WriteByte(_deNormalizer.DeNormalize(triplet.First));
-        stream.WriteByte(_deNormalizer.DeNormalize(triplet.Second));
-        stream.WriteByte(_deNormalizer.DeNormalize(triplet.Third));
+        var (first, second, third) = converter.Extract(triplet);
+
+        stream.WriteByte(first);
+        stream.WriteByte(second);
+        stream.WriteByte(third);
     }
 
     public void WriteHeader(Stream stream, IBitmapImage image)

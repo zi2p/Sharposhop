@@ -11,7 +11,6 @@ using Sharposhop.Core.BitmapImages;
 using Sharposhop.Core.ChannelFilters;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Loading;
-using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 using Sharposhop.Core.SchemeConverters;
 using Sharposhop.Core.Tools;
@@ -35,7 +34,7 @@ public partial class App : Application
         var enumerationStrategy = new RowByRowEnumerationStrategy();
         collection.AddSingleton<IEnumerationStrategy>(enumerationStrategy);
 
-        var schemeConverter = new PassthroughSchemeConverter();
+        var schemeConverter = new PassthroughSchemeConverter(deNormalizer);
         var channelFilter = new PassthroughChannelFilter(deNormalizer);
 
         var bitmapImageProxy = new BitmapImageProxy();
@@ -45,7 +44,8 @@ public partial class App : Application
         (
             schemeConverterProxy,
             channelFilter,
-            enumerationStrategy
+            enumerationStrategy,
+            schemeConverterProxy
         );
 
         collection.AddSingleton<IBitmapImageUpdater>(bitmapImageProxy);
