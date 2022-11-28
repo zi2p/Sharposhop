@@ -6,6 +6,8 @@ public interface IBitmapImage : IDisposable
 {
     int Width { get; }
     int Height { get; }
+    
+    ColorScheme Scheme { get; }
 
     ColorTriplet this[int x, int y] { get; }
 

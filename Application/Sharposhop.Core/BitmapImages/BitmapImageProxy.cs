@@ -3,11 +3,11 @@ using Sharposhop.Core.Model;
 
 namespace Sharposhop.Core.BitmapImages;
 
-public sealed class BitmapImageProxy : IBitmapImage, IBitmapImageUpdater
+public sealed class BitmapImageProxy : IWritableBitmapImage, IBitmapImageUpdater
 {
-    private IBitmapImage? _image;
+    private IWritableBitmapImage? _image;
 
-    public BitmapImageProxy(IBitmapImage? image = null)
+    public BitmapImageProxy(IWritableBitmapImage? image = null)
     {
         if (image is null)
             return;
@@ -17,16 +17,22 @@ public sealed class BitmapImageProxy : IBitmapImage, IBitmapImageUpdater
         image.BitmapChanged += OnBitmapChanged;
     }
 
-    public IBitmapImage Image => _image ?? throw BitmapImageProxyException.NoImageLoaded();
+    public IWritableBitmapImage Image => _image ?? throw BitmapImageProxyException.NoImageLoaded();
 
     public int Width => Image.Width;
     public int Height => Image.Height;
 
-    public ColorTriplet this[int x, int y] => Image[x, y];
+    public ColorScheme Scheme => Image.Scheme;
+
+    public ColorTriplet this[int x, int y]
+    {
+        get => Image[x, y];
+        set => Image[x, y] = value;
+    }
 
     public event Func<Task>? BitmapChanged;
 
-    public Task UpdateAsync(IBitmapImage image)
+    public Task UpdateAsync(IWritableBitmapImage image)
     {
         if (_image is not null)
         {

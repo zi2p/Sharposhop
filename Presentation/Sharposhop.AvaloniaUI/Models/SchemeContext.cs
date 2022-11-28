@@ -14,17 +14,17 @@ public class SchemeContext
         IServiceProvider provider,
         ISchemeConverterUpdater schemeConverterUpdater,
         IChannelFilterUpdater channelFilterUpdater,
-        IDeNormalizer deNormalizer)
+        INormalizer normalizer)
     {
         _provider = provider;
         SchemeConverterUpdater = schemeConverterUpdater;
         ChannelFilterUpdater = channelFilterUpdater;
-        DeNormalizer = deNormalizer;
+        Normalizer = normalizer;
     }
 
     public ISchemeConverterUpdater SchemeConverterUpdater { get; }
     public IChannelFilterUpdater ChannelFilterUpdater { get; }
-    public IDeNormalizer DeNormalizer { get; }
+    public INormalizer Normalizer { get; }
 
     public ISchemeConverter CreateConverter<T>() where T : ISchemeConverter
         => ActivatorUtilities.CreateInstance<T>(_provider);

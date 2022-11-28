@@ -17,7 +17,7 @@ public class LoaderProxy : IImageLoader
         _loaderFactory = loaderFactory;
     }
 
-    public async Task<IBitmapImage> LoadImageAsync(Stream data)
+    public async Task<IWritableBitmapImage> LoadImageAsync(Stream data)
     {
         var type = await RecognizeImageTypeAsync(data);
         data.Position = 0;

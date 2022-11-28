@@ -14,18 +14,18 @@ namespace Sharposhop.AvaloniaUI.ViewModels;
 public class ImageViewModel : ViewModelBase
 {
     private readonly IEnumerationStrategy _enumerationStrategy;
-    private readonly IDeNormalizer _deNormalizer;
+    private readonly INormalizer _normalizer;
 
     private Bitmap? _bitmap;
 
     public ImageViewModel(
         IBitmapImage bitmapImage,
         IEnumerationStrategy enumerationStrategy,
-        IDeNormalizer deNormalizer)
+        INormalizer normalizer)
     {
         BitmapImage = bitmapImage;
         _enumerationStrategy = enumerationStrategy;
-        _deNormalizer = deNormalizer;
+        _normalizer = normalizer;
 
         bitmapImage.BitmapChanged += Load;
         bitmapImage.BitmapChanged += BitmapChanged;
@@ -65,9 +65,9 @@ public class ImageViewModel : ViewModelBase
                 {
                     var triplet = BitmapImage[x, y];
 
-                    var first = _deNormalizer.DeNormalize(triplet.First);
-                    var second = _deNormalizer.DeNormalize(triplet.Second);
-                    var third = _deNormalizer.DeNormalize(triplet.Third);
+                    var first = _normalizer.DeNormalize(triplet.First);
+                    var second = _normalizer.DeNormalize(triplet.Second);
+                    var third = _normalizer.DeNormalize(triplet.Third);
 
                     var index = _enumerationStrategy.AsContinuousIndex(x, y, size.Width, size.Height) * 4;
 

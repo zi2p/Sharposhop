@@ -8,13 +8,13 @@ namespace Sharposhop.Core.ChannelFilters;
 
 public class SingleChannelFilter : IChannelFilter
 {
-    private readonly IDeNormalizer _deNormalizer;
     private readonly Channel _channel;
+    private readonly INormalizer _normalizer;
 
-    public SingleChannelFilter(Channel channel, IDeNormalizer deNormalizer)
+    public SingleChannelFilter(Channel channel, INormalizer normalizer)
     {
-        _deNormalizer = deNormalizer;
         _channel = channel;
+        _normalizer = normalizer;
     }
 
     public ColorTriplet Filter(ColorTriplet triplet)
@@ -30,21 +30,15 @@ public class SingleChannelFilter : IChannelFilter
 
     public void Write(Stream stream, ColorTriplet triplet, ISchemeConverter converter)
     {
-        var (first, second, third) = converter.Extract(triplet);
-        
         var value = _channel switch
         {
-            Channel.First => first,
-            Channel.Second => second,
-            Channel.Third => third,
+            Channel.First => triplet.First,
+            Channel.Second => triplet.Second,
+            Channel.Third => triplet.Third,
             _ => throw new ArgumentOutOfRangeException(),
         };
 
-        stream.WriteByte(value);
-    }
-
-    public void Write(Stream stream, ColorTriplet triplet)
-    {
+        stream.WriteByte(_normalizer.DeNormalize(value));
     }
 
     public void WriteHeader(Stream stream, IBitmapImage image)

@@ -37,7 +37,7 @@ public class SchemeSelectorComponent
     public async Task SchemeSelectedAsync()
     {
         var scheme = _converterFactory.Invoke(_context);
-        var filter = new PassthroughChannelFilter(_context.DeNormalizer);
+        var filter = new PassthroughChannelFilter(_context.Normalizer);
 
         await _context.SchemeConverterUpdater.UpdateAsync(scheme, false);
         await _context.ChannelFilterUpdater.UpdateAsync(filter);
@@ -55,7 +55,7 @@ public class SchemeSelectorComponent
     private async Task ChannelSelectedAsync(Channel channel)
     {
         var scheme = _converterFactory.Invoke(_context);
-        var filter = new SingleChannelFilter(channel, _context.DeNormalizer);
+        var filter = new SingleChannelFilter(channel, _context.Normalizer);
 
         await _context.SchemeConverterUpdater.UpdateAsync(scheme, false);
         await _context.ChannelFilterUpdater.UpdateAsync(filter);

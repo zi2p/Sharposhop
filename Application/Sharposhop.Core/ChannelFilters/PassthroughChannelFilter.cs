@@ -8,11 +8,11 @@ namespace Sharposhop.Core.ChannelFilters;
 
 public class PassthroughChannelFilter : IChannelFilter
 {
-    private readonly IDeNormalizer _deNormalizer;
+    private readonly INormalizer _normalizer;
 
-    public PassthroughChannelFilter(IDeNormalizer deNormalizer)
+    public PassthroughChannelFilter(INormalizer normalizer)
     {
-        _deNormalizer = deNormalizer;
+        _normalizer = normalizer;
     }
 
     public ColorTriplet Filter(ColorTriplet triplet)
@@ -20,11 +20,9 @@ public class PassthroughChannelFilter : IChannelFilter
 
     public void Write(Stream stream, ColorTriplet triplet, ISchemeConverter converter)
     {
-        var (first, second, third) = converter.Extract(triplet);
-
-        stream.WriteByte(first);
-        stream.WriteByte(second);
-        stream.WriteByte(third);
+        stream.WriteByte(_normalizer.DeNormalize(triplet.First));
+        stream.WriteByte(_normalizer.DeNormalize(triplet.Second));
+        stream.WriteByte(_normalizer.DeNormalize(triplet.Third));
     }
 
     public void WriteHeader(Stream stream, IBitmapImage image)

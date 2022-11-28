@@ -1,16 +1,10 @@
 using Sharposhop.Core.Model;
-using Sharposhop.Core.Normalization;
 
 namespace Sharposhop.Core.SchemeConverters;
 
 public class CmySchemeConverter : ISchemeConverter
 {
-    private readonly IDeNormalizer _deNormalizer;
-
-    public CmySchemeConverter(IDeNormalizer deNormalizer)
-    {
-        _deNormalizer = deNormalizer;
-    }
+    public ColorScheme Scheme => ColorScheme.Cmy;
 
     public ColorTriplet Convert(ColorTriplet triplet)
     {
@@ -23,12 +17,4 @@ public class CmySchemeConverter : ISchemeConverter
 
     public ColorTriplet Revert(ColorTriplet triplet)
         => Convert(triplet);
-
-    public (byte, byte, byte) Extract(ColorTriplet triplet)
-    {
-        return (
-            _deNormalizer.DeNormalize(triplet.First),
-            _deNormalizer.DeNormalize(triplet.Second),
-            _deNormalizer.DeNormalize(triplet.Third));
-    }
 }

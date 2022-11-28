@@ -28,6 +28,7 @@ public sealed class BitmapImageChannelFilterProxy : IBitmapImage, IChannelFilter
 
     public int Width => _image.Width;
     public int Height => _image.Height;
+    public ColorScheme Scheme => _image.Scheme;
 
     public ColorTriplet this[int x, int y] => _filter.Filter(_image[x, y]);
 

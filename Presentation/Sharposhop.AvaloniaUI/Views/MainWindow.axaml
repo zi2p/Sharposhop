@@ -43,7 +43,7 @@
             <Image Grid.Column="0" Grid.Row="0"
                    Source="{Binding ImageViewModel.Bitmap}"
                    Stretch="Uniform"
-                   StretchDirection="Both" />
+                   StretchDirection="DownOnly" />
 
             <StackPanel Grid.Column="0" Grid.Row="1"
                         HorizontalAlignment="Center">

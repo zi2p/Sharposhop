@@ -27,15 +27,14 @@ public partial class App : Application
         var collection = new ServiceCollection();
         collection.UseMicrosoftDependencyResolver();
 
-        var deNormalizer = new SimpleDeNormalizer();
-        collection.AddSingleton<IDeNormalizer>(deNormalizer);
-        collection.AddSingleton<INormalizer, SimpleNormalizer>();
+        var normalizer = new SimpleNormalizer();
+        collection.AddSingleton<INormalizer>();
 
         var enumerationStrategy = new RowByRowEnumerationStrategy();
         collection.AddSingleton<IEnumerationStrategy>(enumerationStrategy);
 
-        var schemeConverter = new PassthroughSchemeConverter(deNormalizer);
-        var channelFilter = new PassthroughChannelFilter(deNormalizer);
+        var schemeConverter = new PassthroughSchemeConverter();
+        var channelFilter = new PassthroughChannelFilter(normalizer);
 
         var bitmapImageProxy = new BitmapImageProxy();
         var schemeConverterProxy = new BitmapImageSchemeConverterProxy(bitmapImageProxy, schemeConverter);

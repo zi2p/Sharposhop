@@ -1,16 +1,12 @@
 using Sharposhop.Core.Model;
-using Sharposhop.Core.Normalization;
 
 namespace Sharposhop.Core.SchemeConverters;
 
 public class HsvSchemeConverter : ISchemeConverter
 {
-    private readonly IDeNormalizer _deNormalizer;
+    private const float Delta = 0.01f;
 
-    public HsvSchemeConverter(IDeNormalizer deNormalizer)
-    {
-        _deNormalizer = deNormalizer;
-    }
+    public ColorScheme Scheme => ColorScheme.Hsv;
 
     public ColorTriplet Convert(ColorTriplet triplet)
     {
@@ -21,23 +17,23 @@ public class HsvSchemeConverter : ISchemeConverter
         var s = max is 0 ? 0 : 1 - min / max;
         float h = 0;
 
-        if (max == min)
+        if (Math.Abs(max - min) < Delta)
         {
             h = 0;
         }
-        else if (max == triplet.First && triplet.Second >= triplet.Third)
+        else if (Math.Abs(max - triplet.First) < Delta && triplet.Second >= triplet.Third)
         {
             h = 60 * (triplet.Second - triplet.Third) / (max - min);
         }
-        else if (max == triplet.First && triplet.Second < triplet.Third)
+        else if (Math.Abs(max - triplet.First) < Delta && triplet.Second < triplet.Third)
         {
             h = 60 * (triplet.Second - triplet.Third) / (max - min) + 360;
         }
-        else if (max == triplet.Second)
+        else if (Math.Abs(max - triplet.Second) < Delta)
         {
             h = 60 * (triplet.Third - triplet.First) / (max - min) + 120;
         }
-        else if (max == triplet.Third)
+        else if (Math.Abs(max - triplet.Third) < Delta)
         {
             h = 60 * (triplet.First - triplet.Second) / (max - min) + 240;
         }
@@ -57,40 +53,16 @@ public class HsvSchemeConverter : ISchemeConverter
         var x = c * (1 - Math.Abs(h / 60 % 2 - 1));
         var m = v - c;
 
-        float r;
-        float g;
-        float b;
-
-        switch (h)
+        var (r, g, b) = h switch
         {
-            case < 60:
-                (r, g, b) = (c, x, 0);
-                break;
-            case < 120:
-                (r, g, b) = (x, c, 0);
-                break;
-            case < 180:
-                (r, g, b) = (0, c, x);
-                break;
-            case < 240:
-                (r, g, b) = (0, x, c);
-                break;
-            case < 300:
-                (r, g, b) = (x, 0, c);
-                break;
-            default:
-                (r, g, b) = (c, 0, x);
-                break;
-        }
+            < 60 => (c, x, 0f),
+            < 120 => (x, c, 0f),
+            < 180 => (0f, c, x),
+            < 240 => (0f, x, c),
+            < 300 => (x, 0f, c),
+            _ => (c, 0f, x)
+        };
 
         return new ColorTriplet(r + m, g + m, b + m);
-    }
-
-    public (byte, byte, byte) Extract(ColorTriplet triplet)
-    {
-        return (
-            _deNormalizer.DeNormalize(triplet.First),
-            _deNormalizer.DeNormalize(triplet.Second),
-            _deNormalizer.DeNormalize(triplet.Third));
     }
 }

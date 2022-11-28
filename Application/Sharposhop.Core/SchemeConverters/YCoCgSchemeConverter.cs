@@ -1,17 +1,12 @@
+using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Single;
 using Sharposhop.Core.Model;
-using Sharposhop.Core.Normalization;
 
 namespace Sharposhop.Core.SchemeConverters;
 
 public class YCoCgSchemeConverter : ISchemeConverter
 {
-    private readonly IDeNormalizer _deNormalizer;
-
-    public YCoCgSchemeConverter(IDeNormalizer deNormalizer)
-    {
-        _deNormalizer = deNormalizer;
-    }
+    public ColorScheme Scheme => ColorScheme.YCoCg;
 
     public ColorTriplet Convert(ColorTriplet triplet)
     {
@@ -24,7 +19,7 @@ public class YCoCgSchemeConverter : ISchemeConverter
 
         var vector = new DenseVector(new float[] { triplet.First, triplet.Second, triplet.Third });
 
-        var hsl = matrix.Transpose() * vector;
+        Vector<float>? hsl = matrix.Transpose() * vector;
 
         return new ColorTriplet(hsl[0], hsl[1] + 0.5f, hsl[2] + 0.5f);
     }
@@ -42,13 +37,5 @@ public class YCoCgSchemeConverter : ISchemeConverter
         var b = tmp - co;
 
         return new ColorTriplet(r, g, b);
-    }
-
-    public (byte, byte, byte) Extract(ColorTriplet triplet)
-    {
-        return (
-            _deNormalizer.DeNormalize(triplet.First),
-            _deNormalizer.DeNormalize(triplet.Second),
-            _deNormalizer.DeNormalize(triplet.Third));
     }
 }

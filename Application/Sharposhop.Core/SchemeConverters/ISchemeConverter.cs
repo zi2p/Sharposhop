@@ -4,8 +4,8 @@ namespace Sharposhop.Core.SchemeConverters;
 
 public interface ISchemeConverter
 {
+    ColorScheme Scheme { get; }
+    
     ColorTriplet Convert(ColorTriplet triplet);
     ColorTriplet Revert(ColorTriplet triplet);
-
-    (byte, byte, byte) Extract(ColorTriplet triplet);
 }

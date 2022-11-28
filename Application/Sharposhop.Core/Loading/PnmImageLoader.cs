@@ -22,10 +22,10 @@ public class PnmImageLoader : IImageLoader
         _enumerationStrategy = new RowByRowEnumerationStrategy();
     }
 
-    public Task<IBitmapImage> LoadImageAsync(Stream data)
+    public Task<IWritableBitmapImage> LoadImageAsync(Stream data)
         => Task.FromResult(ParseImage(data));
 
-    private IBitmapImage ParseImage(Stream stream)
+    private IWritableBitmapImage ParseImage(Stream stream)
     {
         using var streamReader = new StreamReader(stream, Encoding.UTF8, true);
 
@@ -55,7 +55,7 @@ public class PnmImageLoader : IImageLoader
         var height = ReadNum(stream);
         SkipSpaceChar(stream);
 
-        var maxColor = ReadNum(stream);
+        _ = ReadNum(stream);
         _ = stream.ReadByte();
 
         return format switch
@@ -66,7 +66,7 @@ public class PnmImageLoader : IImageLoader
         };
     }
 
-    private IBitmapImage LoadP5(Stream stream, int width, int height)
+    private IWritableBitmapImage LoadP5(Stream stream, int width, int height)
     {
         const int size = 1;
 
@@ -90,10 +90,10 @@ public class PnmImageLoader : IImageLoader
 
         ArrayPool<byte>.Shared.Return(buffer);
 
-        return new RowByRowArrayBitmapImage(width, height, array);
+        return new RowByRowArrayBitmapImage(width, height, ColorScheme.Rgb, array);
     }
 
-    private IBitmapImage LoadP6(Stream stream, int height, int width)
+    private IWritableBitmapImage LoadP6(Stream stream, int height, int width)
     {
         const int size = 3;
 
@@ -119,7 +119,7 @@ public class PnmImageLoader : IImageLoader
 
         ArrayPool<byte>.Shared.Return(buffer);
 
-        return new RowByRowArrayBitmapImage(width, height, array);
+        return new RowByRowArrayBitmapImage(width, height, ColorScheme.Rgb, array);
     }
 
     private static void SkipSpaceChar(Stream content)

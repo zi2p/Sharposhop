@@ -2,5 +2,5 @@ namespace Sharposhop.Core.BitmapImages;
 
 public interface IBitmapImageUpdater
 {
-    Task UpdateAsync(IBitmapImage image);
+    Task UpdateAsync(IWritableBitmapImage image);
 }

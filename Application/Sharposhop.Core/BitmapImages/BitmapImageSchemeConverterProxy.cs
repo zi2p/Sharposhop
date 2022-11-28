@@ -23,6 +23,7 @@ public sealed class BitmapImageSchemeConverterProxy :
     public int Width => _image.Width;
 
     public int Height => _image.Height;
+    public ColorScheme Scheme => Converter.Scheme;
 
     public ColorTriplet this[int x, int y] => Converter.Convert(_image[x, y]);
 
@@ -33,7 +34,7 @@ public sealed class BitmapImageSchemeConverterProxy :
         Converter = converter;
         return notify ? OnBitmapChanged() : Task.CompletedTask;
     }
-    
+
     private Task OnBitmapChanged()
         => BitmapChanged?.Invoke() ?? Task.CompletedTask;
 
