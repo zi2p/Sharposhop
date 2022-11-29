@@ -1,0 +1,52 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+actor User as u
+
+participant Writer as w
+
+participant BitmapImageFilterProxy as fp
+participant "Filter's writer wrappers" as fpw
+
+participant BitmapImageChannelFilterProxy as cfp
+participant ChannelFilteringTripletWriter as cfpw
+
+participant BitmapImageSchemeConverterProxy as scp
+participant SchemeConverterTripletWriter as scpw
+
+participant BitmapImageProxy as ip
+
+participant BitmapImage as i
+
+u -> fp: WriteToAsync(writer)
+activate w
+
+fp -> fpw: wraps 
+activate fpw
+fp <-- fpw
+fp -> cfp: WriteToAsync(wrapped writter)
+
+cfp -> cfpw: wraps writer info ChannelFilteringTripletWriter
+activate cfpw
+cfp <-- cfpw
+cfp -> scp: WriteToAsync(wrapped writer)
+
+scp -> scpw: wraps writer into SchemeConverterTripletWriter
+activate scpw
+scp <-- scpw
+scp -> ip: WriteToAsync(wrapped wtrited)
+
+ip -> i: WriteToAsync(writer)
+
+scpw <-- i: writes every triplet one by one
+
+scpw -> scpw: applies scheme conversion to triplet
+cfpw <-- scpw: writes triplet
+
+cfpw -> cfpw: applies channel filtering
+fpw <-- cfpw: writes triplet
+
+fpw -> fpw: applies filters' modifications
+w <-- fpw: writes triplet
+
+@enduml

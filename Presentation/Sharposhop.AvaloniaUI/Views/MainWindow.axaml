@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Sharposhop.AvaloniaUI.ViewModels"
+        xmlns:v="using:Sharposhop.AvaloniaUI.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
@@ -38,14 +39,16 @@
                     Opacity="0.6">
         </StackPanel>
 
-        <Grid ColumnDefinitions="*" RowDefinitions="*, Auto" Margin="0 25 0 0">
+        <Grid ColumnDefinitions="3*,*" RowDefinitions="*, Auto" Margin="0 25 0 0">
 
             <Image Grid.Column="0" Grid.Row="0"
                    Source="{Binding ImageViewModel.Bitmap}"
                    Stretch="Uniform"
                    StretchDirection="DownOnly" />
 
-            <StackPanel Grid.Column="0" Grid.Row="1"
+            <UserControl Grid.Column="1" Grid.Row="0" Content="{Binding FilterViewModel}" />
+
+            <StackPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
                         HorizontalAlignment="Center">
                 <Menu Name="Menu"
                       MinHeight="50">

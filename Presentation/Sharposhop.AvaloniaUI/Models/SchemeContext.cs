@@ -1,8 +1,8 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Sharposhop.Core.ChannelFilters;
+using Sharposhop.Core.BitmapImages.ChannelFiltering;
+using Sharposhop.Core.BitmapImages.SchemeConversion;
 using Sharposhop.Core.Normalization;
-using Sharposhop.Core.SchemeConverters;
 
 namespace Sharposhop.AvaloniaUI.Models;
 

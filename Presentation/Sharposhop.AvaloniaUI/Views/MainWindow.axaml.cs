@@ -6,12 +6,14 @@ using Avalonia.ReactiveUI;
 using ReactiveUI;
 using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.AvaloniaUI.ViewModels;
-using Sharposhop.Core.SchemeConverters;
+using Sharposhop.Core.BitmapImages.SchemeConversion.Converters;
+using Sharposhop.Core.Saving.Strategies;
 
 namespace Sharposhop.AvaloniaUI.Views;
 
 public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 {
+    // ReSharper disable once UnusedMember.Global
     public MainWindow() { }
 
     public MainWindow(SchemeContext schemeContext, MainWindowViewModel viewModel)
@@ -34,7 +36,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             schemeContext,
             x => x.CreateConverter<YCbCr601SchemeConverter>());
 
-        var son = new SchemeSelectorComponent("YCbCr.709", "Y", "Cb", "Cr", 
+        var son = new SchemeSelectorComponent("YCbCr.709", "Y", "Cb", "Cr",
             schemeContext,
             x => x.CreateConverter<YCbCr709SchemeConverter>());
 
@@ -42,7 +44,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             schemeContext,
             x => x.CreateConverter<YCoCgSchemeConverter>());
 
-        var cmy = new SchemeSelectorComponent("CMY", "Cyan", "Magenta", "Yellow", 
+        var cmy = new SchemeSelectorComponent("CMY", "Cyan", "Magenta", "Yellow",
             schemeContext,
             x => x.CreateConverter<CmySchemeConverter>());
 
@@ -61,7 +63,12 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     },
                     new MenuItemViewModel("_Save")
                     {
-                        Command = ReactiveCommand.CreateFromTask<Window>(viewModel.SaveImageAsync),
+                        Command = ReactiveCommand.CreateFromTask<Window>(w =>
+                        {
+                            var strategy = new P6SavingStrategy(viewModel.Normalizer, viewModel.EnumerationStrategy);
+                            return viewModel.SaveImageAsync(w, strategy);
+                        }),
+
                         CommandParameter = this,
                     },
                 }

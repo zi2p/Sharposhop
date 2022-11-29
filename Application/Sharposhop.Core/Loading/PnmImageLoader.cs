@@ -1,11 +1,12 @@
 ﻿using System.Buffers;
 using System.Text;
 using Sharposhop.Core.BitmapImages;
+using Sharposhop.Core.BitmapImages.Implementations;
+using Sharposhop.Core.BitmapImages.SchemeConversion;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Exceptions;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
-using Sharposhop.Core.SchemeConverters;
 
 namespace Sharposhop.Core.Loading;
 
@@ -15,11 +16,14 @@ public class PnmImageLoader : IImageLoader
     private readonly IEnumerationStrategy _enumerationStrategy;
     private readonly INormalizer _normalizer;
 
-    public PnmImageLoader(INormalizer normalizer, ISchemeConverterProvider schemeConverterProvider)
+    public PnmImageLoader(
+        INormalizer normalizer,
+        ISchemeConverterProvider schemeConverterProvider,
+        IEnumerationStrategy enumerationStrategy)
     {
         _normalizer = normalizer;
         _schemeConverterProvider = schemeConverterProvider;
-        _enumerationStrategy = new RowByRowEnumerationStrategy();
+        _enumerationStrategy = enumerationStrategy;
     }
 
     public Task<IWritableBitmapImage> LoadImageAsync(Stream data)
@@ -73,9 +77,9 @@ public class PnmImageLoader : IImageLoader
         ColorTriplet[] array = ArrayPool<ColorTriplet>.Shared.Rent(width * height);
         var buffer = ArrayPool<byte>.Shared.Rent(size);
 
-        foreach (var (x, y) in _enumerationStrategy.Enumerate(width, height))
+        foreach (var coordinate in _enumerationStrategy.Enumerate(width, height))
         {
-            var index = _enumerationStrategy.AsContinuousIndex(x, y, width, height);
+            var index = _enumerationStrategy.AsContinuousIndex(coordinate, width, height);
 
             var count = stream.Read(buffer, 0, size);
 
@@ -90,7 +94,8 @@ public class PnmImageLoader : IImageLoader
 
         ArrayPool<byte>.Shared.Return(buffer);
 
-        return new RowByRowArrayBitmapImage(width, height, ColorScheme.Rgb, array);
+        // TODO: Proper gamma value
+        return new BitmapImage(width, height, ColorScheme.Rgb, 0, array, _enumerationStrategy);
     }
 
     private IWritableBitmapImage LoadP6(Stream stream, int height, int width)
@@ -100,9 +105,9 @@ public class PnmImageLoader : IImageLoader
         ColorTriplet[] array = ArrayPool<ColorTriplet>.Shared.Rent(width * height);
         var buffer = ArrayPool<byte>.Shared.Rent(size);
 
-        foreach (var (x, y) in _enumerationStrategy.Enumerate(width, height))
+        foreach (var coordinate in _enumerationStrategy.Enumerate(width, height))
         {
-            var index = _enumerationStrategy.AsContinuousIndex(x, y, width, height);
+            var index = _enumerationStrategy.AsContinuousIndex(coordinate, width, height);
 
             var count = stream.Read(buffer, 0, size);
 
@@ -119,7 +124,8 @@ public class PnmImageLoader : IImageLoader
 
         ArrayPool<byte>.Shared.Return(buffer);
 
-        return new RowByRowArrayBitmapImage(width, height, ColorScheme.Rgb, array);
+        // TODO: Proper gamma value
+        return new BitmapImage(width, height, ColorScheme.Rgb, 0, array, _enumerationStrategy);
     }
 
     private static void SkipSpaceChar(Stream content)

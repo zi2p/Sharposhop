@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
 using Sharposhop.AvaloniaUI.Models;
-using Sharposhop.Core.ChannelFilters;
+using Sharposhop.Core.BitmapImages.ChannelFiltering.Filters;
+using Sharposhop.Core.BitmapImages.SchemeConversion;
 using Sharposhop.Core.Model;
-using Sharposhop.Core.SchemeConverters;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;
 

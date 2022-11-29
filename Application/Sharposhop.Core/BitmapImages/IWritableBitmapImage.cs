@@ -1,8 +1,9 @@
 using Sharposhop.Core.Model;
+using Sharposhop.Core.Writing;
 
 namespace Sharposhop.Core.BitmapImages;
 
 public interface IWritableBitmapImage : IBitmapImage
 {
-    new ColorTriplet this[int x, int y] { get; set; }
+    ValueTask WriteFromAsync<T>(IEnumerable<PlaneCoordinate> coordinates, T writer) where T : IBitmapImageWriter;
 }

@@ -5,7 +5,10 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using ReactiveUI;
 using Sharposhop.Core.BitmapImages;
+using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Loading;
+using Sharposhop.Core.Normalization;
+using Sharposhop.Core.Saving;
 using Sharposhop.Core.Tools;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;
@@ -13,35 +16,52 @@ namespace Sharposhop.AvaloniaUI.ViewModels;
 public class MainWindowViewModel : ViewModelBase
 {
     private readonly IImageLoader _loader;
-    private readonly IBitmapImageSaver _saver;
     private readonly IBitmapImageUpdater _bitmapImageUpdater;
+    private readonly IBitmapImage _image;
     private readonly IExceptionSink _exceptionSink;
 
     private bool _isEnabled;
 
     public MainWindowViewModel(
         ImageViewModel imageViewModel,
+        FilterViewModel filterViewModel,
         IImageLoader loader,
-        IBitmapImageSaver saver,
         IBitmapImageUpdater bitmapImageUpdater,
-        IExceptionSink exceptionSink)
+        IExceptionSink exceptionSink,
+        IBitmapImage image,
+        INormalizer normalizer,
+        IEnumerationStrategy enumerationStrategy)
     {
         ImageViewModel = imageViewModel;
         _loader = loader;
-        _saver = saver;
         _bitmapImageUpdater = bitmapImageUpdater;
         _exceptionSink = exceptionSink;
+        _image = image;
+        Normalizer = normalizer;
+        EnumerationStrategy = enumerationStrategy;
+        FilterViewModel = filterViewModel;
 
-        ImageViewModel.BitmapChanged += () =>
-        {
-            this.RaisePropertyChanged(nameof(ImageViewModel));
-            return Task.CompletedTask;
-        };
+        ImageViewModel.BitmapChanged += OnImageViewModelOnBitmapChanged;
 
         _isEnabled = true;
     }
 
+    ~MainWindowViewModel()
+    {
+        ImageViewModel.BitmapChanged -= OnImageViewModelOnBitmapChanged;
+    }
+
+    private ValueTask OnImageViewModelOnBitmapChanged()
+    {
+        this.RaisePropertyChanged(nameof(ImageViewModel));
+        return ValueTask.CompletedTask;
+    }
+
+    public INormalizer Normalizer { get; }
+    public IEnumerationStrategy EnumerationStrategy { get; }
+
     public ImageViewModel ImageViewModel { get; }
+    public FilterViewModel FilterViewModel { get; }
 
     public bool IsEnabled
     {
@@ -71,7 +91,7 @@ public class MainWindowViewModel : ViewModelBase
         });
     }
 
-    public Task SaveImageAsync(Window window)
+    public Task SaveImageAsync(Window window, ISavingStrategy strategy)
     {
         return ExecuteSafeAsync(async () =>
         {
@@ -83,7 +103,7 @@ public class MainWindowViewModel : ViewModelBase
                 return;
 
             await using var stream = File.OpenWrite(result);
-            _saver.SaveTo(stream);
+            await strategy.SaveAsync(stream, _image);
         });
     }
 
