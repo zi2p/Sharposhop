@@ -62,19 +62,6 @@ public partial class App : Application
         var channelFilterProxy = new BitmapImageChannelFilterProxy(schemeConverterProxy, channelFilter);
         var filterProxy = new BitmapImageFilterProxy(channelFilterProxy);
 
-        filterProxy.Add(0, new DimmingBitmapFilter
-        {
-            Value = 1,
-        });
-        filterProxy.Add(0, new DimmingBitmapFilter
-        {
-            Value = 0.5f,
-        });
-        filterProxy.Add(0, new DimmingBitmapFilter
-        {
-            Value = 0.25f,
-        });
-
         collection.AddSingleton<IBitmapImageUpdater>(bitmapImageProxy);
         collection.AddSingleton<IWritableBitmapImage>(bitmapImageProxy);
 

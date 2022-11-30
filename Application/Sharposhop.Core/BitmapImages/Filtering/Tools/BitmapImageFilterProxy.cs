@@ -14,12 +14,12 @@ public sealed class BitmapImageFilterProxy : IBitmapImage, IBitmapFilterManager
         _image = image;
         _filters = new List<IBitmapFilter>();
 
-        image.BitmapChanged += BitmapChanged;
+        image.BitmapChanged += OnBitmapChanged;
     }
 
     ~BitmapImageFilterProxy()
     {
-        _image.BitmapChanged -= BitmapChanged;
+        _image.BitmapChanged -= OnBitmapChanged;
     }
 
     public int Width => _image.Width;

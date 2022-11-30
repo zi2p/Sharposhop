@@ -33,7 +33,16 @@ public class P6SavingStrategy : ISavingStrategy
 
         stream.Write(headerBytes, 0, headerBytes.Length);
 
-        var writer = new StreamTripletWriter(stream, image.Width, image.Height, _normalizer, _enumerationStrategy);
+        var writer = new StreamTripletWriter
+        (
+            stream,
+            image.Width,
+            image.Height,
+            _normalizer,
+            _enumerationStrategy,
+            headerBytes.Length
+        );
+
         return image.WriteToAsync(writer);
     }
 }
