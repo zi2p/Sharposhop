@@ -1,3 +1,4 @@
+using Sharposhop.Core.Gamma;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Writing;
 
@@ -9,7 +10,7 @@ public interface IBitmapImage : IDisposable
     int Height { get; }
 
     ColorScheme Scheme { get; }
-    Gamma Gamma { get; set; }
+    GammaModel Gamma { get; set; }
 
     ValueTask WriteToAsync<T>(T writer) where T : ITripletWriter;
 

@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Runtime.CompilerServices;
 using Sharposhop.Core.Enumeration;
+using Sharposhop.Core.Gamma;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Writing;
 
@@ -10,13 +11,13 @@ public sealed class BitmapImage : IWritableBitmapImage
 {
     private readonly ColorTriplet[] _values;
     private readonly IEnumerationStrategy _enumeration;
-    private Gamma _gamma;
+    private GammaModel _gamma;
 
     public BitmapImage(
         int width,
         int height,
         ColorScheme scheme,
-        Gamma gamma,
+        GammaModel gamma,
         ColorTriplet[] values,
         IEnumerationStrategy enumeration)
     {
@@ -32,10 +33,10 @@ public sealed class BitmapImage : IWritableBitmapImage
     public int Height { get; }
     public ColorScheme Scheme { get; }
 
-    public Gamma Gamma
+    public GammaModel Gamma
     {
         get => _gamma;
-        set => throw new NotImplementedException("Implement set gamma logic.");
+        set =>_gamma = value;
     }
 
     public event Func<ValueTask>? BitmapChanged;

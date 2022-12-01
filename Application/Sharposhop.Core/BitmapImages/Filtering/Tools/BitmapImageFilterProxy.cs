@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Sharposhop.Core.Gamma;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Writing;
 
@@ -28,7 +29,7 @@ public sealed class BitmapImageFilterProxy : IBitmapImage, IBitmapFilterManager
 
     public ColorScheme Scheme => _image.Scheme;
 
-    public Gamma Gamma
+    public GammaModel Gamma
     {
         get => _image.Gamma;
         set => _image.Gamma = value;

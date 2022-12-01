@@ -71,6 +71,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
                         CommandParameter = this,
                     },
+                    new MenuItemViewModel("_Generate gradient")
+                    {
+                        Command = ReactiveCommand.CreateFromTask(viewModel.GenerateGradientAsync)
+                    }
                 }
             },
             new MenuItemViewModel("_Scheme")
@@ -86,6 +90,59 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     ToItem(cmy),
                 },
             },
+            new MenuItemViewModel("_Gamma")
+            {
+                Items =
+                {
+                    new MenuItemViewModel("_Value")
+                    {
+                        Items =
+                        {
+                            new MenuItemViewModel("sRGB")
+                            {
+                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 0f)
+                            },
+                            new MenuItemViewModel("0.5")
+                            {
+                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 0.5f)
+                            },
+                            new MenuItemViewModel("1.0")
+                            {
+                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 1.0f)
+                            },
+                            new MenuItemViewModel("1.5")
+                            {
+                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 1.5f)
+                            },
+                            new MenuItemViewModel("2.0")
+                            {
+                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 2.0f)
+                            },
+                            new MenuItemViewModel("2.2")
+                            {
+                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 2.2f)
+                            },
+                            new MenuItemViewModel("2.5")
+                            {
+                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 2.5f)
+                            },
+                            new MenuItemViewModel("3.0")
+                            {
+                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 3.0f)
+                            },
+                        }
+                    },
+                    new MenuItemViewModel("_Assign gamma")
+                    {
+                        Command = ReactiveCommand.CreateFromTask(viewModel.AssignGammaAsync)
+                    },
+                    new MenuItemViewModel("_Convert to gamma")
+                    {
+                        Command = ReactiveCommand.CreateFromTask(viewModel.ConvertToGammaAsync)
+                    }
+                    
+                }
+            }
         };
     }
 

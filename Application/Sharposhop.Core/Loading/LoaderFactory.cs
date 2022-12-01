@@ -28,6 +28,7 @@ public class LoaderFactory
         {
             // ImageFileTypes.Bmp => new SkiaImageLoader(_normalizer, _schemeConverterProvider),
             ImageFileTypes.Pnm => new PnmImageLoader(_normalizer, _schemeConverterProvider, _enumerationStrategy),
+            ImageFileTypes.Gradient => new GradientGenerator(_normalizer, _enumerationStrategy),
             ImageFileTypes.Other or _ => throw WrongFileFormatException.ImageTypeNotSupported(),
         };
     }

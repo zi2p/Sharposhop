@@ -95,7 +95,7 @@ public class PnmImageLoader : IImageLoader
         ArrayPool<byte>.Shared.Return(buffer);
 
         // TODO: Proper gamma value
-        return new BitmapImage(width, height, ColorScheme.Rgb, 0, array, _enumerationStrategy);
+        return new BitmapImage(width, height, ColorScheme.Rgb, Gamma.GammaModel.DefaultGamma, array, _enumerationStrategy);
     }
 
     private IWritableBitmapImage LoadP6(Stream stream, int height, int width)
@@ -125,7 +125,7 @@ public class PnmImageLoader : IImageLoader
         ArrayPool<byte>.Shared.Return(buffer);
 
         // TODO: Proper gamma value
-        return new BitmapImage(width, height, ColorScheme.Rgb, 0, array, _enumerationStrategy);
+        return new BitmapImage(width, height, ColorScheme.Rgb, Gamma.GammaModel.DefaultGamma, array, _enumerationStrategy);
     }
 
     private static void SkipSpaceChar(Stream content)

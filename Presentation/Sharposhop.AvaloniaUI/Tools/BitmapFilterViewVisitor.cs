@@ -17,9 +17,9 @@ public class BitmapFilterViewVisitor : IBitmapFilterVisitor
 
     public List<FilterViewModelBase> Contents { get; } = new List<FilterViewModelBase>();
 
-    public void Visit(DimmingBitmapFilter filter)
+    public void Visit(IBitmapFilter filter)
     {
-        var viewModel = new DimmingFilterViewModel(filter, _sink);
-        Contents.Add(viewModel);
+        // var viewModel = new DimmingFilterViewModel(filter, _sink);
+        // Contents.Add(viewModel);
     }
 }

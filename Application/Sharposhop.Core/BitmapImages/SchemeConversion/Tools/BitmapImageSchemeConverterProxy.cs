@@ -25,7 +25,7 @@ public sealed class BitmapImageSchemeConverterProxy :
     public int Height => _image.Height;
     public ColorScheme Scheme => Converter.Scheme;
 
-    public Gamma Gamma
+    public Gamma.GammaModel Gamma
     {
         get => _image.Gamma;
         set => _image.Gamma = value;

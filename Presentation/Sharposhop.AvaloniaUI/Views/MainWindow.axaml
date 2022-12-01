@@ -46,7 +46,7 @@
                    Stretch="Uniform"
                    StretchDirection="DownOnly" />
 
-            <UserControl Grid.Column="1" Grid.Row="0" Content="{Binding FilterViewModel}" />
+            <!--<UserControl Grid.Column="1" Grid.Row="0" Content="{Binding FilterViewModel}" />-->
 
             <StackPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
                         HorizontalAlignment="Center">

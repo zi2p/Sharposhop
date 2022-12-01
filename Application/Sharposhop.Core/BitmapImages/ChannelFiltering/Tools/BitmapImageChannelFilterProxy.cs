@@ -22,7 +22,7 @@ public sealed class BitmapImageChannelFilterProxy : IBitmapImage, IChannelFilter
     public int Height => _image.Height;
     public ColorScheme Scheme => _image.Scheme;
 
-    public Gamma Gamma
+    public Gamma.GammaModel Gamma
     {
         get => _image.Gamma;
         set => _image.Gamma = value;

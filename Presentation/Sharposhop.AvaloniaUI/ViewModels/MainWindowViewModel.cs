@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using ReactiveUI;
+using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.Core.BitmapImages;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Loading;
+using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 using Sharposhop.Core.Saving;
 using Sharposhop.Core.Tools;
@@ -19,6 +22,7 @@ public class MainWindowViewModel : ViewModelBase
     private readonly IBitmapImageUpdater _bitmapImageUpdater;
     private readonly IBitmapImage _image;
     private readonly IExceptionSink _exceptionSink;
+    private readonly IWritableBitmapImage _writableBitmapImage;
 
     private bool _isEnabled;
 
@@ -30,7 +34,9 @@ public class MainWindowViewModel : ViewModelBase
         IExceptionSink exceptionSink,
         IBitmapImage image,
         INormalizer normalizer,
-        IEnumerationStrategy enumerationStrategy)
+        IEnumerationStrategy enumerationStrategy,
+        GammaSettings gammaSettings,
+        IWritableBitmapImage writableImage)
     {
         ImageViewModel = imageViewModel;
         _loader = loader;
@@ -40,6 +46,8 @@ public class MainWindowViewModel : ViewModelBase
         Normalizer = normalizer;
         EnumerationStrategy = enumerationStrategy;
         FilterViewModel = filterViewModel;
+        GammaSettings = gammaSettings;
+        _writableBitmapImage = writableImage;
 
         ImageViewModel.BitmapChanged += OnImageViewModelOnBitmapChanged;
 
@@ -62,6 +70,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public ImageViewModel ImageViewModel { get; }
     public FilterViewModel FilterViewModel { get; }
+    public GammaSettings GammaSettings { get; }
 
     public bool IsEnabled
     {
@@ -85,6 +94,22 @@ public class MainWindowViewModel : ViewModelBase
                 return;
 
             await using var stream = File.OpenRead(result[0]);
+            var image = await _loader.LoadImageAsync(stream);
+
+            await _bitmapImageUpdater.UpdateAsync(image);
+        });
+    }
+
+    public Task GenerateGradientAsync()
+    {
+        return ExecuteSafeAsync(async () =>
+        {
+            var request = "grad 500 500 255 255 255";
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            await writer.WriteAsync(request);
+            await writer.FlushAsync();
+            stream.Position = 0;
             var image = await _loader.LoadImageAsync(stream);
 
             await _bitmapImageUpdater.UpdateAsync(image);
@@ -121,6 +146,37 @@ public class MainWindowViewModel : ViewModelBase
         finally
         {
             IsEnabled = true;
+        }
+    }
+
+    public Task AssignGammaAsync()
+    {
+        GammaSettings.Filter.Value = GammaSettings.GammaValue;
+        return Task.CompletedTask;
+    }
+
+    public Task ConvertToGammaAsync()
+    {
+        return ExecuteSafeAsync(async () =>
+        {
+            await _writableBitmapImage.WriteFromAsync(GetCoordinates(), GammaSettings.GetWriter(_image.Gamma));
+            _writableBitmapImage.Gamma = GammaSettings.GammaValue;
+            // _image.Gamma = GammaSettings.GammaValue;
+            GammaSettings.Filter.Value = GammaSettings.GammaValue;
+        });
+    }
+
+    private IEnumerable<PlaneCoordinate> GetCoordinates()
+    {
+        var width = _image.Width;
+        var height = _image.Height;
+
+        for (var x = 0; x < width; x++)
+        {
+            for (var y = 0; y < height; y++)
+            {
+                yield return new PlaneCoordinate(x, y);
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 using Sharposhop.Core.Exceptions;
+using Sharposhop.Core.Gamma;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Writing;
 
@@ -25,7 +26,7 @@ public sealed class BitmapImageProxy : IWritableBitmapImage, IBitmapImageUpdater
 
     public ColorScheme Scheme => Image.Scheme;
 
-    public Gamma Gamma
+    public GammaModel Gamma
     {
         get => Image.Gamma;
         set => Image.Gamma = value;

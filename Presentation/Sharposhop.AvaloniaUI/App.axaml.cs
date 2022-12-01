@@ -62,6 +62,22 @@ public partial class App : Application
         var channelFilterProxy = new BitmapImageChannelFilterProxy(schemeConverterProxy, channelFilter);
         var filterProxy = new BitmapImageFilterProxy(channelFilterProxy);
 
+        var gammaSettings = new GammaSettings();
+        filterProxy.Add(0, gammaSettings.Filter);
+
+        // filterProxy.Add(0, new DimmingBitmapFilter
+        // {
+        //     Value = 1,
+        // });
+        // filterProxy.Add(0, new DimmingBitmapFilter
+        // {
+        //     Value = 0.5f,
+        // });
+        // filterProxy.Add(0, new DimmingBitmapFilter
+        // {
+        //     Value = 0.25f,
+        // });
+
         collection.AddSingleton<IBitmapImageUpdater>(bitmapImageProxy);
         collection.AddSingleton<IWritableBitmapImage>(bitmapImageProxy);
 
@@ -73,7 +89,7 @@ public partial class App : Application
 
         collection.AddSingleton<SchemeContext>();
 
-        collection.AddSingleton<IImageLoader, PnmImageLoader>();
+        collection.AddSingleton<IImageLoader, LoaderProxy>();
         collection.AddSingleton<LoaderFactory>();
 
         collection.AddScoped<ImageViewModel>();
@@ -83,6 +99,7 @@ public partial class App : Application
         collection.AddSingleton<IExceptionSink, MessageBoxExceptionSink>();
 
         collection.AddSingleton<ViewLocator>();
+        collection.AddSingleton(gammaSettings);
 
         var provider = collection.BuildServiceProvider();
         provider.UseMicrosoftDependencyResolver();
