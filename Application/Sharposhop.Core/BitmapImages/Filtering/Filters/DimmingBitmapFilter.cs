@@ -1,3 +1,4 @@
+using Sharposhop.Core.BitmapImages.Filtering.Tools;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Writing;
 
@@ -7,6 +8,7 @@ public class DimmingBitmapFilter : IBitmapFilter
 {
     private Fraction _value;
     public string DisplayName => "Dimming";
+    public UserAction UserAction { get; set; }
 
     public event Func<ValueTask>? FilterChanged;
 

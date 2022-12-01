@@ -15,7 +15,6 @@ using Sharposhop.Core.BitmapImages.ChannelFiltering;
 using Sharposhop.Core.BitmapImages.ChannelFiltering.Filters;
 using Sharposhop.Core.BitmapImages.ChannelFiltering.Tools;
 using Sharposhop.Core.BitmapImages.Filtering;
-using Sharposhop.Core.BitmapImages.Filtering.Filters;
 using Sharposhop.Core.BitmapImages.Filtering.Tools;
 using Sharposhop.Core.BitmapImages.Implementations;
 using Sharposhop.Core.BitmapImages.SchemeConversion;
@@ -61,25 +60,13 @@ public partial class App : Application
         var schemeConverterProxy = new BitmapImageSchemeConverterProxy(bitmapImageProxy, schemeConverter);
         var channelFilterProxy = new BitmapImageChannelFilterProxy(schemeConverterProxy, channelFilter);
         var filterProxy = new BitmapImageFilterProxy(channelFilterProxy);
-
-        var gammaSettings = new GammaSettings();
+        var userAction = new UserAction();
+        var gammaSettings = new GammaSettings(userAction);
         filterProxy.Add(0, gammaSettings.Filter);
-
-        // filterProxy.Add(0, new DimmingBitmapFilter
-        // {
-        //     Value = 1,
-        // });
-        // filterProxy.Add(0, new DimmingBitmapFilter
-        // {
-        //     Value = 0.5f,
-        // });
-        // filterProxy.Add(0, new DimmingBitmapFilter
-        // {
-        //     Value = 0.25f,
-        // });
 
         collection.AddSingleton<IBitmapImageUpdater>(bitmapImageProxy);
         collection.AddSingleton<IWritableBitmapImage>(bitmapImageProxy);
+        collection.AddSingleton(userAction);
 
         collection.AddSingleton<ISchemeConverterUpdater>(schemeConverterProxy);
         collection.AddSingleton<ISchemeConverterProvider>(schemeConverterProxy);

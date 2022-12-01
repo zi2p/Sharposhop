@@ -7,6 +7,7 @@ using Avalonia.Threading;
 using ReactiveUI;
 using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.Core.BitmapImages;
+using Sharposhop.Core.BitmapImages.Filtering.Tools;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Loading;
 using Sharposhop.Core.Model;
@@ -23,6 +24,7 @@ public class MainWindowViewModel : ViewModelBase
     private readonly IBitmapImage _image;
     private readonly IExceptionSink _exceptionSink;
     private readonly IWritableBitmapImage _writableBitmapImage;
+    private readonly UserAction _userAction;
 
     private bool _isEnabled;
 
@@ -36,7 +38,8 @@ public class MainWindowViewModel : ViewModelBase
         INormalizer normalizer,
         IEnumerationStrategy enumerationStrategy,
         GammaSettings gammaSettings,
-        IWritableBitmapImage writableImage)
+        IWritableBitmapImage writableImage,
+        UserAction userAction)
     {
         ImageViewModel = imageViewModel;
         _loader = loader;
@@ -48,6 +51,7 @@ public class MainWindowViewModel : ViewModelBase
         FilterViewModel = filterViewModel;
         GammaSettings = gammaSettings;
         _writableBitmapImage = writableImage;
+        _userAction = userAction;
 
         ImageViewModel.BitmapChanged += OnImageViewModelOnBitmapChanged;
 
@@ -118,6 +122,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public Task SaveImageAsync(Window window, ISavingStrategy strategy)
     {
+        _userAction.IsSavingAction = true;
         return ExecuteSafeAsync(async () =>
         {
             var dialog = new SaveFileDialog();
@@ -129,6 +134,7 @@ public class MainWindowViewModel : ViewModelBase
 
             await using var stream = File.OpenWrite(result);
             await strategy.SaveAsync(stream, _image);
+            _userAction.IsSavingAction = false;
         });
     }
 
