@@ -15,5 +15,5 @@ public readonly struct GammaConvertWriter : IBitmapImageWriter
     public GammaModel OldGamma { get; }
 
     public ValueTask<ColorTriplet> Write(PlaneCoordinate coordinate, ColorTriplet current)
-        => ValueTask.FromResult(current.WithoutGamma(OldGamma).WithGamma(NewGamma));
+        => ValueTask.FromResult(current.WithGamma(OldGamma).WithoutGamma(NewGamma));
 }
