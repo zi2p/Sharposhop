@@ -13,5 +13,18 @@
         <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseDark.xaml" />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml" />
         <StyleInclude Source="avares://AvaloniaProgressRing/Styles/ProgressRing.xaml" />
+
+        <Style Selector="NumericUpDown.field">
+            <Setter Property="AllowSpin" Value="False" />
+            <Setter Property="ShowButtonSpinner" Value="False" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0 8 0 8" />
+        </Style>
+
+        <Style Selector="TextBlock.label">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Margin" Value="8" />
+        </Style>
     </Application.Styles>
 </Application>

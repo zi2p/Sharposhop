@@ -7,26 +7,22 @@ namespace Sharposhop.Core.BitmapImages.Filtering.Filters;
 
 public class GammaFilter : IBitmapFilter
 {
-    private GammaModel _value;
+    private readonly UserAction _userAction;
 
     public GammaFilter(UserAction userAction)
     {
-        UserAction = userAction;
+        _userAction = userAction;
     }
 
     public string DisplayName => "Gamma";
-    public UserAction UserAction { get; set; }
-
     public event Func<ValueTask>? FilterChanged;
 
-    public GammaModel Value
+    public GammaModel Value { get; private set; }
+
+    public ValueTask Update(GammaModel value)
     {
-        get => _value;
-        set
-        {
-            _value = value;
-            FilterChanged?.Invoke();
-        }
+        Value = value;
+        return FilterChanged?.Invoke() ?? ValueTask.CompletedTask;
     }
 
     public void Accept(IBitmapFilterVisitor visitor)
@@ -35,7 +31,7 @@ public class GammaFilter : IBitmapFilter
     public ValueTask WriteAsync<T>(T writer, IBitmapImage image, ReadOnlySpan<IBitmapFilter>.Enumerator enumerator)
         where T : ITripletWriter
     {
-        var wrapper = new GammaBitmapTripletWriter<T>(writer, Value, !UserAction.IsSavingAction);
+        var wrapper = new GammaBitmapTripletWriter<T>(writer, Value, !_userAction.IsSavingAction);
 
         return enumerator.MoveNext()
             ? enumerator.Current.WriteAsync(wrapper, image, enumerator)

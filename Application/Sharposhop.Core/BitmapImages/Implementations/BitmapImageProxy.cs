@@ -37,8 +37,9 @@ public sealed class BitmapImageProxy : IWritableBitmapImage, IBitmapImageUpdater
     public ValueTask WriteToAsync<T>(T writer) where T : ITripletWriter
         => Image.WriteToAsync(writer);
 
-    public ValueTask WriteFromAsync<T>(IEnumerable<PlaneCoordinate> coordinates, T writer) where T : IBitmapImageWriter
-        => Image.WriteFromAsync(coordinates, writer);
+    public ValueTask WriteFromAsync<T>(IEnumerable<PlaneCoordinate> coordinates, T writer, bool notify)
+        where T : IBitmapImageWriter
+        => Image.WriteFromAsync(coordinates, writer, notify);
 
     public ValueTask UpdateAsync(IWritableBitmapImage image)
     {

@@ -1,4 +1,3 @@
-using Sharposhop.Core.BitmapImages.Filtering.Tools;
 using Sharposhop.Core.Writing;
 
 namespace Sharposhop.Core.BitmapImages.Filtering;
@@ -6,7 +5,6 @@ namespace Sharposhop.Core.BitmapImages.Filtering;
 public interface IBitmapFilter
 {
     string DisplayName { get; }
-    UserAction UserAction { get; set; }
 
     event Func<ValueTask> FilterChanged;
 

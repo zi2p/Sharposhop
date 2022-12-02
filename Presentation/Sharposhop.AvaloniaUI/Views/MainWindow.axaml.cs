@@ -2,7 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.ReactiveUI;
+using Avalonia.Threading;
 using ReactiveUI;
 using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.AvaloniaUI.ViewModels;
@@ -71,11 +75,20 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
                         CommandParameter = this,
                     },
-                    new MenuItemViewModel("_Generate gradient")
+                    new MenuItemViewModel("_Create gradient")
                     {
-                        Command = ReactiveCommand.CreateFromTask(viewModel.GenerateGradientAsync)
-                    }
-                }
+                        Command = ReactiveCommand.CreateFromTask(() =>
+                        {
+                            var window = new CreateGradientWindow
+                            {
+                                ViewModel = new CreateGradientViewModel(viewModel),
+                            };
+
+                            Dispatcher.UIThread.Post(window.Show);
+                            return Task.CompletedTask;
+                        }),
+                    },
+                },
             },
             new MenuItemViewModel("_Scheme")
             {
@@ -90,59 +103,6 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     ToItem(cmy),
                 },
             },
-            new MenuItemViewModel("_Gamma")
-            {
-                Items =
-                {
-                    new MenuItemViewModel("_Value")
-                    {
-                        Items =
-                        {
-                            new MenuItemViewModel("sRGB")
-                            {
-                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 0f)
-                            },
-                            new MenuItemViewModel("0.5")
-                            {
-                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 0.5f)
-                            },
-                            new MenuItemViewModel("1.0")
-                            {
-                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 1.0f)
-                            },
-                            new MenuItemViewModel("1.5")
-                            {
-                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 1.5f)
-                            },
-                            new MenuItemViewModel("2.0")
-                            {
-                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 2.0f)
-                            },
-                            new MenuItemViewModel("2.2")
-                            {
-                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 2.2f)
-                            },
-                            new MenuItemViewModel("2.5")
-                            {
-                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 2.5f)
-                            },
-                            new MenuItemViewModel("3.0")
-                            {
-                                Command = ReactiveCommand.Create(() => viewModel.GammaSettings.GammaValue = 3.0f)
-                            },
-                        }
-                    },
-                    new MenuItemViewModel("_Assign gamma")
-                    {
-                        Command = ReactiveCommand.CreateFromTask(viewModel.AssignGammaAsync)
-                    },
-                    new MenuItemViewModel("_Convert to gamma")
-                    {
-                        Command = ReactiveCommand.CreateFromTask(viewModel.ConvertToGammaAsync)
-                    }
-                    
-                }
-            }
         };
     }
 
@@ -154,9 +114,9 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         };
     }
 
-    private IList<MenuItemViewModel> GetSubItems(SchemeSelectorComponent component)
+    private IList<ViewModelBase> GetSubItems(SchemeSelectorComponent component)
     {
-        return new[]
+        return new ViewModelBase[]
         {
             new MenuItemViewModel("_All")
             {
@@ -179,4 +139,13 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
     private Task ExecuteSafeAsync(Func<Task> action)
         => ViewModel?.ExecuteSafeAsync(action) ?? Task.CompletedTask;
+
+    private void TogglePane(object? sender, RoutedEventArgs routedEventArgs)
+        => ViewModel?.TogglePane();
+
+    private async void Assign(object? sender, RoutedEventArgs routedEventArgs)
+        => await (ViewModel?.AssignGammaAsync() ?? Task.CompletedTask);
+    
+    private async void ConvertTo(object? sender, RoutedEventArgs routedEventArgs)
+        => await (ViewModel?.ConvertToGammaAsync() ?? Task.CompletedTask);  
 }

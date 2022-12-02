@@ -11,7 +11,6 @@ public sealed class BitmapImage : IWritableBitmapImage
 {
     private readonly ColorTriplet[] _values;
     private readonly IEnumerationStrategy _enumeration;
-    private GammaModel _gamma;
 
     public BitmapImage(
         int width,
@@ -25,7 +24,7 @@ public sealed class BitmapImage : IWritableBitmapImage
         Height = height;
         _values = values;
         _enumeration = enumeration;
-        _gamma = gamma;
+        Gamma = gamma;
         Scheme = scheme;
     }
 
@@ -33,11 +32,7 @@ public sealed class BitmapImage : IWritableBitmapImage
     public int Height { get; }
     public ColorScheme Scheme { get; }
 
-    public GammaModel Gamma
-    {
-        get => _gamma;
-        set =>_gamma = value;
-    }
+    public GammaModel Gamma { get; set; }
 
     public event Func<ValueTask>? BitmapChanged;
 
@@ -50,7 +45,7 @@ public sealed class BitmapImage : IWritableBitmapImage
         }
     }
 
-    public async ValueTask WriteFromAsync<T>(IEnumerable<PlaneCoordinate> coordinates, T writer)
+    public async ValueTask WriteFromAsync<T>(IEnumerable<PlaneCoordinate> coordinates, T writer, bool notify)
         where T : IBitmapImageWriter
     {
         foreach (var coordinate in coordinates)
@@ -60,7 +55,8 @@ public sealed class BitmapImage : IWritableBitmapImage
             _values[index] = await writer.Write(coordinate, _values[index]);
         }
 
-        await OnBitmapChanged();
+        if (notify)
+            await OnBitmapChanged();
     }
 
     public void Dispose()

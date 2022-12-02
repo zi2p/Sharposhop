@@ -3,6 +3,7 @@ using System.Text;
 using Sharposhop.Core.BitmapImages;
 using Sharposhop.Core.BitmapImages.Implementations;
 using Sharposhop.Core.Enumeration;
+using Sharposhop.Core.Gamma;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 
@@ -62,7 +63,7 @@ public class GradientGenerator : IImageLoader
             array[index] = triplet;
         }
 
-        return new BitmapImage(width, height, ColorScheme.Rgb, Gamma.GammaModel.DefaultGamma, array, _enumerationStrategy);
+        return new BitmapImage(width, height, ColorScheme.Rgb, GammaModel.DefaultGamma, array, _enumerationStrategy);
     }
 
     private static void SkipSpaceChar(Stream content)

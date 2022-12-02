@@ -10,6 +10,7 @@ public readonly struct GammaModel
     {
         if (value < 0)
             throw new ArgumentOutOfRangeException(nameof(value), "GammaModel value can't be less than 0");
+
         Value = value;
     }
 

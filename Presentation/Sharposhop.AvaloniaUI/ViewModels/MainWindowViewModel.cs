@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Threading;
 using ReactiveUI;
 using Sharposhop.AvaloniaUI.Models;
@@ -27,6 +29,7 @@ public class MainWindowViewModel : ViewModelBase
     private readonly UserAction _userAction;
 
     private bool _isEnabled;
+    private bool _isSrgbChecked;
 
     public MainWindowViewModel(
         ImageViewModel imageViewModel,
@@ -86,6 +89,20 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public bool IsSrgbChecked
+    {
+        get => _isSrgbChecked;
+        set
+        {
+            _isSrgbChecked = value;
+            GammaSettings.IsSrgb = value;
+            this.RaisePropertyChanged();
+        }
+    }
+
+    public static CultureInfo Culture => CultureInfo.InvariantCulture;
+    public bool IsPaneOpen { get; set; }
+
     public Task LoadImageAsync(Window window)
     {
         return ExecuteSafeAsync(async () =>
@@ -98,22 +115,6 @@ public class MainWindowViewModel : ViewModelBase
                 return;
 
             await using var stream = File.OpenRead(result[0]);
-            var image = await _loader.LoadImageAsync(stream);
-
-            await _bitmapImageUpdater.UpdateAsync(image);
-        });
-    }
-
-    public Task GenerateGradientAsync()
-    {
-        return ExecuteSafeAsync(async () =>
-        {
-            var request = "grad 500 500 255 255 255";
-            var stream = new MemoryStream();
-            var writer = new StreamWriter(stream);
-            await writer.WriteAsync(request);
-            await writer.FlushAsync();
-            stream.Position = 0;
             var image = await _loader.LoadImageAsync(stream);
 
             await _bitmapImageUpdater.UpdateAsync(image);
@@ -138,6 +139,15 @@ public class MainWindowViewModel : ViewModelBase
         });
     }
 
+    public Task LoadImageAsync(Stream data)
+    {
+        return ExecuteSafeAsync(async () =>
+        {
+            var image = await _loader.LoadImageAsync(data);
+            await _bitmapImageUpdater.UpdateAsync(image);
+        });
+    }
+
     public async Task ExecuteSafeAsync(Func<Task> action)
     {
         try
@@ -157,18 +167,20 @@ public class MainWindowViewModel : ViewModelBase
 
     public Task AssignGammaAsync()
     {
-        GammaSettings.Filter.Value = GammaSettings.GammaValue;
-        return Task.CompletedTask;
+        return ExecuteSafeAsync(async () => await GammaSettings.Filter.Update(GammaSettings.EffectiveGamma));
     }
 
     public Task ConvertToGammaAsync()
     {
         return ExecuteSafeAsync(async () =>
         {
-            await _writableBitmapImage.WriteFromAsync(GetCoordinates(), GammaSettings.GetWriter(_image.Gamma));
-            _writableBitmapImage.Gamma = GammaSettings.GammaValue;
-            // _image.Gamma = GammaSettings.GammaValue;
-            GammaSettings.Filter.Value = GammaSettings.GammaValue;
+            IEnumerable<PlaneCoordinate> coo = GetCoordinates();
+            var writer = GammaSettings.GetWriter(_image.Gamma);
+
+            await _writableBitmapImage.WriteFromAsync(coo, writer, false);
+            _writableBitmapImage.Gamma = GammaSettings.EffectiveGamma;
+
+            await GammaSettings.Filter.Update(GammaSettings.EffectiveGamma);
         });
     }
 
@@ -184,5 +196,11 @@ public class MainWindowViewModel : ViewModelBase
                 yield return new PlaneCoordinate(x, y);
             }
         }
+    }
+
+    public void TogglePane()
+    {
+        IsPaneOpen = !IsPaneOpen;
+        this.RaisePropertyChanged(nameof(IsPaneOpen));
     }
 }

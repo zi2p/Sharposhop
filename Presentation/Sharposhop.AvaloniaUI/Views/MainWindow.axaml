@@ -5,65 +5,133 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
+        xmlns:converters="clr-namespace:Sharposhop.AvaloniaUI.Converters"
+        xmlns:viewModels="clr-namespace:Sharposhop.AvaloniaUI.ViewModels"
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="500"
         x:Class="Sharposhop.AvaloniaUI.Views.MainWindow"
         Icon="/Assets/logo.SH.SH.ico"
         Title="Sharposhop"
+        Background="Transparent"
         TransparencyLevelHint="AcrylicBlur"
         ExtendClientAreaToDecorationsHint="True"
-        Width="1000"
+        Width="1500"
         Height="1000">
 
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Panel>
-        <StackPanel ZIndex="10"
-                    Orientation="Vertical"
-                    IsVisible="{Binding !IsEnabled}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
+    <Window.Resources>
+        <converters:GammaValueConverter x:Key="GammaValueConverter" />
+    </Window.Resources>
 
-            <progRing:ProgressRing Width="70"
-                                   Height="70"
-                                   Margin="5,5,5,5"
-                                   IsActive="True"
-                                   Foreground="White" />
+    <Window.Styles>
+        <Style Selector="Button.execute">
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="5" />
+        </Style>
+    </Window.Styles>
 
+    <Grid ColumnDefinitions="*" RowDefinitions="*, Auto" Margin="0 25 0 0">
+
+        <SplitView PanePlacement="Right"
+                   IsPaneOpen="{Binding IsPaneOpen}"
+                   DisplayMode="Inline"
+                   PaneBackground="Transparent">
+
+            <Panel>
+                <StackPanel ZIndex="10"
+                            Orientation="Vertical"
+                            IsVisible="{Binding !IsEnabled}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+
+                    <progRing:ProgressRing Width="70"
+                                           Height="70"
+                                           Margin="5,5,5,5"
+                                           IsActive="True"
+                                           Foreground="White" />
+
+                </StackPanel>
+
+                <!-- <StackPanel ZIndex="9" -->
+                <!--             IsVisible="{Binding !IsEnabled}"> -->
+                <!-- </StackPanel> -->
+
+                <Image Source="{Binding ImageViewModel.Bitmap}"
+                       Stretch="Uniform"
+                       StretchDirection="DownOnly"
+                       Margin="15" />
+            </Panel>
+
+            <SplitView.Pane>
+                <Grid ColumnDefinitions="*" RowDefinitions="Auto">
+                    <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto, Auto"
+                          Margin="8">
+
+                        <TextBlock Classes="label">
+                            Gamma
+                        </TextBlock>
+
+                        <NumericUpDown Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Classes="field"
+                                       Value="{Binding GammaSettings.GammaValue, 
+                                        Converter={StaticResource GammaValueConverter}}"
+                                       Minimum="0"
+                                       Maximum="3"
+                                       CultureInfo="{Binding Culture}"
+                                       Increment="0.1"
+                                       IsEnabled="{Binding !IsSrgbChecked}" />
+
+                        <CheckBox Grid.Row="0" Grid.Column="3"
+                                  IsChecked="{Binding IsSrgbChecked}"
+                                  FontSize="15">
+                            sRGB
+                        </CheckBox>
+
+                        <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Classes="execute" Click="Assign">
+                            Assign
+                        </Button>
+
+                        <Button Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Classes="execute" Click="ConvertTo">
+                            Convert
+                        </Button>
+
+                    </Grid>
+
+                </Grid>
+
+
+            </SplitView.Pane>
+        </SplitView>
+
+        <StackPanel Grid.Column="0" Grid.Row="1"
+                    HorizontalAlignment="Center">
+            <Menu Name="Menu" MinHeight="50">
+                <Menu.Styles>
+                    <Style Selector="MenuItem">
+                        <Setter Property="Header" Value="{Binding Header}" />
+                        <Setter Property="Items" Value="{Binding Items}" />
+                        <Setter Property="Command" Value="{Binding Command}" />
+                        <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
+                        <Setter Property="Padding" Value="15" />
+                    </Style>
+                </Menu.Styles>
+            </Menu>
         </StackPanel>
 
-        <StackPanel ZIndex="9"
-                    IsVisible="{Binding !IsEnabled}"
-                    Background="Black"
-                    Opacity="0.6">
+        <StackPanel Grid.Column="0" Grid.Row="1"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Margin="10">
+            <Button Click="TogglePane"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch">
+                Controls
+            </Button>
         </StackPanel>
-
-        <Grid ColumnDefinitions="3*,*" RowDefinitions="*, Auto" Margin="0 25 0 0">
-
-            <Image Grid.Column="0" Grid.Row="0"
-                   Source="{Binding ImageViewModel.Bitmap}"
-                   Stretch="Uniform"
-                   StretchDirection="DownOnly" />
-
-            <!--<UserControl Grid.Column="1" Grid.Row="0" Content="{Binding FilterViewModel}" />-->
-
-            <StackPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
-                        HorizontalAlignment="Center">
-                <Menu Name="Menu"
-                      MinHeight="50">
-                    <Menu.Styles>
-                        <Style Selector="MenuItem">
-                            <Setter Property="Header" Value="{Binding Header}" />
-                            <Setter Property="Items" Value="{Binding Items}" />
-                            <Setter Property="Command" Value="{Binding Command}" />
-                            <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
-                            <Setter Property="Padding" Value="15" />
-                        </Style>
-                    </Menu.Styles>
-                </Menu>
-            </StackPanel>
-        </Grid>
-    </Panel>
+    </Grid>
 
 </Window>
