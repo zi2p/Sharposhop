@@ -78,7 +78,7 @@
                                        Value="{Binding GammaSettings.GammaValue, 
                                         Converter={StaticResource GammaValueConverter}}"
                                        Minimum="0"
-                                       Maximum="3"
+                                       Maximum="5"
                                        CultureInfo="{Binding Culture}"
                                        Increment="0.1"
                                        IsEnabled="{Binding !IsSrgbChecked}" />

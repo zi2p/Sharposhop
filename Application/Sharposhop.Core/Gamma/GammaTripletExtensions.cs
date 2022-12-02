@@ -9,9 +9,9 @@ public static class GammaTripletExtensions
         if (newGamma == GammaModel.DefaultGamma)
         {
             return new ColorTriplet(
-                triplet.First <= 0.040449936 ? triplet.First / 12.92f : (float)Math.Pow((triplet.First + 0.055) / 1.055, 2.4),
-                triplet.Second <= 0.040449936 ? triplet.Second / 12.92f : (float)Math.Pow((triplet.Second + 0.055) / 1.055, 2.4),
-                triplet.Third <= 0.040449936 ? triplet.Third / 12.92f : (float)Math.Pow((triplet.Third + 0.055) / 1.055, 2.4));
+                triplet.First <= 0.0404482362771082f ? triplet.First / 12.92f : (float)Math.Pow((triplet.First + 0.055) / 1.055, 2.4),
+                triplet.Second <= 0.0404482362771082f ? triplet.Second / 12.92f : (float)Math.Pow((triplet.Second + 0.055) / 1.055, 2.4),
+                triplet.Third <= 0.0404482362771082f ? triplet.Third / 12.92f : (float)Math.Pow((triplet.Third + 0.055) / 1.055, 2.4));
         }
 
         return new ColorTriplet(
@@ -22,18 +22,18 @@ public static class GammaTripletExtensions
 
     public static ColorTriplet WithoutGamma(this ColorTriplet triplet, GammaModel oldGamma)
     {
-        if (oldGamma == GammaModel.DefaultGamma.Reversed)
+        if (oldGamma == GammaModel.DefaultGamma)
         {
             return new ColorTriplet(
-                triplet.First <= 0.0031308f
+                triplet.First <= 0.00313066844250063f
                     ? triplet.First * 12.92f
-                    : (float) Math.Pow(triplet.First, 1 / 2.4) * 1.055f - 0.055f,
-                triplet.Second <= 0.0031308f
+                    : (float)(Math.Pow(triplet.First, 1 / 2.4) * 1.055 - 0.055),
+                triplet.Second <= 0.00313066844250063f
                     ? triplet.Second * 12.92f
-                    : (float) Math.Pow(triplet.Second, 1 / 2.4) * 1.055f - 0.055f,
-                triplet.Third <= 0.0031308f
+                    : (float)(Math.Pow(triplet.Second, 1 / 2.4) * 1.055 - 0.055),
+                triplet.Third <= 0.00313066844250063f
                     ? triplet.Third * 12.92f
-                    : (float) Math.Pow(triplet.Third, 1 / 2.4) * 1.055f - 0.055f);
+                    : (float)(Math.Pow(triplet.Third, 1 / 2.4) * 1.055 - 0.055));
         }
 
         return new ColorTriplet(

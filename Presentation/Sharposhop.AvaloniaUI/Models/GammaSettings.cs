@@ -1,7 +1,6 @@
 ﻿using Sharposhop.Core.BitmapImages.Filtering.Filters;
 using Sharposhop.Core.BitmapImages.Filtering.Tools;
 using Sharposhop.Core.Gamma;
-using Sharposhop.Core.Writing;
 
 namespace Sharposhop.AvaloniaUI.Models;
 
@@ -16,7 +15,7 @@ public class GammaSettings
     public GammaModel GammaValue { get; set; } = 0; 
     public GammaFilter Filter { get; }
 
-    public GammaModel EffectiveGamma => IsSrgb ? 0 : GammaValue;
+    public GammaModel EffectiveGamma => IsSrgb ? GammaModel.DefaultGamma : GammaValue;
 
     public GammaConvertWriter GetWriter(GammaModel currentGamma)
         => new GammaConvertWriter(EffectiveGamma, currentGamma);
