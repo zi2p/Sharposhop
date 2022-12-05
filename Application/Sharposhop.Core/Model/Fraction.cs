@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace Sharposhop.Core.Model;
 
@@ -16,9 +17,11 @@ public readonly struct Fraction
 
     public float Value { get; }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator float(Fraction fraction)
         => fraction.Value;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Fraction(float value)
         => new Fraction(value);
 

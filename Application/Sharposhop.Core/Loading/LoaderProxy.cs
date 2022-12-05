@@ -17,7 +17,7 @@ public class LoaderProxy : IImageLoader
         _loaderFactory = loaderFactory;
     }
 
-    public async Task<IBitmapImage> LoadImageAsync(Stream data)
+    public async Task<IWritableBitmapImage> LoadImageAsync(Stream data)
     {
         var type = await RecognizeImageTypeAsync(data);
         data.Position = 0;
@@ -28,9 +28,22 @@ public class LoaderProxy : IImageLoader
 
     private async Task<ImageFileTypes> RecognizeImageTypeAsync(Stream data)
     {
+        if (await IsImageTypeGradient(data)) return ImageFileTypes.Gradient;
         if (await IsImageTypePnm(data)) return ImageFileTypes.Pnm;
         if (await IsImageTypeBmp(data)) return ImageFileTypes.Bmp;
         return ImageFileTypes.Other;
+    }
+
+    // format: grad x y r g b
+    private async Task<bool> IsImageTypeGradient(Stream data)
+    {
+        data.Position = 0;
+        if (data.Length < 4) return false;
+        var grad = new byte[4];
+        _ = await data.ReadAsync(grad.AsMemory(0, 4));
+        var gradString = Encoding.UTF8.GetString(grad);
+
+        return gradString is "grad";
     }
 
     private async Task<bool> IsImageTypeBmp(Stream data)

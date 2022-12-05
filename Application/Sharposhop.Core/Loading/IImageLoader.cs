@@ -4,5 +4,5 @@ namespace Sharposhop.Core.Loading;
 
 public interface IImageLoader
 {
-    Task<IBitmapImage> LoadImageAsync(Stream data);
+    Task<IWritableBitmapImage> LoadImageAsync(Stream data);
 }

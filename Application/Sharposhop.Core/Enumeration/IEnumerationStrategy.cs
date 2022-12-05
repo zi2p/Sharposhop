@@ -1,8 +1,10 @@
+using Sharposhop.Core.Model;
+
 namespace Sharposhop.Core.Enumeration;
 
 public interface IEnumerationStrategy
 {
-    IEnumerable<(int X, int Y)> Enumerate(int width, int height);
+    IEnumerable<PlaneCoordinate> Enumerate(int width, int height);
     
-    int AsContinuousIndex(int x, int y, int width, int height);
+    long AsContinuousIndex(PlaneCoordinate coordinate, int width, int height);
 }

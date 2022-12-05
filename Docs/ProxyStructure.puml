@@ -1,0 +1,35 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class BitmapImage
+
+interface IWritableBitmapImage
+interface IBitmapImageUpdater
+class BitmapImageProxy
+
+interface ISchemeConverterUpdater
+interface ISchemeConverterProvider
+class BitmapImageSchemeConverterProxy
+
+interface IChannelFilterUpdater
+class BitmapImageChannelFilterProxy
+
+interface IBitmapFilterManager
+class BitmapImageFilterProxy
+
+BitmapImage --* BitmapImageProxy
+
+BitmapImageProxy --|> IWritableBitmapImage
+BitmapImageProxy --|> IBitmapImageUpdater
+BitmapImageProxy --* BitmapImageSchemeConverterProxy
+
+BitmapImageSchemeConverterProxy --|> ISchemeConverterUpdater
+BitmapImageSchemeConverterProxy --|> ISchemeConverterProvider
+BitmapImageSchemeConverterProxy --* BitmapImageChannelFilterProxy
+
+BitmapImageChannelFilterProxy --|> IChannelFilterUpdater
+BitmapImageChannelFilterProxy --* BitmapImageFilterProxy
+
+BitmapImageFilterProxy --|> IBitmapFilterManager
+
+@enduml

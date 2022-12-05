@@ -2,17 +2,27 @@ using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using FluentScanning;
+using FluentScanning.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Sharposhop.AvaloniaUI.FilterProvider;
 using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.AvaloniaUI.Tools;
 using Sharposhop.AvaloniaUI.ViewModels;
 using Sharposhop.AvaloniaUI.Views;
 using Sharposhop.Core.BitmapImages;
-using Sharposhop.Core.ChannelFilters;
+using Sharposhop.Core.BitmapImages.ChannelFiltering;
+using Sharposhop.Core.BitmapImages.ChannelFiltering.Filters;
+using Sharposhop.Core.BitmapImages.ChannelFiltering.Tools;
+using Sharposhop.Core.BitmapImages.Filtering;
+using Sharposhop.Core.BitmapImages.Filtering.Tools;
+using Sharposhop.Core.BitmapImages.Implementations;
+using Sharposhop.Core.BitmapImages.SchemeConversion;
+using Sharposhop.Core.BitmapImages.SchemeConversion.Converters;
+using Sharposhop.Core.BitmapImages.SchemeConversion.Tools;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Loading;
 using Sharposhop.Core.Normalization;
-using Sharposhop.Core.SchemeConverters;
 using Sharposhop.Core.Tools;
 using Splat.Microsoft.Extensions.DependencyInjection;
 
@@ -27,43 +37,56 @@ public partial class App : Application
         var collection = new ServiceCollection();
         collection.UseMicrosoftDependencyResolver();
 
-        var deNormalizer = new SimpleDeNormalizer();
-        collection.AddSingleton<IDeNormalizer>(deNormalizer);
-        collection.AddSingleton<INormalizer, SimpleNormalizer>();
+        using (var scanner = collection.UseAssemblyScanner(typeof(App)))
+        {
+            scanner.EnqueueAdditionOfTypesThat()
+                .WouldBeRegisteredAs<IFilterProvider>()
+                .WithSingletonLifetime()
+                .AreAssignableTo<IFilterProvider>()
+                .AreNotAbstractClasses()
+                .AreNotInterfaces();
+        }
+
+        var normalizer = new SimpleNormalizer();
+        collection.AddSingleton<INormalizer>(normalizer);
 
         var enumerationStrategy = new RowByRowEnumerationStrategy();
         collection.AddSingleton<IEnumerationStrategy>(enumerationStrategy);
 
-        var schemeConverter = new PassthroughSchemeConverter(deNormalizer);
-        var channelFilter = new PassthroughChannelFilter(deNormalizer);
+        var schemeConverter = new PassthroughSchemeConverter();
+        var channelFilter = new PassthroughChannelFilter(normalizer);
 
         var bitmapImageProxy = new BitmapImageProxy();
         var schemeConverterProxy = new BitmapImageSchemeConverterProxy(bitmapImageProxy, schemeConverter);
-
-        var channelFilterProxy = new BitmapImageChannelFilterProxy
-        (
-            schemeConverterProxy,
-            channelFilter,
-            enumerationStrategy,
-            schemeConverterProxy
-        );
+        var channelFilterProxy = new BitmapImageChannelFilterProxy(schemeConverterProxy, channelFilter);
+        var filterProxy = new BitmapImageFilterProxy(channelFilterProxy);
+        var userAction = new UserAction();
+        var gammaSettings = new GammaSettings(userAction);
+        filterProxy.Add(0, gammaSettings.Filter);
 
         collection.AddSingleton<IBitmapImageUpdater>(bitmapImageProxy);
+        collection.AddSingleton<IWritableBitmapImage>(bitmapImageProxy);
+        collection.AddSingleton(userAction);
+
         collection.AddSingleton<ISchemeConverterUpdater>(schemeConverterProxy);
         collection.AddSingleton<ISchemeConverterProvider>(schemeConverterProxy);
         collection.AddSingleton<IChannelFilterUpdater>(channelFilterProxy);
-        collection.AddSingleton<IBitmapImageSaver>(channelFilterProxy);
-        collection.AddSingleton<IBitmapImage>(channelFilterProxy);
+        collection.AddSingleton<IBitmapFilterManager>(filterProxy);
+        collection.AddSingleton<IBitmapImage>(filterProxy);
 
         collection.AddSingleton<SchemeContext>();
 
-        collection.AddSingleton<IImageLoader, PnmImageLoader>();
+        collection.AddSingleton<IImageLoader, LoaderProxy>();
         collection.AddSingleton<LoaderFactory>();
 
         collection.AddScoped<ImageViewModel>();
+        collection.AddScoped<FilterViewModel>();
         collection.AddScoped<MainWindowViewModel>();
 
         collection.AddSingleton<IExceptionSink, MessageBoxExceptionSink>();
+
+        collection.AddSingleton<ViewLocator>();
+        collection.AddSingleton(gammaSettings);
 
         var provider = collection.BuildServiceProvider();
         provider.UseMicrosoftDependencyResolver();

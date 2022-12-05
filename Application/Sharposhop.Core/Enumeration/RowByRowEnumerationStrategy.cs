@@ -1,18 +1,20 @@
+using Sharposhop.Core.Model;
+
 namespace Sharposhop.Core.Enumeration;
 
 public class RowByRowEnumerationStrategy : IEnumerationStrategy
 {
-    public IEnumerable<(int X, int Y)> Enumerate(int width, int height)
+    public IEnumerable<PlaneCoordinate> Enumerate(int width, int height)
     {
         for (var y = 0; y < height; y++)
         {
             for (var x = 0; x < width; x++)
             {
-                yield return (x, y);
+                yield return new PlaneCoordinate(x, y);
             }
         }
     }
 
-    public int AsContinuousIndex(int x, int y, int width, int height)
-        => y * width + x;
+    public long AsContinuousIndex(PlaneCoordinate coordinate, int width, int height)
+        => coordinate.Y * width + coordinate.X;
 }

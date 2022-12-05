@@ -5,6 +5,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using ReactiveUI;
+using Sharposhop.AvaloniaUI.Tools;
 using Sharposhop.Core.BitmapImages;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Normalization;
@@ -14,18 +15,18 @@ namespace Sharposhop.AvaloniaUI.ViewModels;
 public class ImageViewModel : ViewModelBase
 {
     private readonly IEnumerationStrategy _enumerationStrategy;
-    private readonly IDeNormalizer _deNormalizer;
+    private readonly INormalizer _normalizer;
 
     private Bitmap? _bitmap;
 
     public ImageViewModel(
         IBitmapImage bitmapImage,
         IEnumerationStrategy enumerationStrategy,
-        IDeNormalizer deNormalizer)
+        INormalizer normalizer)
     {
         BitmapImage = bitmapImage;
         _enumerationStrategy = enumerationStrategy;
-        _deNormalizer = deNormalizer;
+        _normalizer = normalizer;
 
         bitmapImage.BitmapChanged += Load;
         bitmapImage.BitmapChanged += BitmapChanged;
@@ -37,7 +38,7 @@ public class ImageViewModel : ViewModelBase
         BitmapImage.BitmapChanged -= BitmapChanged;
     }
 
-    public event Func<Task>? BitmapChanged;
+    public event Func<ValueTask>? BitmapChanged;
 
     public IBitmapImage BitmapImage { get; }
 
@@ -47,38 +48,31 @@ public class ImageViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _bitmap, value);
     }
 
-    private Task Load()
+    private async ValueTask Load()
     {
-        return Task.Run(() =>
-        {
-            unsafe
-            {
-                var size = new PixelSize(BitmapImage.Width, BitmapImage.Height);
-                var dpi = new Vector(100, 100);
-                var bm = new WriteableBitmap(size, dpi, PixelFormat.Rgba8888, AlphaFormat.Opaque);
+        await RunLoad(out var bitmap);
+        Dispatcher.UIThread.Post(() => Bitmap = bitmap);
+    }
 
-                using var locked = bm.Lock();
+    private unsafe ValueTask RunLoad(out WriteableBitmap bm)
+    {
+        var size = new PixelSize(BitmapImage.Width, BitmapImage.Height);
+        var dpi = new Vector(100, 100);
+        bm = new WriteableBitmap(size, dpi, PixelFormat.Rgba8888, AlphaFormat.Opaque);
 
-                var ptr = (byte*)locked.Address.ToPointer();
+        using var locked = bm.Lock();
 
-                foreach (var (x, y) in _enumerationStrategy.Enumerate(BitmapImage.Width, BitmapImage.Height))
-                {
-                    var triplet = BitmapImage[x, y];
+        var ptr = (byte*)locked.Address.ToPointer();
 
-                    var first = _deNormalizer.DeNormalize(triplet.First);
-                    var second = _deNormalizer.DeNormalize(triplet.Second);
-                    var third = _deNormalizer.DeNormalize(triplet.Third);
+        var writer = new PointerTripletWriter
+        (
+            ptr,
+            BitmapImage.Width,
+            BitmapImage.Height,
+            _enumerationStrategy,
+            _normalizer
+        );
 
-                    var index = _enumerationStrategy.AsContinuousIndex(x, y, size.Width, size.Height) * 4;
-
-                    ptr[index] = first;
-                    ptr[index + 1] = second;
-                    ptr[index + 2] = third;
-                    ptr[index + 3] = 255;
-                }
-
-                Dispatcher.UIThread.Post(() => { Bitmap = bm; });
-            }
-        });
+        return BitmapImage.WriteToAsync(writer);
     }
 }

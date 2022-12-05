@@ -2,16 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.ReactiveUI;
+using Avalonia.Threading;
 using ReactiveUI;
 using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.AvaloniaUI.ViewModels;
-using Sharposhop.Core.SchemeConverters;
+using Sharposhop.Core.BitmapImages.SchemeConversion.Converters;
+using Sharposhop.Core.Saving.Strategies;
 
 namespace Sharposhop.AvaloniaUI.Views;
 
 public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 {
+    // ReSharper disable once UnusedMember.Global
     public MainWindow() { }
 
     public MainWindow(SchemeContext schemeContext, MainWindowViewModel viewModel)
@@ -34,7 +40,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             schemeContext,
             x => x.CreateConverter<YCbCr601SchemeConverter>());
 
-        var son = new SchemeSelectorComponent("YCbCr.709", "Y", "Cb", "Cr", 
+        var son = new SchemeSelectorComponent("YCbCr.709", "Y", "Cb", "Cr",
             schemeContext,
             x => x.CreateConverter<YCbCr709SchemeConverter>());
 
@@ -42,7 +48,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             schemeContext,
             x => x.CreateConverter<YCoCgSchemeConverter>());
 
-        var cmy = new SchemeSelectorComponent("CMY", "Cyan", "Magenta", "Yellow", 
+        var cmy = new SchemeSelectorComponent("CMY", "Cyan", "Magenta", "Yellow",
             schemeContext,
             x => x.CreateConverter<CmySchemeConverter>());
 
@@ -61,10 +67,28 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     },
                     new MenuItemViewModel("_Save")
                     {
-                        Command = ReactiveCommand.CreateFromTask<Window>(viewModel.SaveImageAsync),
+                        Command = ReactiveCommand.CreateFromTask<Window>(w =>
+                        {
+                            var strategy = new P6SavingStrategy(viewModel.Normalizer, viewModel.EnumerationStrategy);
+                            return viewModel.SaveImageAsync(w, strategy);
+                        }),
+
                         CommandParameter = this,
                     },
-                }
+                    new MenuItemViewModel("_Create gradient")
+                    {
+                        Command = ReactiveCommand.CreateFromTask(() =>
+                        {
+                            var window = new CreateGradientWindow
+                            {
+                                ViewModel = new CreateGradientViewModel(viewModel),
+                            };
+
+                            Dispatcher.UIThread.Post(window.Show);
+                            return Task.CompletedTask;
+                        }),
+                    },
+                },
             },
             new MenuItemViewModel("_Scheme")
             {
@@ -90,9 +114,9 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         };
     }
 
-    private IList<MenuItemViewModel> GetSubItems(SchemeSelectorComponent component)
+    private IList<ViewModelBase> GetSubItems(SchemeSelectorComponent component)
     {
-        return new[]
+        return new ViewModelBase[]
         {
             new MenuItemViewModel("_All")
             {
@@ -115,4 +139,13 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
     private Task ExecuteSafeAsync(Func<Task> action)
         => ViewModel?.ExecuteSafeAsync(action) ?? Task.CompletedTask;
+
+    private void TogglePane(object? sender, RoutedEventArgs routedEventArgs)
+        => ViewModel?.TogglePane();
+
+    private async void Assign(object? sender, RoutedEventArgs routedEventArgs)
+        => await (ViewModel?.AssignGammaAsync() ?? Task.CompletedTask);
+    
+    private async void ConvertTo(object? sender, RoutedEventArgs routedEventArgs)
+        => await (ViewModel?.ConvertToGammaAsync() ?? Task.CompletedTask);  
 }
