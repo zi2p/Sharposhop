@@ -22,10 +22,10 @@ public class GradientGenerator : IImageLoader
         _enumerationStrategy = enumerationStrategy;
     }
 
-    public Task<IWritableBitmapImage> LoadImageAsync(Stream data)
-        => Task.FromResult(ParseInput(data));
+    public ValueTask<IReadBitmapImage> LoadImageAsync(Stream data)
+        => ValueTask.FromResult(ParseInput(data));
 
-    private IWritableBitmapImage ParseInput(Stream stream)
+    private IReadBitmapImage ParseInput(Stream stream)
     {
         using var streamReader = new StreamReader(stream, Encoding.UTF8, true);
 
@@ -46,7 +46,7 @@ public class GradientGenerator : IImageLoader
         return Generate(width, height, new ColorTriplet(_normalizer.Normalize(r), _normalizer.Normalize(g), _normalizer.Normalize(b)));
     }
     
-    private IWritableBitmapImage Generate(int width, int height, ColorTriplet targetColor)
+    private IReadBitmapImage Generate(int width, int height, ColorTriplet targetColor)
     {
         ColorTriplet[] array = ArrayPool<ColorTriplet>.Shared.Rent(width * height);
 

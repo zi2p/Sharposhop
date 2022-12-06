@@ -1,16 +1,15 @@
 using Sharposhop.Core.Model;
-using Sharposhop.Core.Writing;
 
 namespace Sharposhop.Core.BitmapImages.SchemeConversion.Tools;
 
 public sealed class BitmapImageSchemeConverterProxy :
-    IBitmapImage,
+    IReadBitmapImage,
     ISchemeConverterUpdater,
     ISchemeConverterProvider
 {
-    private readonly IBitmapImage _image;
+    private readonly IReadBitmapImage _image;
 
-    public BitmapImageSchemeConverterProxy(IBitmapImage image, ISchemeConverter converter)
+    public BitmapImageSchemeConverterProxy(IReadBitmapImage image, ISchemeConverter converter)
     {
         _image = image;
         Converter = converter;
@@ -23,19 +22,12 @@ public sealed class BitmapImageSchemeConverterProxy :
     public int Width => _image.Width;
 
     public int Height => _image.Height;
+
+    public ColorTriplet this[PlaneCoordinate coordinate] => Converter.Convert(_image[coordinate]);
+
     public ColorScheme Scheme => Converter.Scheme;
 
-    public Gamma.GammaModel Gamma
-    {
-        get => _image.Gamma;
-        set => _image.Gamma = value;
-    }
-
-    public ValueTask WriteToAsync<T>(T writer) where T : ITripletWriter
-    {
-        var wrapper = new SchemeConverterTripletWriter<T>(writer, Converter);
-        return _image.WriteToAsync(wrapper);
-    }
+    public Gamma.GammaModel Gamma => _image.Gamma;
 
     public event Func<ValueTask>? BitmapChanged;
 

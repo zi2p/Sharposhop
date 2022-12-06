@@ -1,13 +1,14 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Threading;
 using ReactiveUI;
-using Sharposhop.AvaloniaUI.Tools;
 using Sharposhop.Core.BitmapImages;
 using Sharposhop.Core.Enumeration;
+using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;
@@ -20,7 +21,7 @@ public class ImageViewModel : ViewModelBase
     private Bitmap? _bitmap;
 
     public ImageViewModel(
-        IBitmapImage bitmapImage,
+        IReadBitmapImage bitmapImage,
         IEnumerationStrategy enumerationStrategy,
         INormalizer normalizer)
     {
@@ -40,7 +41,7 @@ public class ImageViewModel : ViewModelBase
 
     public event Func<ValueTask>? BitmapChanged;
 
-    public IBitmapImage BitmapImage { get; }
+    public IReadBitmapImage BitmapImage { get; }
 
     public Bitmap? Bitmap
     {
@@ -48,31 +49,38 @@ public class ImageViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _bitmap, value);
     }
 
-    private async ValueTask Load()
+    private ValueTask Load()
     {
-        await RunLoad(out var bitmap);
-        Dispatcher.UIThread.Post(() => Bitmap = bitmap);
+        Bitmap = RunLoad();
+        return ValueTask.CompletedTask;
     }
 
-    private unsafe ValueTask RunLoad(out WriteableBitmap bm)
+    private WriteableBitmap RunLoad()
     {
         var size = new PixelSize(BitmapImage.Width, BitmapImage.Height);
         var dpi = new Vector(100, 100);
-        bm = new WriteableBitmap(size, dpi, PixelFormat.Rgba8888, AlphaFormat.Opaque);
+        var bm = new WriteableBitmap(size, dpi, PixelFormat.Rgba8888, AlphaFormat.Opaque);
 
         using var locked = bm.Lock();
 
-        var ptr = (byte*)locked.Address.ToPointer();
+        var ptr = locked.Address;
 
-        var writer = new PointerTripletWriter
-        (
-            ptr,
-            BitmapImage.Width,
-            BitmapImage.Height,
-            _enumerationStrategy,
-            _normalizer
-        );
+        IEnumerable<PlaneCoordinate> a = _enumerationStrategy.Enumerate(size.Width, size.Height);
+        Parallel.ForEach(a, (x, _) => Assign(ptr, size, x));
 
-        return BitmapImage.WriteToAsync(writer);
+        return bm;
+    }
+
+    private unsafe void Assign(IntPtr intPtr, PixelSize size, PlaneCoordinate coordinate)
+    {
+        var ptr = (byte*)intPtr.ToPointer();
+
+        var index = _enumerationStrategy.AsContinuousIndex(coordinate, size.Width, size.Height) * 4;
+        var triplet = BitmapImage[coordinate];
+
+        ptr[index] = _normalizer.DeNormalize(triplet.First);
+        ptr[index + 1] = _normalizer.DeNormalize(triplet.Second);
+        ptr[index + 2] = _normalizer.DeNormalize(triplet.Third);
+        ptr[index + 3] = 255;
     }
 }

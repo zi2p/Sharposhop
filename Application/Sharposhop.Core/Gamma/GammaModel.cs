@@ -25,4 +25,13 @@ public readonly struct GammaModel
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator GammaModel(float value)
         => new GammaModel(value);
+
+    public bool Equals(GammaModel other)
+        => Value.Equals(other.Value);
+
+    public override bool Equals(object? obj)
+        => obj is GammaModel other && Equals(other);
+
+    public override int GetHashCode()
+        => Value.GetHashCode();
 }

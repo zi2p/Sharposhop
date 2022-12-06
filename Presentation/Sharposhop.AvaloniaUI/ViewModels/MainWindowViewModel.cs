@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Media;
 using Avalonia.Threading;
 using ReactiveUI;
 using Sharposhop.AvaloniaUI.Models;
@@ -12,7 +10,6 @@ using Sharposhop.Core.BitmapImages;
 using Sharposhop.Core.BitmapImages.Filtering.Tools;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Loading;
-using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 using Sharposhop.Core.Saving;
 using Sharposhop.Core.Tools;
@@ -23,9 +20,9 @@ public class MainWindowViewModel : ViewModelBase
 {
     private readonly IImageLoader _loader;
     private readonly IBitmapImageUpdater _bitmapImageUpdater;
-    private readonly IBitmapImage _image;
+    private readonly IReadBitmapImage _image;
     private readonly IExceptionSink _exceptionSink;
-    private readonly IWritableBitmapImage _writableBitmapImage;
+    private readonly IBitmapImage _writableBitmapImage;
     private readonly UserAction _userAction;
 
     private bool _isEnabled;
@@ -37,11 +34,11 @@ public class MainWindowViewModel : ViewModelBase
         IImageLoader loader,
         IBitmapImageUpdater bitmapImageUpdater,
         IExceptionSink exceptionSink,
-        IBitmapImage image,
+        IReadBitmapImage image,
         INormalizer normalizer,
         IEnumerationStrategy enumerationStrategy,
         GammaSettings gammaSettings,
-        IWritableBitmapImage writableImage,
+        IBitmapImage writableImage,
         UserAction userAction)
     {
         ImageViewModel = imageViewModel;
@@ -115,9 +112,14 @@ public class MainWindowViewModel : ViewModelBase
                 return;
 
             await using var stream = File.OpenRead(result[0]);
+            Console.WriteLine($"Start loading: {DateTime.Now:HH:mm:ss.fff}");
             var image = await _loader.LoadImageAsync(stream);
+            
+            Console.WriteLine($"End loading: {DateTime.Now:HH:mm:ss.fff}");
 
+            Console.WriteLine($"Start updating: {DateTime.Now:HH:mm:ss.fff}");
             await _bitmapImageUpdater.UpdateAsync(image);
+            Console.WriteLine($"End updating: {DateTime.Now:HH:mm:ss.fff}");
         });
     }
 
@@ -166,37 +168,14 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     public Task AssignGammaAsync()
-    {
-        return ExecuteSafeAsync(async () => await GammaSettings.Filter.Update(GammaSettings.EffectiveGamma));
-    }
+        => ExecuteSafeAsync(async () => await GammaSettings.BitmapFilter.Update(GammaSettings.EffectiveGamma));
 
     public Task ConvertToGammaAsync()
-    {
-        return ExecuteSafeAsync(async () =>
+        => ExecuteSafeAsync(async () =>
         {
-            IEnumerable<PlaneCoordinate> coo = GetCoordinates();
-            var writer = GammaSettings.GetWriter(_image.Gamma);
-
-            await _writableBitmapImage.WriteFromAsync(coo, writer, false);
-            _writableBitmapImage.Gamma = GammaSettings.EffectiveGamma;
-
-            await GammaSettings.Filter.Update(GammaSettings.EffectiveGamma);
+            await _writableBitmapImage.UpdateGamma(GammaSettings.EffectiveGamma, false);
+            await GammaSettings.BitmapFilter.Update(GammaSettings.EffectiveGamma);
         });
-    }
-
-    private IEnumerable<PlaneCoordinate> GetCoordinates()
-    {
-        var width = _image.Width;
-        var height = _image.Height;
-
-        for (var x = 0; x < width; x++)
-        {
-            for (var y = 0; y < height; y++)
-            {
-                yield return new PlaneCoordinate(x, y);
-            }
-        }
-    }
 
     public void TogglePane()
     {

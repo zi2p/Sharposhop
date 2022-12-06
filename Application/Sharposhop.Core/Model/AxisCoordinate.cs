@@ -21,4 +21,7 @@ public readonly struct AxisCoordinate
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator AxisCoordinate(int value)
         => new AxisCoordinate(value);
+
+    public override string ToString()
+        => Value.ToString();
 }

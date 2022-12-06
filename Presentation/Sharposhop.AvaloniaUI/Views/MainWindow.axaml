@@ -11,8 +11,6 @@
         x:Class="Sharposhop.AvaloniaUI.Views.MainWindow"
         Icon="/Assets/logo.SH.SH.ico"
         Title="Sharposhop"
-        Background="Transparent"
-        TransparencyLevelHint="AcrylicBlur"
         ExtendClientAreaToDecorationsHint="True"
         Width="1500"
         Height="1000">
@@ -54,10 +52,6 @@
                                            Foreground="White" />
 
                 </StackPanel>
-
-                <!-- <StackPanel ZIndex="9" -->
-                <!--             IsVisible="{Binding !IsEnabled}"> -->
-                <!-- </StackPanel> -->
 
                 <Image Source="{Binding ImageViewModel.Bitmap}"
                        Stretch="Uniform"

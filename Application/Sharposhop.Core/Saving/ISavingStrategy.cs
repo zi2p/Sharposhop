@@ -4,5 +4,5 @@ namespace Sharposhop.Core.Saving;
 
 public interface ISavingStrategy
 {
-    ValueTask SaveAsync(Stream stream, IBitmapImage image);
+    ValueTask SaveAsync(Stream stream, IReadBitmapImage image);
 }

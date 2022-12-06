@@ -1,4 +1,4 @@
-using Sharposhop.Core.Writing;
+using Sharposhop.Core.Model;
 
 namespace Sharposhop.Core.BitmapImages.Filtering;
 
@@ -8,8 +8,7 @@ public interface IBitmapFilter
 
     event Func<ValueTask> FilterChanged;
 
-    void Accept(IBitmapFilterVisitor visitor);
+    ColorTriplet ApplyAt<T>(T reader, PlaneCoordinate coordinate) where T : IBitmapFilterReader;
 
-    ValueTask WriteAsync<T>(T writer, IBitmapImage image, ReadOnlySpan<IBitmapFilter>.Enumerator enumerator)
-        where T : ITripletWriter;
+    void Accept(IBitmapFilterVisitor visitor);
 }
