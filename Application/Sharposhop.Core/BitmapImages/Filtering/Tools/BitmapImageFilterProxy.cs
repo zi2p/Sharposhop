@@ -1,18 +1,19 @@
 using System.Runtime.InteropServices;
 using Sharposhop.Core.Gamma;
 using Sharposhop.Core.Model;
-using Sharposhop.Core.Writing;
 
 namespace Sharposhop.Core.BitmapImages.Filtering.Tools;
 
-public sealed class BitmapImageFilterProxy : IBitmapImage, IBitmapFilterManager
+public sealed class BitmapImageFilterProxy : IReadBitmapImage, IBitmapFilterManager
 {
     private readonly List<IBitmapFilter> _filters;
-    private readonly IBitmapImage _image;
+    private readonly IReadBitmapImage _image;
+    private readonly ICompiledBitmapFilter _proxy;
 
-    public BitmapImageFilterProxy(IBitmapImage image)
+    public BitmapImageFilterProxy(IReadBitmapImage image)
     {
         _image = image;
+        _proxy = new ProxyCompiledBitmapFilter(image);
         _filters = new List<IBitmapFilter>();
 
         image.BitmapChanged += OnBitmapChanged;
@@ -27,13 +28,11 @@ public sealed class BitmapImageFilterProxy : IBitmapImage, IBitmapFilterManager
 
     public int Height => _image.Height;
 
+    public ColorTriplet this[PlaneCoordinate coordinate] => GetTriplet(coordinate);
+
     public ColorScheme Scheme => _image.Scheme;
 
-    public GammaModel Gamma
-    {
-        get => _image.Gamma;
-        set => _image.Gamma = value;
-    }
+    public GammaModel Gamma => _image.Gamma;
 
     public IEnumerable<IBitmapFilter> Filters => _filters
         .Select((x, i) => (x, i))
@@ -87,25 +86,18 @@ public sealed class BitmapImageFilterProxy : IBitmapImage, IBitmapFilterManager
         _filters.Insert(index - 1, filter);
     }
 
-    public ValueTask WriteToAsync<T>(T writer) where T : ITripletWriter
-    {
-        Span<IBitmapFilter> span = CollectionsMarshal.AsSpan(_filters);
-        span.Reverse();
-
-        ReadOnlySpan<IBitmapFilter> readOnlySpan = span;
-        var enumerator = readOnlySpan.GetEnumerator();
-
-        if (enumerator.MoveNext() is false)
-            return _image.WriteToAsync(writer);
-
-        var first = enumerator.Current;
-
-        return first.WriteAsync(writer, _image, enumerator);
-    }
-
     public void Dispose()
-        => _image.Dispose();
+    {
+        GC.SuppressFinalize(this);
+        _image.Dispose();
+    }
 
     private ValueTask OnBitmapChanged()
         => BitmapChanged?.Invoke() ?? ValueTask.CompletedTask;
+
+    private ColorTriplet GetTriplet(PlaneCoordinate coordinate)
+    {
+        ReadOnlySpan<IBitmapFilter> span = CollectionsMarshal.AsSpan(_filters);
+        return _proxy.ValueAt(coordinate, span.GetEnumerator());
+    }
 }

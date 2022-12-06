@@ -26,10 +26,10 @@ public class PnmImageLoader : IImageLoader
         _enumerationStrategy = enumerationStrategy;
     }
 
-    public Task<IWritableBitmapImage> LoadImageAsync(Stream data)
-        => Task.FromResult(ParseImage(data));
+    public async ValueTask<IReadBitmapImage> LoadImageAsync(Stream data)
+        => await ParseImage(data);
 
-    private IWritableBitmapImage ParseImage(Stream stream)
+    private async ValueTask<IReadBitmapImage> ParseImage(Stream stream)
     {
         using var streamReader = new StreamReader(stream, Encoding.UTF8, true);
 
@@ -64,13 +64,13 @@ public class PnmImageLoader : IImageLoader
 
         return format switch
         {
-            "P5" => LoadP5(stream, width, height),
-            "P6" => LoadP6(stream, height, width),
+            "P5" => await LoadP5(stream, width, height),
+            "P6" => await LoadP6(stream, height, width),
             _ => throw WrongFileFormatException.IncorrectFileContent(),
         };
     }
 
-    private IWritableBitmapImage LoadP5(Stream stream, int width, int height)
+    private async ValueTask<IReadBitmapImage> LoadP5(Stream stream, int width, int height)
     {
         const int size = 1;
 
@@ -81,7 +81,7 @@ public class PnmImageLoader : IImageLoader
         {
             var index = _enumerationStrategy.AsContinuousIndex(coordinate, width, height);
 
-            var count = stream.Read(buffer, 0, size);
+            var count = await stream.ReadAsync(buffer.AsMemory(0, size));
 
             if (count is not size)
                 throw LoadingException.UnexpectedStreamEnd();
@@ -95,10 +95,18 @@ public class PnmImageLoader : IImageLoader
         ArrayPool<byte>.Shared.Return(buffer);
 
         // TODO: Proper gamma value
-        return new BitmapImage(width, height, ColorScheme.Rgb, Gamma.GammaModel.DefaultGamma, array, _enumerationStrategy);
+        return new BitmapImage
+        (
+            width,
+            height,
+            ColorScheme.Rgb,
+            Gamma.GammaModel.DefaultGamma,
+            array,
+            _enumerationStrategy
+        );
     }
 
-    private IWritableBitmapImage LoadP6(Stream stream, int height, int width)
+    private async ValueTask<IReadBitmapImage> LoadP6(Stream stream, int height, int width)
     {
         const int size = 3;
 
@@ -109,7 +117,7 @@ public class PnmImageLoader : IImageLoader
         {
             var index = _enumerationStrategy.AsContinuousIndex(coordinate, width, height);
 
-            var count = stream.Read(buffer, 0, size);
+            var count = await stream.ReadAsync(buffer.AsMemory(0, size));
 
             if (count is not size)
                 throw LoadingException.UnexpectedStreamEnd();
@@ -125,7 +133,15 @@ public class PnmImageLoader : IImageLoader
         ArrayPool<byte>.Shared.Return(buffer);
 
         // TODO: Proper gamma value
-        return new BitmapImage(width, height, ColorScheme.Rgb, Gamma.GammaModel.DefaultGamma, array, _enumerationStrategy);
+        return new BitmapImage
+        (
+            width,
+            height,
+            ColorScheme.Rgb,
+            Gamma.GammaModel.DefaultGamma,
+            array,
+            _enumerationStrategy
+        );
     }
 
     private static void SkipSpaceChar(Stream content)

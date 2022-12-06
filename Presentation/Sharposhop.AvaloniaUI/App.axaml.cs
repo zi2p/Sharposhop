@@ -20,6 +20,7 @@ using Sharposhop.Core.BitmapImages.Implementations;
 using Sharposhop.Core.BitmapImages.SchemeConversion;
 using Sharposhop.Core.BitmapImages.SchemeConversion.Converters;
 using Sharposhop.Core.BitmapImages.SchemeConversion.Tools;
+using Sharposhop.Core.BitmapImages.Writing;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Loading;
 using Sharposhop.Core.Normalization;
@@ -54,25 +55,27 @@ public partial class App : Application
         collection.AddSingleton<IEnumerationStrategy>(enumerationStrategy);
 
         var schemeConverter = new PassthroughSchemeConverter();
-        var channelFilter = new PassthroughChannelFilter(normalizer);
+        var channelFilter = new PassthroughChannelFilter();
 
         var bitmapImageProxy = new BitmapImageProxy();
-        var schemeConverterProxy = new BitmapImageSchemeConverterProxy(bitmapImageProxy, schemeConverter);
+        var writableBitmapImageProxy = new WritableBitmapImage(bitmapImageProxy, enumerationStrategy);
+        var schemeConverterProxy = new BitmapImageSchemeConverterProxy(writableBitmapImageProxy, schemeConverter);
         var channelFilterProxy = new BitmapImageChannelFilterProxy(schemeConverterProxy, channelFilter);
         var filterProxy = new BitmapImageFilterProxy(channelFilterProxy);
+
         var userAction = new UserAction();
         var gammaSettings = new GammaSettings(userAction);
-        filterProxy.Add(0, gammaSettings.Filter);
+        filterProxy.Add(0, gammaSettings.BitmapFilter);
 
         collection.AddSingleton<IBitmapImageUpdater>(bitmapImageProxy);
-        collection.AddSingleton<IWritableBitmapImage>(bitmapImageProxy);
+        collection.AddSingleton<IBitmapImage>(writableBitmapImageProxy);
         collection.AddSingleton(userAction);
 
         collection.AddSingleton<ISchemeConverterUpdater>(schemeConverterProxy);
         collection.AddSingleton<ISchemeConverterProvider>(schemeConverterProxy);
         collection.AddSingleton<IChannelFilterUpdater>(channelFilterProxy);
         collection.AddSingleton<IBitmapFilterManager>(filterProxy);
-        collection.AddSingleton<IBitmapImage>(filterProxy);
+        collection.AddSingleton<IReadBitmapImage>(filterProxy);
 
         collection.AddSingleton<SchemeContext>();
 

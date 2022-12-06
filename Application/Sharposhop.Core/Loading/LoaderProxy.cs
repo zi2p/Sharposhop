@@ -17,7 +17,7 @@ public class LoaderProxy : IImageLoader
         _loaderFactory = loaderFactory;
     }
 
-    public async Task<IWritableBitmapImage> LoadImageAsync(Stream data)
+    public async ValueTask<IReadBitmapImage> LoadImageAsync(Stream data)
     {
         var type = await RecognizeImageTypeAsync(data);
         data.Position = 0;
@@ -26,31 +26,42 @@ public class LoaderProxy : IImageLoader
         return await loader.LoadImageAsync(data);
     }
 
-    private async Task<ImageFileTypes> RecognizeImageTypeAsync(Stream data)
+    private async ValueTask<ImageFileTypes> RecognizeImageTypeAsync(Stream data)
     {
-        if (await IsImageTypeGradient(data)) return ImageFileTypes.Gradient;
-        if (await IsImageTypePnm(data)) return ImageFileTypes.Pnm;
-        if (await IsImageTypeBmp(data)) return ImageFileTypes.Bmp;
+        if (await IsImageTypeGradient(data))
+            return ImageFileTypes.Gradient;
+        if (await IsImageTypePnm(data))
+            return ImageFileTypes.Pnm;
+        if (await IsImageTypeBmp(data))
+            return ImageFileTypes.Bmp;
+
         return ImageFileTypes.Other;
     }
 
-    // format: grad x y r g b
-    private async Task<bool> IsImageTypeGradient(Stream data)
+    /// <summary>
+    ///     format: grad x y r g b
+    /// </summary>
+    private async ValueTask<bool> IsImageTypeGradient(Stream data)
     {
         data.Position = 0;
-        if (data.Length < 4) return false;
+
+        if (data.Length < 4)
+            return false;
+
         var grad = new byte[4];
+
         _ = await data.ReadAsync(grad.AsMemory(0, 4));
         var gradString = Encoding.UTF8.GetString(grad);
 
         return gradString is "grad";
     }
 
-    private async Task<bool> IsImageTypeBmp(Stream data)
+    private async ValueTask<bool> IsImageTypeBmp(Stream data)
     {
         data.Position = 0;
-        
-        if (data.Length <= BmpHeaderLength) return false;
+
+        if (data.Length <= BmpHeaderLength)
+            return false;
 
         var bmpHeaderField = new byte[BmpHeaderFieldLength];
         _ = await data.ReadAsync(bmpHeaderField.AsMemory(0, BmpHeaderFieldLength));
@@ -59,11 +70,12 @@ public class LoaderProxy : IImageLoader
         return bmpHeaderFieldString is "BM" or "BA" or "CI" or "CI" or "CP" or "PT";
     }
 
-    private async Task<bool> IsImageTypePnm(Stream data)
+    private async ValueTask<bool> IsImageTypePnm(Stream data)
     {
         data.Position = 0;
-        
-        if (data.Length <= PnmHeaderLength) return false;
+
+        if (data.Length <= PnmHeaderLength)
+            return false;
 
         var pnmHeaderField = new byte[PnmHeaderLength];
         _ = await data.ReadAsync(pnmHeaderField.AsMemory(0, PnmHeaderLength));

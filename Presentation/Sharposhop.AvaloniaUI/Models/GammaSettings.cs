@@ -8,18 +8,12 @@ public class GammaSettings
 {
     public GammaSettings(UserAction userAction)
     {
-        Filter = new GammaFilter(userAction);
+        BitmapFilter = new GammaBitmapFilter(userAction);
     }
     
     public bool IsSrgb { get; set; }
     public GammaModel GammaValue { get; set; } = 0; 
-    public GammaFilter Filter { get; }
+    public GammaBitmapFilter BitmapFilter { get; }
 
     public GammaModel EffectiveGamma => IsSrgb ? GammaModel.DefaultGamma : GammaValue;
-
-    public GammaConvertWriter GetWriter(GammaModel currentGamma)
-        => new GammaConvertWriter(EffectiveGamma, currentGamma);
-
-    public GammaConvertWriter GetWriterBalanced(GammaModel newGamma, GammaModel currentGamma)
-        => new GammaConvertWriter(newGamma, currentGamma);
 }

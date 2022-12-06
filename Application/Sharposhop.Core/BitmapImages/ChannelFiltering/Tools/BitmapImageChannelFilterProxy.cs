@@ -1,15 +1,14 @@
 using Sharposhop.Core.Model;
-using Sharposhop.Core.Writing;
 
 namespace Sharposhop.Core.BitmapImages.ChannelFiltering.Tools;
 
-public sealed class BitmapImageChannelFilterProxy : IBitmapImage, IChannelFilterUpdater
+public sealed class BitmapImageChannelFilterProxy : IReadBitmapImage, IChannelFilterUpdater
 {
-    private readonly IBitmapImage _image;
+    private readonly IReadBitmapImage _image;
     private IChannelFilter _filter;
 
     public BitmapImageChannelFilterProxy(
-        IBitmapImage image,
+        IReadBitmapImage image,
         IChannelFilter filter)
     {
         _image = image;
@@ -20,19 +19,12 @@ public sealed class BitmapImageChannelFilterProxy : IBitmapImage, IChannelFilter
 
     public int Width => _image.Width;
     public int Height => _image.Height;
+
+    public ColorTriplet this[PlaneCoordinate coordinate] => _filter.Filter(_image[coordinate]);
+
     public ColorScheme Scheme => _image.Scheme;
 
-    public Gamma.GammaModel Gamma
-    {
-        get => _image.Gamma;
-        set => _image.Gamma = value;
-    }
-
-    public ValueTask WriteToAsync<T>(T writer) where T : ITripletWriter
-    {
-        var wrapper = new ChannelFilteringTripletWriter<T>(writer, _filter);
-        return _image.WriteToAsync(wrapper);
-    }
+    public Gamma.GammaModel Gamma => _image.Gamma;
 
     public event Func<ValueTask>? BitmapChanged;
 

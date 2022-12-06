@@ -2,7 +2,6 @@ using System.Text;
 using Sharposhop.Core.BitmapImages;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Normalization;
-using Sharposhop.Core.Saving.Tools;
 
 namespace Sharposhop.Core.Saving.Strategies;
 
@@ -17,7 +16,7 @@ public class P6SavingStrategy : ISavingStrategy
         _enumerationStrategy = enumerationStrategy;
     }
 
-    public ValueTask SaveAsync(Stream stream, IBitmapImage image)
+    public ValueTask SaveAsync(Stream stream, IReadBitmapImage image)
     {
         var builder = new StringBuilder();
 
@@ -33,16 +32,19 @@ public class P6SavingStrategy : ISavingStrategy
 
         stream.Write(headerBytes, 0, headerBytes.Length);
 
-        var writer = new StreamTripletWriter
-        (
-            stream,
-            image.Width,
-            image.Height,
-            _normalizer,
-            _enumerationStrategy,
-            headerBytes.Length
-        );
+        foreach (var coordinate in _enumerationStrategy.Enumerate(image.Width, image.Height))
+        {
+            var triplet = image[coordinate];
 
-        return image.WriteToAsync(writer);
+            var first = _normalizer.DeNormalize(triplet.First);
+            var second = _normalizer.DeNormalize(triplet.Second);
+            var third = _normalizer.DeNormalize(triplet.Third);
+            
+            stream.WriteByte(first);
+            stream.WriteByte(second);
+            stream.WriteByte(third);
+        }
+
+        return ValueTask.CompletedTask;
     }
 }

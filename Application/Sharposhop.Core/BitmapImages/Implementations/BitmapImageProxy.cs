@@ -1,15 +1,14 @@
 using Sharposhop.Core.Exceptions;
 using Sharposhop.Core.Gamma;
 using Sharposhop.Core.Model;
-using Sharposhop.Core.Writing;
 
 namespace Sharposhop.Core.BitmapImages.Implementations;
 
-public sealed class BitmapImageProxy : IWritableBitmapImage, IBitmapImageUpdater
+public sealed class BitmapImageProxy : IReadBitmapImage, IBitmapImageUpdater
 {
-    private IWritableBitmapImage? _image;
+    private IReadBitmapImage? _image;
 
-    public BitmapImageProxy(IWritableBitmapImage? image = null)
+    public BitmapImageProxy(IReadBitmapImage? image = null)
     {
         if (image is null)
             return;
@@ -19,29 +18,20 @@ public sealed class BitmapImageProxy : IWritableBitmapImage, IBitmapImageUpdater
         image.BitmapChanged += OnBitmapChanged;
     }
 
-    public IWritableBitmapImage Image => _image ?? throw BitmapImageProxyException.NoImageLoaded();
+    public IReadBitmapImage Image => _image ?? throw BitmapImageProxyException.NoImageLoaded();
 
-    public int Width => Image.Width;
-    public int Height => Image.Height;
+    public int Width => _image?.Width ?? 0;
+    public int Height => _image?.Height ?? 0;
+
+    public ColorTriplet this[PlaneCoordinate coordinate] => Image[coordinate];
 
     public ColorScheme Scheme => Image.Scheme;
 
-    public GammaModel Gamma
-    {
-        get => Image.Gamma;
-        set => Image.Gamma = value;
-    }
+    public GammaModel Gamma => _image?.Gamma ?? GammaModel.DefaultGamma;
 
     public event Func<ValueTask>? BitmapChanged;
 
-    public ValueTask WriteToAsync<T>(T writer) where T : ITripletWriter
-        => Image.WriteToAsync(writer);
-
-    public ValueTask WriteFromAsync<T>(IEnumerable<PlaneCoordinate> coordinates, T writer, bool notify)
-        where T : IBitmapImageWriter
-        => Image.WriteFromAsync(coordinates, writer, notify);
-
-    public ValueTask UpdateAsync(IWritableBitmapImage image)
+    public ValueTask UpdateAsync(IReadBitmapImage image)
     {
         if (_image is not null)
         {
