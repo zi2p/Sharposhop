@@ -1,6 +1,5 @@
 using Sharposhop.Core.Model;
 using Sharposhop.Core.PictureManagement;
-using Sharposhop.Core.Tools;
 
 namespace Sharposhop.Core.GammaConfiguration;
 

@@ -6,7 +6,6 @@ using ReactiveUI;
 using Sharposhop.AvaloniaUI.Tools;
 using Sharposhop.AvaloniaUI.ViewModels.Layers;
 using Sharposhop.Core.LayerManagement;
-using Sharposhop.Core.Layers;
 using Sharposhop.Core.Tools;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;

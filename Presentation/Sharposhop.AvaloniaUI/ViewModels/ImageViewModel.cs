@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media.Imaging;
@@ -10,7 +9,6 @@ using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 using Sharposhop.Core.PictureManagement;
 using Sharposhop.Core.Pictures;
-using Sharposhop.Core.Tools;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;
 
@@ -53,28 +51,40 @@ public class ImageViewModel : ViewModelBase, IPictureUpdateObserver
         set => this.RaiseAndSetIfChanged(ref _bitmap, value);
     }
 
-    private async ValueTask Load(IPicture picture)
+    private ValueTask Load(IPicture picture)
     {
-        Bitmap = await RunLoad(picture);
+        Bitmap = RunLoad(picture);
+        return ValueTask.CompletedTask;
     }
 
-    private Task<WriteableBitmap> RunLoad(IPicture picture)
+    private WriteableBitmap RunLoad(IPicture picture)
     {
-        return Task.Run(() =>
+        var size = new PixelSize(picture.Size.Width, picture.Size.Height);
+        var dpi = new Vector(100, 100);
+        var bm = new WriteableBitmap(size, dpi, PixelFormat.Rgba8888, AlphaFormat.Opaque);
+
+        using var locked = bm.Lock();
+
+        var ptr = locked.Address;
+        Assign(ptr, picture);
+
+        return bm;
+    }
+
+    private unsafe void Assign(IntPtr intPtr, IPicture picture)
+    {
+        Span<ColorTriplet> span = picture.AsSpan();
+
+        for (var i = 0; i < span.Length; i++)
         {
-            var size = new PixelSize(picture.Size.Width, picture.Size.Height);
-            var dpi = new Vector(100, 100);
-            var bm = new WriteableBitmap(size, dpi, PixelFormat.Rgba8888, AlphaFormat.Opaque);
+            var triplet = span[i];
+            var ptr = (byte*)intPtr + i * 4;
 
-            using var locked = bm.Lock();
-
-            var ptr = locked.Address;
-
-            IEnumerable<PlaneCoordinate> a = _enumerationStrategy.Enumerate(picture.Size);
-            Parallel.ForEach(a, (x, _) => Assign(ptr, picture, x));
-
-            return bm;
-        });
+            ptr[0] = _normalizer.DeNormalize(triplet.First);
+            ptr[1] = _normalizer.DeNormalize(triplet.Second);
+            ptr[2] = _normalizer.DeNormalize(triplet.Third);
+            ptr[3] = 255;
+        }
     }
 
     private unsafe void Assign(IntPtr intPtr, IPicture picture, PlaneCoordinate coordinate)

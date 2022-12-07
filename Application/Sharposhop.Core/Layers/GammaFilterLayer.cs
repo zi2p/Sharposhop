@@ -22,19 +22,12 @@ public class GammaFilterLayer : ILayer
         if (_stateProvider.IsCurrentlySaving)
             return ValueTask.FromResult(picture);
 
-        if (picture.Gamma.Equals(_provider.Gamma))
-            return ValueTask.FromResult(picture);
-
-        Console.WriteLine($"Started gamma filtering {DateTime.Now:HH:mm:ss.fff}");
-
         Span<ColorTriplet> span = picture.AsSpan();
 
         for (var i = 0; i < span.Length; i++)
         {
             span[i] = span[i].WithoutGamma(Gamma.DefaultGamma).WithGamma(_provider.Gamma);
         }
-
-        Console.WriteLine($"Finished gamma filtering {DateTime.Now:HH:mm:ss.fff}");
 
         picture = new GammaPictureProxy(picture, _provider.Gamma);
         return ValueTask.FromResult(picture);
