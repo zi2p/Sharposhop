@@ -1,19 +1,18 @@
-﻿using Sharposhop.Core.BitmapImages.Filtering.Filters;
-using Sharposhop.Core.BitmapImages.Filtering.Tools;
-using Sharposhop.Core.Gamma;
+﻿using Sharposhop.Core.GammaConfiguration;
+using Sharposhop.Core.Model;
 
 namespace Sharposhop.AvaloniaUI.Models;
 
 public class GammaSettings
 {
-    public GammaSettings(UserAction userAction)
+    public GammaSettings(IGammaUpdater gammaUpdater)
     {
-        BitmapFilter = new GammaBitmapFilter(userAction);
+        GammaUpdater = gammaUpdater;
     }
-    
-    public bool IsSrgb { get; set; }
-    public GammaModel GammaValue { get; set; } = 0; 
-    public GammaBitmapFilter BitmapFilter { get; }
 
-    public GammaModel EffectiveGamma => IsSrgb ? GammaModel.DefaultGamma : GammaValue;
+    public bool IsSrgb { get; set; }
+    public Gamma GammaValue { get; set; } = 0;
+    public IGammaUpdater GammaUpdater { get; }
+
+    public Gamma EffectiveGamma => IsSrgb ? Gamma.DefaultGamma : GammaValue;
 }

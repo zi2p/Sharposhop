@@ -4,28 +4,29 @@ using System.Threading;
 using System.Threading.Tasks;
 using ReactiveUI;
 using Sharposhop.AvaloniaUI.Tools;
-using Sharposhop.AvaloniaUI.ViewModels.Filters;
-using Sharposhop.Core.BitmapImages.Filtering;
+using Sharposhop.AvaloniaUI.ViewModels.Layers;
+using Sharposhop.Core.LayerManagement;
+using Sharposhop.Core.Layers;
 using Sharposhop.Core.Tools;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;
 
-public class FilterViewModel : ViewModelBase, IDisposable
+public sealed class FilterViewModel : ViewModelBase, IDisposable
 {
-    private readonly IBitmapFilterManager _manager;
+    private readonly ILayerManager _manager;
     private readonly IExceptionSink _sink;
     private readonly SemaphoreSlim _semaphore;
 
-    private FilterViewModelBase? _selected;
+    private LayerViewModelBase? _selected;
 
-    public FilterViewModel(IBitmapFilterManager manager, IExceptionSink sink)
+    public FilterViewModel(ILayerManager manager, IExceptionSink sink)
     {
         _manager = manager;
         _sink = sink;
         _semaphore = new SemaphoreSlim(1, 1);
     }
 
-    public FilterViewModelBase? Selected
+    public LayerViewModelBase? Selected
     {
         get => _selected;
         set
@@ -38,16 +39,12 @@ public class FilterViewModel : ViewModelBase, IDisposable
 
     public bool ButtonsEnabled => Selected is not null;
 
-    public IEnumerable<FilterViewModelBase> Items
+    public IEnumerable<LayerViewModelBase> Items
     {
         get
         {
             var visitor = new BitmapFilterViewVisitor(_sink);
-
-            foreach (var filter in _manager.Filters)
-            {
-                filter.Accept(visitor);
-            }
+            _manager.Accept(visitor);
 
             return visitor.Contents;
         }
@@ -74,6 +71,7 @@ public class FilterViewModel : ViewModelBase, IDisposable
     public async ValueTask Demote()
     {
         await _semaphore.WaitAsync();
+
         try
         {
             if (Selected is null)

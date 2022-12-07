@@ -1,47 +1,51 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ReactiveUI;
-using Sharposhop.Core.BitmapImages;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
+using Sharposhop.Core.PictureManagement;
+using Sharposhop.Core.Pictures;
+using Sharposhop.Core.Tools;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;
 
-public class ImageViewModel : ViewModelBase
+public class ImageViewModel : ViewModelBase, IPictureUpdateObserver
 {
+    private readonly IPictureUpdatePublisher _updatePublisher;
     private readonly IEnumerationStrategy _enumerationStrategy;
     private readonly INormalizer _normalizer;
 
     private Bitmap? _bitmap;
 
     public ImageViewModel(
-        IReadBitmapImage bitmapImage,
         IEnumerationStrategy enumerationStrategy,
-        INormalizer normalizer)
+        INormalizer normalizer,
+        IPictureUpdatePublisher updatePublisher)
     {
-        BitmapImage = bitmapImage;
         _enumerationStrategy = enumerationStrategy;
         _normalizer = normalizer;
+        _updatePublisher = updatePublisher;
 
-        bitmapImage.BitmapChanged += Load;
-        bitmapImage.BitmapChanged += BitmapChanged;
+        updatePublisher.Subscribe(this);
     }
 
     ~ImageViewModel()
     {
-        BitmapImage.BitmapChanged -= Load;
-        BitmapImage.BitmapChanged -= BitmapChanged;
+        _updatePublisher.Unsubscribe(this);
     }
 
     public event Func<ValueTask>? BitmapChanged;
 
-    public IReadBitmapImage BitmapImage { get; }
+    public async ValueTask OnPictureUpdated(IPicture picture)
+    {
+        await Load(picture);
+        await (BitmapChanged?.Invoke() ?? ValueTask.CompletedTask);
+    }
 
     public Bitmap? Bitmap
     {
@@ -49,34 +53,36 @@ public class ImageViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _bitmap, value);
     }
 
-    private ValueTask Load()
+    private async ValueTask Load(IPicture picture)
     {
-        Bitmap = RunLoad();
-        return ValueTask.CompletedTask;
+        Bitmap = await RunLoad(picture);
     }
 
-    private WriteableBitmap RunLoad()
+    private Task<WriteableBitmap> RunLoad(IPicture picture)
     {
-        var size = new PixelSize(BitmapImage.Width, BitmapImage.Height);
-        var dpi = new Vector(100, 100);
-        var bm = new WriteableBitmap(size, dpi, PixelFormat.Rgba8888, AlphaFormat.Opaque);
+        return Task.Run(() =>
+        {
+            var size = new PixelSize(picture.Size.Width, picture.Size.Height);
+            var dpi = new Vector(100, 100);
+            var bm = new WriteableBitmap(size, dpi, PixelFormat.Rgba8888, AlphaFormat.Opaque);
 
-        using var locked = bm.Lock();
+            using var locked = bm.Lock();
 
-        var ptr = locked.Address;
+            var ptr = locked.Address;
 
-        IEnumerable<PlaneCoordinate> a = _enumerationStrategy.Enumerate(size.Width, size.Height);
-        Parallel.ForEach(a, (x, _) => Assign(ptr, size, x));
+            IEnumerable<PlaneCoordinate> a = _enumerationStrategy.Enumerate(picture.Size);
+            Parallel.ForEach(a, (x, _) => Assign(ptr, picture, x));
 
-        return bm;
+            return bm;
+        });
     }
 
-    private unsafe void Assign(IntPtr intPtr, PixelSize size, PlaneCoordinate coordinate)
+    private unsafe void Assign(IntPtr intPtr, IPicture picture, PlaneCoordinate coordinate)
     {
         var ptr = (byte*)intPtr.ToPointer();
 
-        var index = _enumerationStrategy.AsContinuousIndex(coordinate, size.Width, size.Height) * 4;
-        var triplet = BitmapImage[coordinate];
+        var index = _enumerationStrategy.AsContinuousIndex(coordinate, picture.Size) * 4;
+        var triplet = picture[coordinate];
 
         ptr[index] = _normalizer.DeNormalize(triplet.First);
         ptr[index + 1] = _normalizer.DeNormalize(triplet.Second);

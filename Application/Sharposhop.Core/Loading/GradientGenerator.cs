@@ -1,15 +1,12 @@
 ﻿using System.Buffers;
 using System.Text;
-using Sharposhop.Core.BitmapImages;
-using Sharposhop.Core.BitmapImages.Implementations;
 using Sharposhop.Core.Enumeration;
-using Sharposhop.Core.Gamma;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 
 namespace Sharposhop.Core.Loading;
 
-public class GradientGenerator : IImageLoader
+public class GradientGenerator : IPictureLoader
 {
     private readonly IEnumerationStrategy _enumerationStrategy;
     private readonly INormalizer _normalizer;
@@ -22,10 +19,10 @@ public class GradientGenerator : IImageLoader
         _enumerationStrategy = enumerationStrategy;
     }
 
-    public ValueTask<IReadBitmapImage> LoadImageAsync(Stream data)
+    public ValueTask<PictureData> LoadImageAsync(Stream data)
         => ValueTask.FromResult(ParseInput(data));
 
-    private IReadBitmapImage ParseInput(Stream stream)
+    private PictureData ParseInput(Stream stream)
     {
         using var streamReader = new StreamReader(stream, Encoding.UTF8, true);
 
@@ -43,16 +40,19 @@ public class GradientGenerator : IImageLoader
         SkipSpaceChar(stream);
         var b = ReadNum(stream);
         SkipSpaceChar(stream);
-        return Generate(width, height, new ColorTriplet(_normalizer.Normalize(r), _normalizer.Normalize(g), _normalizer.Normalize(b)));
+
+        var color = new ColorTriplet(_normalizer.Normalize(r), _normalizer.Normalize(g), _normalizer.Normalize(b));
+        return Generate(width, height, color);
     }
-    
-    private IReadBitmapImage Generate(int width, int height, ColorTriplet targetColor)
+
+    private PictureData Generate(int width, int height, ColorTriplet targetColor)
     {
         ColorTriplet[] array = ArrayPool<ColorTriplet>.Shared.Rent(width * height);
+        var size = new PictureSize(width, height);
 
-        foreach (var coordinate in _enumerationStrategy.Enumerate(width, height))
+        foreach (var coordinate in _enumerationStrategy.Enumerate(size))
         {
-            var index = _enumerationStrategy.AsContinuousIndex(coordinate, width, height);
+            var index = _enumerationStrategy.AsContinuousIndex(coordinate, size);
             var percent = coordinate.X / (float)width;
 
             var first = percent * targetColor.First;
@@ -63,7 +63,7 @@ public class GradientGenerator : IImageLoader
             array[index] = triplet;
         }
 
-        return new BitmapImage(width, height, ColorScheme.Rgb, GammaModel.DefaultGamma, array, _enumerationStrategy);
+        return new PictureData(size, ColorScheme.Rgb, Gamma.DefaultGamma, array);
     }
 
     private static void SkipSpaceChar(Stream content)

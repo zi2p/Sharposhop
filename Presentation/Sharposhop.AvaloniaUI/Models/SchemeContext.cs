@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Sharposhop.Core.BitmapImages.ChannelFiltering;
-using Sharposhop.Core.BitmapImages.SchemeConversion;
+using Sharposhop.Core.ChannelFiltering;
+using Sharposhop.Core.ColorSchemes;
 using Sharposhop.Core.Normalization;
 
 namespace Sharposhop.AvaloniaUI.Models;

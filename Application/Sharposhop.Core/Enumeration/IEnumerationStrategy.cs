@@ -4,7 +4,7 @@ namespace Sharposhop.Core.Enumeration;
 
 public interface IEnumerationStrategy
 {
-    IEnumerable<PlaneCoordinate> Enumerate(int width, int height);
+    IEnumerable<PlaneCoordinate> Enumerate(PictureSize size);
     
-    long AsContinuousIndex(PlaneCoordinate coordinate, int width, int height);
+    int AsContinuousIndex(PlaneCoordinate coordinate, PictureSize size);
 }
