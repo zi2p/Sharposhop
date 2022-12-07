@@ -5,7 +5,11 @@
         xmlns:viewModels="clr-namespace:Sharposhop.AvaloniaUI.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Sharposhop.AvaloniaUI.Views.CreateGradientWindow"
-        Title="CreateGradientWindow">
+        Title="CreateGradientWindow"
+        Width="500"
+        Height="250"
+        CanResize="False"
+        Margin="5">
 
 
     <Design.DataContext>
@@ -27,49 +31,51 @@
         </Style>
     </Window.Styles>
 
-    <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto,Auto,Auto,Auto">
+    <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+        <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto,Auto,Auto,Auto">
 
-        <TextBlock Grid.Row="0" Grid.Column="0" Classes="label">
-            Width
-        </TextBlock>
-
-        <NumericUpDown Grid.Row="0" Grid.Column="1" Classes="field" Value="{Binding Width}" />
-
-        <TextBlock Grid.Row="1" Grid.Column="0" Classes="label">
-            Height
-        </TextBlock>
-
-        <NumericUpDown Grid.Row="1" Grid.Column="1" Classes="field size" Value="{Binding Height}" />
-
-        <TextBlock Grid.Row="2" Grid.Column="0" Classes="label">
-            Color
-        </TextBlock>
-
-        <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="Auto, *, Auto, *, Auto, *" RowDefinitions="Auto">
             <TextBlock Grid.Row="0" Grid.Column="0" Classes="label">
-                R
+                Width
             </TextBlock>
 
-            <NumericUpDown Grid.Row="0" Grid.Column="1" Classes="field color" Value="{Binding Red}" />
+            <NumericUpDown Grid.Row="0" Grid.Column="1" Classes="field" Value="{Binding Width}" />
 
-            <TextBlock Grid.Row="0" Grid.Column="2" Classes="label">
-                G
+            <TextBlock Grid.Row="1" Grid.Column="0" Classes="label">
+                Height
             </TextBlock>
 
-            <NumericUpDown Grid.Row="0" Grid.Column="3" Classes="field color" Value="{Binding Green}" />
+            <NumericUpDown Grid.Row="1" Grid.Column="1" Classes="field size" Value="{Binding Height}" />
 
-
-            <TextBlock Grid.Row="0" Grid.Column="4" Classes="label">
-                B
+            <TextBlock Grid.Row="2" Grid.Column="0" Classes="label">
+                Color
             </TextBlock>
 
-            <NumericUpDown Grid.Row="0" Grid.Column="5" Classes="field color" Value="{Binding Blue}" />
+            <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="Auto, *, Auto, *, Auto, *" RowDefinitions="Auto">
+                <TextBlock Grid.Row="0" Grid.Column="0" Classes="label">
+                    R
+                </TextBlock>
+
+                <NumericUpDown Grid.Row="0" Grid.Column="1" Classes="field color" Value="{Binding Red}" />
+
+                <TextBlock Grid.Row="0" Grid.Column="2" Classes="label">
+                    G
+                </TextBlock>
+
+                <NumericUpDown Grid.Row="0" Grid.Column="3" Classes="field color" Value="{Binding Green}" />
+
+
+                <TextBlock Grid.Row="0" Grid.Column="4" Classes="label">
+                    B
+                </TextBlock>
+
+                <NumericUpDown Grid.Row="0" Grid.Column="5" Classes="field color" Value="{Binding Blue}" />
+            </Grid>
+
+            <Button Grid.Row="3" Grid.Column="0" Classes="generate" Click="GenerateButton_OnClick">
+                Generate
+            </Button>
+
         </Grid>
-
-        <Button Grid.Row="3" Grid.Column="0" Classes="generate" Click="GenerateButton_OnClick">
-            Generate
-        </Button>
-
-    </Grid>
+    </StackPanel>
 
 </Window>

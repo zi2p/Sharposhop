@@ -4,17 +4,17 @@ namespace Sharposhop.Core.Enumeration;
 
 public class RowByRowEnumerationStrategy : IEnumerationStrategy
 {
-    public IEnumerable<PlaneCoordinate> Enumerate(int width, int height)
+    public IEnumerable<PlaneCoordinate> Enumerate(PictureSize size)
     {
-        for (var y = 0; y < height; y++)
+        for (var y = 0; y < size.Height; y++)
         {
-            for (var x = 0; x < width; x++)
+            for (var x = 0; x < size.Width; x++)
             {
                 yield return new PlaneCoordinate(x, y);
             }
         }
     }
 
-    public long AsContinuousIndex(PlaneCoordinate coordinate, int width, int height)
-        => coordinate.Y * width + coordinate.X;
+    public int AsContinuousIndex(PlaneCoordinate coordinate, PictureSize size)
+        => coordinate.Y * size.Width + coordinate.X;
 }

@@ -1,4 +1,4 @@
-﻿using Sharposhop.Core.BitmapImages.SchemeConversion;
+﻿using Sharposhop.Core.ColorSchemes;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Exceptions;
 using Sharposhop.Core.Normalization;
@@ -22,12 +22,12 @@ public class LoaderFactory
         _enumerationStrategy = enumerationStrategy;
     }
 
-    public IImageLoader CreateRightImageLoader(ImageFileTypes type)
+    public IPictureLoader CreateRightImageLoader(ImageFileTypes type)
     {
         return type switch
         {
             // ImageFileTypes.Bmp => new SkiaImageLoader(_normalizer, _schemeConverterProvider),
-            ImageFileTypes.Pnm => new PnmImageLoader(_normalizer, _schemeConverterProvider, _enumerationStrategy),
+            ImageFileTypes.Pnm => new PnmPictureLoader(_normalizer, _schemeConverterProvider, _enumerationStrategy),
             ImageFileTypes.Gradient => new GradientGenerator(_normalizer, _enumerationStrategy),
             ImageFileTypes.Other or _ => throw WrongFileFormatException.ImageTypeNotSupported(),
         };

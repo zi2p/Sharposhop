@@ -10,20 +10,18 @@ using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.AvaloniaUI.Tools;
 using Sharposhop.AvaloniaUI.ViewModels;
 using Sharposhop.AvaloniaUI.Views;
-using Sharposhop.Core.BitmapImages;
-using Sharposhop.Core.BitmapImages.ChannelFiltering;
-using Sharposhop.Core.BitmapImages.ChannelFiltering.Filters;
-using Sharposhop.Core.BitmapImages.ChannelFiltering.Tools;
-using Sharposhop.Core.BitmapImages.Filtering;
-using Sharposhop.Core.BitmapImages.Filtering.Tools;
-using Sharposhop.Core.BitmapImages.Implementations;
-using Sharposhop.Core.BitmapImages.SchemeConversion;
-using Sharposhop.Core.BitmapImages.SchemeConversion.Converters;
-using Sharposhop.Core.BitmapImages.SchemeConversion.Tools;
-using Sharposhop.Core.BitmapImages.Writing;
+using Sharposhop.Core.AppStateManagement;
+using Sharposhop.Core.ChannelFiltering;
+using Sharposhop.Core.ChannelFiltering.Filters;
+using Sharposhop.Core.ColorSchemes;
+using Sharposhop.Core.ColorSchemes.Converters;
 using Sharposhop.Core.Enumeration;
+using Sharposhop.Core.GammaConfiguration;
+using Sharposhop.Core.LayerManagement;
+using Sharposhop.Core.Layers;
 using Sharposhop.Core.Loading;
 using Sharposhop.Core.Normalization;
+using Sharposhop.Core.PictureManagement;
 using Sharposhop.Core.Tools;
 using Splat.Microsoft.Extensions.DependencyInjection;
 
@@ -41,9 +39,9 @@ public partial class App : Application
         using (var scanner = collection.UseAssemblyScanner(typeof(App)))
         {
             scanner.EnqueueAdditionOfTypesThat()
-                .WouldBeRegisteredAs<IFilterProvider>()
+                .WouldBeRegisteredAs<ILayerProvider>()
                 .WithSingletonLifetime()
-                .AreAssignableTo<IFilterProvider>()
+                .AreAssignableTo<ILayerProvider>()
                 .AreNotAbstractClasses()
                 .AreNotInterfaces();
         }
@@ -54,32 +52,51 @@ public partial class App : Application
         var enumerationStrategy = new RowByRowEnumerationStrategy();
         collection.AddSingleton<IEnumerationStrategy>(enumerationStrategy);
 
-        var schemeConverter = new PassthroughSchemeConverter();
-        var channelFilter = new PassthroughChannelFilter();
+        var appState = new AppState();
 
-        var bitmapImageProxy = new BitmapImageProxy();
-        var writableBitmapImageProxy = new WritableBitmapImage(bitmapImageProxy, enumerationStrategy);
-        var schemeConverterProxy = new BitmapImageSchemeConverterProxy(writableBitmapImageProxy, schemeConverter);
-        var channelFilterProxy = new BitmapImageChannelFilterProxy(schemeConverterProxy, channelFilter);
-        var filterProxy = new BitmapImageFilterProxy(channelFilterProxy);
+        var manager = new PictureManager(enumerationStrategy);
 
-        var userAction = new UserAction();
-        var gammaSettings = new GammaSettings(userAction);
-        filterProxy.Add(0, gammaSettings.BitmapFilter);
+        var schemeManager = new SchemeConverterManager(new PassthroughSchemeConverter(), manager);
+        var schemeLayer = new SchemeConverterLayer(schemeManager);
+        manager.Add(schemeLayer);
 
-        collection.AddSingleton<IBitmapImageUpdater>(bitmapImageProxy);
-        collection.AddSingleton<IBitmapImage>(writableBitmapImageProxy);
-        collection.AddSingleton(userAction);
+        var channelManager = new ChannelFilterManager(new PassthroughChannelFilter(), manager);
+        var channelLayer = new ChannelFilterLayer(channelManager);
+        manager.Add(channelLayer);
 
-        collection.AddSingleton<ISchemeConverterUpdater>(schemeConverterProxy);
-        collection.AddSingleton<ISchemeConverterProvider>(schemeConverterProxy);
-        collection.AddSingleton<IChannelFilterUpdater>(channelFilterProxy);
-        collection.AddSingleton<IBitmapFilterManager>(filterProxy);
-        collection.AddSingleton<IReadBitmapImage>(filterProxy);
+        var gammaManager = new GammaManager(manager);
+        var gammaSettings = new GammaSettings(gammaManager);
+        var gammaLayer = new GammaFilterLayer(gammaManager, appState);
+        manager.Add(gammaLayer);
+
+        collection.AddSingleton(appState);
+        collection.AddSingleton<IAppStateProvider>(x => x.GetRequiredService<AppState>());
+        collection.AddSingleton<IAppStateManager>(x => x.GetRequiredService<AppState>());
+
+        collection.AddSingleton(manager);
+        collection.AddSingleton<ILayerManager>(x => x.GetRequiredService<PictureManager>());
+        collection.AddSingleton<IPictureParametersUpdateObserver>(x => x.GetRequiredService<PictureManager>());
+        collection.AddSingleton<IPictureUpdatePublisher>(x => x.GetRequiredService<PictureManager>());
+        collection.AddSingleton<IPictureUpdater>(x => x.GetRequiredService<PictureManager>());
+        collection.AddSingleton<IBasePictureUpdater>(x => x.GetRequiredService<PictureManager>());
+        collection.AddSingleton<IPictureProvider>(x => x.GetRequiredService<PictureManager>());
+
+        collection.AddSingleton(schemeManager);
+        collection.AddSingleton<ISchemeConverterProvider>(x => x.GetRequiredService<SchemeConverterManager>());
+        collection.AddSingleton<ISchemeConverterUpdater>(x => x.GetRequiredService<SchemeConverterManager>());
+
+        collection.AddSingleton(channelManager);
+        collection.AddSingleton<IChannelFilterProvider>(x => x.GetRequiredService<ChannelFilterManager>());
+        collection.AddSingleton<IChannelFilterUpdater>(x => x.GetRequiredService<ChannelFilterManager>());
+
+        collection.AddSingleton(gammaManager);
+        collection.AddSingleton(gammaSettings);
+        collection.AddSingleton<IGammaProvider>(x => x.GetRequiredService<GammaManager>());
+        collection.AddSingleton<IGammaUpdater>(x => x.GetRequiredService<GammaManager>());
 
         collection.AddSingleton<SchemeContext>();
 
-        collection.AddSingleton<IImageLoader, LoaderProxy>();
+        collection.AddSingleton<IPictureLoader, LoaderProxy>();
         collection.AddSingleton<LoaderFactory>();
 
         collection.AddScoped<ImageViewModel>();
@@ -89,7 +106,6 @@ public partial class App : Application
         collection.AddSingleton<IExceptionSink, MessageBoxExceptionSink>();
 
         collection.AddSingleton<ViewLocator>();
-        collection.AddSingleton(gammaSettings);
 
         var provider = collection.BuildServiceProvider();
         provider.UseMicrosoftDependencyResolver();

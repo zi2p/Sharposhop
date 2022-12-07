@@ -1,27 +1,25 @@
 using System.Collections.Generic;
-using Sharposhop.AvaloniaUI.ViewModels.Filters;
-using Sharposhop.Core.BitmapImages.Filtering;
-using Sharposhop.Core.BitmapImages.Filtering.Filters;
+using Sharposhop.AvaloniaUI.ViewModels.Layers;
+using Sharposhop.Core.Layers;
 using Sharposhop.Core.Tools;
 
 namespace Sharposhop.AvaloniaUI.Tools;
 
-public class BitmapFilterViewVisitor : IBitmapFilterVisitor
+public class BitmapFilterViewVisitor : ILayerVisitor
 {
     private readonly IExceptionSink _sink;
 
     public BitmapFilterViewVisitor(IExceptionSink sink)
     {
         _sink = sink;
+        Contents = new List<LayerViewModelBase>();
     }
 
-    public List<FilterViewModelBase> Contents { get; } = new List<FilterViewModelBase>();
+    public List<LayerViewModelBase> Contents { get; }
 
-    public void Visit(DimmingBitmapFilter filter)
-    {
-        var viewModel = new DimmingFilterViewModel(filter, _sink);
-        Contents.Add(viewModel);
-    }
+    public void Visit(ChannelFilterLayer layer) { }
 
-    public void Visit(GammaBitmapFilter bitmapFilter) { }
+    public void Visit(GammaFilterLayer layer) { }
+
+    public void Visit(SchemeConverterLayer layer) { }
 }

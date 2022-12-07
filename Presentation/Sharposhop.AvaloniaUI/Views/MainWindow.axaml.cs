@@ -8,8 +8,8 @@ using Avalonia.Threading;
 using ReactiveUI;
 using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.AvaloniaUI.ViewModels;
-using Sharposhop.Core.BitmapImages.SchemeConversion.Converters;
-using Sharposhop.Core.Saving.Strategies;
+using Sharposhop.Core.ColorSchemes.Converters;
+using Sharposhop.Core.Saving;
 
 namespace Sharposhop.AvaloniaUI.Views;
 
@@ -67,7 +67,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     {
                         Command = ReactiveCommand.CreateFromTask<Window>(w =>
                         {
-                            var strategy = new P6SavingStrategy(viewModel.Normalizer, viewModel.EnumerationStrategy);
+                            var strategy = new P6SavingStrategy(viewModel.Normalizer);
                             return viewModel.SaveImageAsync(w, strategy);
                         }),
 

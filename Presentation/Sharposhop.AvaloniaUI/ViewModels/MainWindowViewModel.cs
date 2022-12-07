@@ -6,11 +6,12 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using ReactiveUI;
 using Sharposhop.AvaloniaUI.Models;
-using Sharposhop.Core.BitmapImages;
-using Sharposhop.Core.BitmapImages.Filtering.Tools;
+using Sharposhop.Core.AppStateManagement;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Loading;
 using Sharposhop.Core.Normalization;
+using Sharposhop.Core.PictureManagement;
+using Sharposhop.Core.PictureUpdateOperations;
 using Sharposhop.Core.Saving;
 using Sharposhop.Core.Tools;
 
@@ -18,12 +19,12 @@ namespace Sharposhop.AvaloniaUI.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    private readonly IImageLoader _loader;
-    private readonly IBitmapImageUpdater _bitmapImageUpdater;
-    private readonly IReadBitmapImage _image;
+    private readonly IPictureLoader _loader;
     private readonly IExceptionSink _exceptionSink;
-    private readonly IBitmapImage _writableBitmapImage;
-    private readonly UserAction _userAction;
+    private readonly IPictureUpdater _pictureUpdater;
+    private readonly IAppStateManager _stateManager;
+    private readonly IPictureProvider _pictureProvider;
+    private readonly IBasePictureUpdater _basePictureUpdater;
 
     private bool _isEnabled;
     private bool _isSrgbChecked;
@@ -31,27 +32,27 @@ public class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel(
         ImageViewModel imageViewModel,
         FilterViewModel filterViewModel,
-        IImageLoader loader,
-        IBitmapImageUpdater bitmapImageUpdater,
+        IPictureLoader loader,
         IExceptionSink exceptionSink,
-        IReadBitmapImage image,
         INormalizer normalizer,
         IEnumerationStrategy enumerationStrategy,
         GammaSettings gammaSettings,
-        IBitmapImage writableImage,
-        UserAction userAction)
+        IPictureUpdater pictureUpdater,
+        IAppStateManager stateManager,
+        IPictureProvider pictureProvider,
+        IBasePictureUpdater basePictureUpdater)
     {
         ImageViewModel = imageViewModel;
         _loader = loader;
-        _bitmapImageUpdater = bitmapImageUpdater;
         _exceptionSink = exceptionSink;
-        _image = image;
         Normalizer = normalizer;
         EnumerationStrategy = enumerationStrategy;
         FilterViewModel = filterViewModel;
         GammaSettings = gammaSettings;
-        _writableBitmapImage = writableImage;
-        _userAction = userAction;
+        _pictureUpdater = pictureUpdater;
+        _stateManager = stateManager;
+        _pictureProvider = pictureProvider;
+        _basePictureUpdater = basePictureUpdater;
 
         ImageViewModel.BitmapChanged += OnImageViewModelOnBitmapChanged;
 
@@ -113,19 +114,19 @@ public class MainWindowViewModel : ViewModelBase
 
             await using var stream = File.OpenRead(result[0]);
             Console.WriteLine($"Start loading: {DateTime.Now:HH:mm:ss.fff}");
-            var image = await _loader.LoadImageAsync(stream);
-            
+            var pictureData = await _loader.LoadImageAsync(stream);
+
             Console.WriteLine($"End loading: {DateTime.Now:HH:mm:ss.fff}");
 
             Console.WriteLine($"Start updating: {DateTime.Now:HH:mm:ss.fff}");
-            await _bitmapImageUpdater.UpdateAsync(image);
+            await _pictureUpdater.UpdateAsync(pictureData);
             Console.WriteLine($"End updating: {DateTime.Now:HH:mm:ss.fff}");
         });
     }
 
     public Task SaveImageAsync(Window window, ISavingStrategy strategy)
     {
-        _userAction.IsSavingAction = true;
+        _stateManager.UpdateSavingState(true);
         return ExecuteSafeAsync(async () =>
         {
             var dialog = new SaveFileDialog();
@@ -133,11 +134,17 @@ public class MainWindowViewModel : ViewModelBase
             var result = await Dispatcher.UIThread.InvokeAsync(() => dialog.ShowAsync(window));
 
             if (string.IsNullOrEmpty(result))
+            {
+                _stateManager.UpdateSavingState(false);
                 return;
+            }
 
             await using var stream = File.OpenWrite(result);
-            await strategy.SaveAsync(stream, _image);
-            _userAction.IsSavingAction = false;
+            var picture = await _pictureProvider.ComposePicture();
+
+            await strategy.SaveAsync(stream, picture);
+
+            _stateManager.UpdateSavingState(false);
         });
     }
 
@@ -146,7 +153,7 @@ public class MainWindowViewModel : ViewModelBase
         return ExecuteSafeAsync(async () =>
         {
             var image = await _loader.LoadImageAsync(data);
-            await _bitmapImageUpdater.UpdateAsync(image);
+            await _pictureUpdater.UpdateAsync(image);
         });
     }
 
@@ -168,14 +175,18 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     public Task AssignGammaAsync()
-        => ExecuteSafeAsync(async () => await GammaSettings.BitmapFilter.Update(GammaSettings.EffectiveGamma));
+        => ExecuteSafeAsync(async () => await GammaSettings.GammaUpdater.Update(GammaSettings.EffectiveGamma));
 
     public Task ConvertToGammaAsync()
-        => ExecuteSafeAsync(async () =>
+    {
+        return ExecuteSafeAsync(async () =>
         {
-            await _writableBitmapImage.UpdateGamma(GammaSettings.EffectiveGamma, false);
-            await GammaSettings.BitmapFilter.Update(GammaSettings.EffectiveGamma);
+            var operation = new GammaUpdateOperations(GammaSettings.EffectiveGamma);
+
+            await _basePictureUpdater.UpdateAsync(operation, false);
+            await GammaSettings.GammaUpdater.Update(GammaSettings.EffectiveGamma);
         });
+    }
 
     public void TogglePane()
     {

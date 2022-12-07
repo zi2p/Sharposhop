@@ -1,10 +1,10 @@
 ﻿using System.Text;
-using Sharposhop.Core.BitmapImages;
+using Sharposhop.Core.Model;
 using Sharposhop.Core.Tools;
 
 namespace Sharposhop.Core.Loading;
 
-public class LoaderProxy : IImageLoader
+public class LoaderProxy : IPictureLoader
 {
     private const int BmpHeaderLength = 14;
     private const int BmpHeaderFieldLength = 2;
@@ -17,7 +17,7 @@ public class LoaderProxy : IImageLoader
         _loaderFactory = loaderFactory;
     }
 
-    public async ValueTask<IReadBitmapImage> LoadImageAsync(Stream data)
+    public async ValueTask<PictureData> LoadImageAsync(Stream data)
     {
         var type = await RecognizeImageTypeAsync(data);
         data.Position = 0;
