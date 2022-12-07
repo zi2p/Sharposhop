@@ -4,7 +4,7 @@ using Sharposhop.Core.Pictures;
 
 namespace Sharposhop.Core.PictureUpdateOperations;
 
-public class GammaUpdateOperations : IBasePictureUpdateOperation
+public readonly struct GammaUpdateOperations : IBasePictureUpdateOperation
 {
     private readonly Gamma _newValue;
 

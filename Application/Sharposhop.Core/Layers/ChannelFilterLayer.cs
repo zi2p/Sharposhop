@@ -16,17 +16,12 @@ public class ChannelFilterLayer : ILayer
     public ValueTask<IPicture> ModifyAsync(IPicture picture)
     {
         var filter = _provider.Filter;
-        
-        Console.WriteLine($"Starting channel filtering: {DateTime.Now:HH:mm:ss.fff}");
-
         Span<ColorTriplet> span = picture.AsSpan();
 
         for (var i = 0; i < span.Length; i++)
         {
             span[i] = filter.Filter(span[i]);
         }
-        
-        Console.WriteLine($"Finished channel filtering: {DateTime.Now:HH:mm:ss.fff}");
 
         return ValueTask.FromResult(picture);
     }

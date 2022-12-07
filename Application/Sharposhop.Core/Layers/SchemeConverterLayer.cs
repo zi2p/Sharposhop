@@ -1,4 +1,5 @@
 using Sharposhop.Core.ColorSchemes;
+using Sharposhop.Core.Model;
 using Sharposhop.Core.Pictures;
 
 namespace Sharposhop.Core.Layers;
@@ -12,22 +13,19 @@ public class SchemeConverterLayer : ILayer
         _provider = provider;
     }
 
-    public async ValueTask<IPicture> ModifyAsync(IPicture picture)
+    public ValueTask<IPicture> ModifyAsync(IPicture picture)
     {
         if (picture.Scheme.Equals(_provider.Converter.Scheme))
-            return picture;
+            return ValueTask.FromResult(picture);
 
-        Console.WriteLine($"Started scheme filtering {DateTime.Now:HH:mm:ss.fff}");
+        Span<ColorTriplet> span = picture.AsSpan();
 
-        await Parallel.ForEachAsync(picture.Enumerate(), (triplet, _) =>
+        for (var i = 0; i < span.Length; i++)
         {
-            picture[triplet.Coordinate] = _provider.Converter.Convert(triplet.Triplet);
-            return ValueTask.CompletedTask;
-        });
-        
-        Console.WriteLine($"Finished scheme filtering {DateTime.Now:HH:mm:ss.fff}");
+            span[i] = _provider.Converter.Convert(span[i]);
+        }
 
-        return picture;
+        return ValueTask.FromResult(picture);
     }
 
     public void Reset() { }
