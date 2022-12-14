@@ -19,10 +19,10 @@ public class LoaderProxy : IPictureLoader
 
     public async ValueTask<PictureData> LoadImageAsync(Stream data)
     {
-        var type = await RecognizeImageTypeAsync(data);
+        ImageFileTypes type = await RecognizeImageTypeAsync(data);
         data.Position = 0;
         
-        var loader = _loaderFactory.CreateRightImageLoader(type);
+        IPictureLoader? loader = _loaderFactory.CreateRightImageLoader(type);
         return await loader.LoadImageAsync(data);
     }
 

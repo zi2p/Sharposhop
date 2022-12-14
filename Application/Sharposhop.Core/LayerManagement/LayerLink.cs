@@ -24,7 +24,7 @@ public class LayerLink : ILayerLink
 
         if (_next.Layer.Equals(layer))
         {
-            var next = _next;
+            ILayerLink? next = _next;
             _next = _next.SwapNextTo(this);
 
             return next;
@@ -41,7 +41,7 @@ public class LayerLink : ILayerLink
 
         if (layer.Equals(Layer))
         {
-            var next = _next;
+            ILayerLink? next = _next;
             _next = _next.SwapNextTo(this);
 
             return next;
@@ -64,7 +64,7 @@ public class LayerLink : ILayerLink
 
     public ILayerLink? SwapNextTo(ILayerLink link)
     {
-        var next = _next;
+        ILayerLink? next = _next;
         _next = link;
         return next;
     }

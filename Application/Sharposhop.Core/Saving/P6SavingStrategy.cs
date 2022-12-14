@@ -1,4 +1,5 @@
 using System.Text;
+using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 using Sharposhop.Core.Pictures;
 
@@ -29,7 +30,7 @@ public class P6SavingStrategy : ISavingStrategy
 
         stream.Write(headerBytes, 0, headerBytes.Length);
 
-        foreach (var triplet in picture.AsSpan())
+        foreach (ColorTriplet triplet in picture.AsSpan())
         {
             var first = _normalizer.DeNormalize(triplet.First);
             var second = _normalizer.DeNormalize(triplet.Second);

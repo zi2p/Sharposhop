@@ -13,4 +13,8 @@
       <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="2.88.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="BitmapImages" />
+    </ItemGroup>
+
 </Project>

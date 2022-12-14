@@ -9,8 +9,10 @@ using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.Core.AppStateManagement;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Loading;
+using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 using Sharposhop.Core.PictureManagement;
+using Sharposhop.Core.Pictures;
 using Sharposhop.Core.PictureUpdateOperations;
 using Sharposhop.Core.Saving;
 using Sharposhop.Core.Tools;
@@ -112,9 +114,9 @@ public class MainWindowViewModel : ViewModelBase
             if (result is not { Length: not 0 })
                 return;
 
-            await using var stream = File.OpenRead(result[0]);
+            await using FileStream? stream = File.OpenRead(result[0]);
             Console.WriteLine($"Start loading: {DateTime.Now:HH:mm:ss.fff}");
-            var pictureData = await _loader.LoadImageAsync(stream);
+            PictureData pictureData = await _loader.LoadImageAsync(stream);
 
             Console.WriteLine($"End loading: {DateTime.Now:HH:mm:ss.fff}");
 
@@ -139,8 +141,8 @@ public class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            await using var stream = File.OpenWrite(result);
-            var picture = await _pictureProvider.ComposePicture();
+            await using FileStream? stream = File.OpenWrite(result);
+            IPicture? picture = await _pictureProvider.ComposePicture();
 
             await strategy.SaveAsync(stream, picture);
 
@@ -152,7 +154,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         return ExecuteSafeAsync(async () =>
         {
-            var image = await _loader.LoadImageAsync(data);
+            PictureData image = await _loader.LoadImageAsync(data);
             await _pictureUpdater.UpdateAsync(image);
         });
     }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Sharposhop.AvaloniaUI.ViewModels.Layers;
 using Sharposhop.Core.Layers;
+using Sharposhop.Core.Layers.Filtering.Filters;
 using Sharposhop.Core.Tools;
 
 namespace Sharposhop.AvaloniaUI.Tools;
@@ -16,6 +17,36 @@ public class BitmapFilterViewVisitor : ILayerVisitor
     }
 
     public List<LayerViewModelBase> Contents { get; }
+
+    public void Visit(GaussianFilter layer)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void Visit(MedianFilter layer)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void Visit(OtsuFilter layer)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void Visit(SobelFilter layer)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void Visit(ThresholdFilter layer)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void Visit(BoxBlurFilter layer)
+    {
+        throw new System.NotImplementedException();
+    }
 
     public void Visit(ChannelFilterLayer layer) { }
 

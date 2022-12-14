@@ -19,6 +19,7 @@ using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.GammaConfiguration;
 using Sharposhop.Core.LayerManagement;
 using Sharposhop.Core.Layers;
+using Sharposhop.Core.Layers.Filtering.Filters;
 using Sharposhop.Core.Loading;
 using Sharposhop.Core.Normalization;
 using Sharposhop.Core.PictureManagement;
@@ -68,6 +69,9 @@ public partial class App : Application
         var gammaSettings = new GammaSettings(gammaManager);
         var gammaLayer = new GammaFilterLayer(gammaManager, appState);
         manager.Add(gammaLayer);
+
+        var layer = new OtsuFilter(normalizer);
+        manager.Add(layer);
 
         collection.AddSingleton(appState);
         collection.AddSingleton<IAppStateProvider>(x => x.GetRequiredService<AppState>());
