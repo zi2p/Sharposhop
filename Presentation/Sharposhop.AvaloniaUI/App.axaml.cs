@@ -19,6 +19,7 @@ using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.GammaConfiguration;
 using Sharposhop.Core.LayerManagement;
 using Sharposhop.Core.Layers;
+using Sharposhop.Core.Layers.Filtering.Filters;
 using Sharposhop.Core.Loading;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;

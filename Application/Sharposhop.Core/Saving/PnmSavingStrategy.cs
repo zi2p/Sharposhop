@@ -30,7 +30,7 @@ public class PnmSavingStrategy : ISavingStrategy
 
         stream.Write(headerBytes, 0, headerBytes.Length);
 
-        foreach (var triplet in picture.AsSpan())
+        foreach (ColorTriplet triplet in picture.AsSpan())
         {
             if (isColored)
             {

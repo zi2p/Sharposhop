@@ -84,9 +84,9 @@ public class PictureManager :
         if (_picture is null)
             return;
 
-        var picture = await ComposePicture();
+        IPicture? picture = await ComposePicture();
 
-        foreach (var observer in _observers)
+        foreach (IPictureUpdateObserver? observer in _observers)
         {
             await observer.OnPictureUpdated(picture);
         }
@@ -97,7 +97,7 @@ public class PictureManager :
         if (_picture is null)
             throw BitmapImageProxyException.NoImageLoaded();
 
-        var picture = _picture.GetBufferPicture();
+        IPicture? picture = _picture.GetBufferPicture();
 
         return _link?.ModifyAsync(picture) ?? ValueTask.FromResult(picture);
     }

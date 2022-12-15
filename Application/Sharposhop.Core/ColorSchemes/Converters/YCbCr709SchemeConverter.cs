@@ -20,9 +20,9 @@ public class YCbCr709SchemeConverter : ISchemeConverter
         var g = _normalizer.DeNormalize(triplet.Second);
         var b = _normalizer.DeNormalize(triplet.Third);
 
-        var y = _normalizer.Normalize(0.2126f * r + 0.7152f * g + 0.0722f * b);
-        var cb = _normalizer.Normalize(-0.1146f * r - 0.3854f * g + 0.5f * b + 128);
-        var cr = _normalizer.Normalize(0.5f * r - 0.4542f * g - 0.0458f * b + 128);
+        Fraction y = _normalizer.Normalize(0.2126f * r + 0.7152f * g + 0.0722f * b);
+        Fraction cb = _normalizer.Normalize(-0.1146f * r - 0.3854f * g + 0.5f * b + 128);
+        Fraction cr = _normalizer.Normalize(0.5f * r - 0.4542f * g - 0.0458f * b + 128);
 
         return new ColorTriplet(y, cb, cr);
     }
@@ -39,9 +39,9 @@ public class YCbCr709SchemeConverter : ISchemeConverter
         var cb = (_normalizer.DeNormalize(triplet.Second) - 128) * d;
         var cr = (_normalizer.DeNormalize(triplet.Third) - 128) * e;
 
-        var b = _normalizer.Normalize(cb + y);
-        var r = _normalizer.Normalize(cr + y);
-        var g = _normalizer.Normalize((y - a * r - c * b) / b1);
+        Fraction b = _normalizer.Normalize(cb + y);
+        Fraction r = _normalizer.Normalize(cr + y);
+        Fraction g = _normalizer.Normalize((y - a * r - c * b) / b1);
 
         return new ColorTriplet(r, g, b);
     }

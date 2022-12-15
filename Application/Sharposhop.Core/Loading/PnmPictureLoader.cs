@@ -76,7 +76,7 @@ public class PnmPictureLoader : IPictureLoader
         var buffer = ArrayPool<byte>.Shared.Rent(size);
         var pictureSize = new PictureSize(width, height);
 
-        foreach (var coordinate in _enumerationStrategy.Enumerate(pictureSize))
+        foreach (PlaneCoordinate coordinate in _enumerationStrategy.Enumerate(pictureSize))
         {
             var index = _enumerationStrategy.AsContinuousIndex(coordinate, pictureSize);
 
@@ -85,7 +85,7 @@ public class PnmPictureLoader : IPictureLoader
             if (count is not size)
                 throw LoadingException.UnexpectedStreamEnd();
 
-            var normalized = _normalizer.Normalize(buffer[0]);
+            Fraction normalized = _normalizer.Normalize(buffer[0]);
             var triplet = new ColorTriplet(normalized, normalized, normalized);
 
             array[index] = _schemeConverterProvider.Converter.Revert(triplet);
@@ -105,7 +105,7 @@ public class PnmPictureLoader : IPictureLoader
         var buffer = ArrayPool<byte>.Shared.Rent(size);
         var pictureSize = new PictureSize(width, height);
 
-        foreach (var coordinate in _enumerationStrategy.Enumerate(pictureSize))
+        foreach (PlaneCoordinate coordinate in _enumerationStrategy.Enumerate(pictureSize))
         {
             var index = _enumerationStrategy.AsContinuousIndex(coordinate, pictureSize);
 
@@ -114,9 +114,9 @@ public class PnmPictureLoader : IPictureLoader
             if (count is not size)
                 throw LoadingException.UnexpectedStreamEnd();
 
-            var first = _normalizer.Normalize(buffer[0]);
-            var second = _normalizer.Normalize(buffer[1]);
-            var third = _normalizer.Normalize(buffer[2]);
+            Fraction first = _normalizer.Normalize(buffer[0]);
+            Fraction second = _normalizer.Normalize(buffer[1]);
+            Fraction third = _normalizer.Normalize(buffer[2]);
             var triplet = new ColorTriplet(first, second, third);
 
             array[index] = _schemeConverterProvider.Converter.Revert(triplet);

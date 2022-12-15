@@ -15,7 +15,7 @@ public class ChannelFilterLayer : ILayer
 
     public ValueTask<IPicture> ModifyAsync(IPicture picture)
     {
-        var filter = _provider.Filter;
+        IChannelFilter filter = _provider.Filter;
         Span<ColorTriplet> span = picture.AsSpan();
 
         for (var i = 0; i < span.Length; i++)
