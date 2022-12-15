@@ -62,15 +62,6 @@ public static class PngDataDecoder
         switch (filterType)
         {
             case FilterType.None: return;
-            case FilterType.Up:
-            {
-                var above = previousRowStartByte + rowByteIndex;
-                if (above < 0 || above >= bytes.Length)
-                    return;
-
-                bytes[currentByte] += bytes[above];
-                return;
-            }
             case FilterType.Sub:
             {
                 var leftIndex = rowByteIndex - bytesPerPixel;
@@ -78,6 +69,15 @@ public static class PngDataDecoder
                     return;
 
                 bytes[currentByte] += bytes[rowStartByte + leftIndex];
+                return;
+            }
+            case FilterType.Up:
+            {
+                var above = previousRowStartByte + rowByteIndex;
+                if (above < 0 || above >= bytes.Length)
+                    return;
+
+                bytes[currentByte] += bytes[above];
                 return;
             }
             case FilterType.Average:
