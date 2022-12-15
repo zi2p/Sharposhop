@@ -1,19 +1,16 @@
-﻿using System.IO.Compression;
-using System.Text;
+﻿using System.Text;
 using Sharposhop.Core.Extensions;
 using Sharposhop.Core.Loading;
 using Sharposhop.Core.Loading.Png;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 using Sharposhop.Core.Pictures;
+using LibDeflate;
 
 namespace Sharposhop.Core.Saving;
 
 public class PngSavingStrategy : ISavingStrategy
 {
-    private const byte DeflateConst = 120;
-    private const int AdlerModulus = 65521;
-    private const byte ChecksumConst = 1;
     private readonly INormalizer _normalizer;
 
     public PngSavingStrategy(INormalizer normalizer)
@@ -84,8 +81,6 @@ public class PngSavingStrategy : ISavingStrategy
     
     private byte[] Compress(Span<ColorTriplet> pictureData, PictureSize size, bool isColored)
     {
-        const int headerLength = 2;
-        const int checksumLength = 4;
         var data = new byte[size.Width * size.Height * (isColored ? 3 : 1) + size.Height];
         var x = 0;
         var y = 0;
@@ -100,54 +95,10 @@ public class PngSavingStrategy : ISavingStrategy
             }
         }
 
-        using var compressStream = new MemoryStream();
-        using var compressor = new DeflateStream(compressStream, CompressionLevel.Optimal, true);
-        compressor.Write(data, 0, data.Length);
-        compressor.Close();
-
-        compressStream.Seek(0, SeekOrigin.Begin);
-
-        var result = new byte[headerLength + compressStream.Length + checksumLength];
-
-        result[0] = DeflateConst;
-        result[1] = ChecksumConst;
-
-        int streamValue;
-        var i = 0;
-        while ((streamValue = compressStream.ReadByte()) != -1)
-        {
-            result[headerLength + i] = (byte)streamValue;
-            i++;
-        }
-
-        var checksum = CalculateAdlerChecksum(data);
-
-        var offset = headerLength + compressStream.Length;
-        result[offset++] = (byte)(checksum >> 24);
-        result[offset++] = (byte)(checksum >> 16);
-        result[offset++] = (byte)(checksum >> 8);
-        result[offset] = (byte)(checksum >> 0);
-
+        using var compressor = new ZlibCompressor(9);
+        using var compressedData = compressor.Compress(data);
+        var result = compressedData?.Memory.ToArray() ?? throw new InvalidOperationException("Impossible to compress data");
         return result;
-    }
-
-    private static int CalculateAdlerChecksum(byte[] data)
-    {
-        var s1 = 1;
-        var s2 = 0;
-
-        var count = 0;
-        foreach (var b in data)
-        {
-            if (data.Length > 0 && count == data.Length)
-                break;
-
-            s1 = (s1 + b) % AdlerModulus;
-            s2 = (s1 + s2) % AdlerModulus;
-            count++;
-        }
-
-        return s2 * 65536 + s1;
     }
 
     public void SetPixel(int x, int y, byte[] data, ColorTriplet triplet, PictureSize size,  bool isColored)
