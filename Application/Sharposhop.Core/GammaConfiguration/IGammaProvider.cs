@@ -4,5 +4,6 @@ namespace Sharposhop.Core.GammaConfiguration;
 
 public interface IGammaProvider
 {
-    Gamma Gamma { get; }
+    Gamma InitialGamma { get; }
+    Gamma GammaValue { get; }
 }

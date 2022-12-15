@@ -9,6 +9,7 @@ public class LoaderProxy : IPictureLoader
     private const int BmpHeaderLength = 14;
     private const int BmpHeaderFieldLength = 2;
     private const int PnmHeaderLength = 2;
+    public static readonly byte[] PngHeader = { 137, 80, 78, 71, 13, 10, 26, 10 };
 
     private readonly LoaderFactory _loaderFactory;
 
@@ -32,6 +33,8 @@ public class LoaderProxy : IPictureLoader
             return ImageFileTypes.Gradient;
         if (await IsImageTypePnm(data))
             return ImageFileTypes.Pnm;
+        if (await IsImageTypePng(data))
+            return ImageFileTypes.Png;
         if (await IsImageTypeBmp(data))
             return ImageFileTypes.Bmp;
 
@@ -68,6 +71,19 @@ public class LoaderProxy : IPictureLoader
         var bmpHeaderFieldString = Encoding.UTF8.GetString(bmpHeaderField);
 
         return bmpHeaderFieldString is "BM" or "BA" or "CI" or "CI" or "CP" or "PT";
+    }
+
+    private async ValueTask<bool> IsImageTypePng(Stream data)
+    {
+        data.Position = 0;
+        var pngHeaderLength = PngHeader.Length;
+
+        if (data.Length <= pngHeaderLength)
+            return false;
+
+        var pngHeader = new byte[pngHeaderLength];
+        _ = await data.ReadAsync(pngHeader.AsMemory(0, pngHeaderLength));
+        return pngHeader.SequenceEqual(PngHeader);
     }
 
     private async ValueTask<bool> IsImageTypePnm(Stream data)

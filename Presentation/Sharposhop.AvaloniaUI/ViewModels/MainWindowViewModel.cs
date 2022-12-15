@@ -30,6 +30,7 @@ public class MainWindowViewModel : ViewModelBase
 
     private bool _isEnabled;
     private bool _isSrgbChecked;
+    private GammaSettings _gammaSettings;
 
     public MainWindowViewModel(
         ImageViewModel imageViewModel,
@@ -77,7 +78,11 @@ public class MainWindowViewModel : ViewModelBase
 
     public ImageViewModel ImageViewModel { get; }
     public FilterViewModel FilterViewModel { get; }
-    public GammaSettings GammaSettings { get; }
+    public GammaSettings GammaSettings
+    { 
+        get => _gammaSettings;
+        set => this.RaiseAndSetIfChanged(ref _gammaSettings, value);
+    }
 
     public bool IsEnabled
     {
@@ -102,6 +107,9 @@ public class MainWindowViewModel : ViewModelBase
 
     public static CultureInfo Culture => CultureInfo.InvariantCulture;
     public bool IsPaneOpen { get; set; }
+    public bool IsColored { get; set; }
+    public bool IsReadonly { get; set; }
+    public Gamma InitialGamma { get; set; }
 
     public Task LoadImageAsync(Window window)
     {
@@ -116,12 +124,20 @@ public class MainWindowViewModel : ViewModelBase
 
             await using FileStream? stream = File.OpenRead(result[0]);
             Console.WriteLine($"Start loading: {DateTime.Now:HH:mm:ss.fff}");
-            PictureData pictureData = await _loader.LoadImageAsync(stream);
+            var pictureData = await _loader.LoadImageAsync(stream);
+            IsColored = pictureData.IsColored;
+            IsReadonly = pictureData.IsReadOnly;
+            InitialGamma = pictureData.InitialGamma;
+            GammaSettings.GammaValue = InitialGamma;
+            IsSrgbChecked = InitialGamma == Gamma.DefaultGamma;
+            GammaSettings.GammaUpdater.InitialGamma = InitialGamma;
+            GammaSettings = new GammaSettings(GammaSettings.GammaUpdater) {GammaValue = InitialGamma};
 
             Console.WriteLine($"End loading: {DateTime.Now:HH:mm:ss.fff}");
 
             Console.WriteLine($"Start updating: {DateTime.Now:HH:mm:ss.fff}");
             await _pictureUpdater.UpdateAsync(pictureData);
+            await AssignGammaAsync();
             Console.WriteLine($"End updating: {DateTime.Now:HH:mm:ss.fff}");
         });
     }
@@ -144,7 +160,7 @@ public class MainWindowViewModel : ViewModelBase
             await using FileStream? stream = File.OpenWrite(result);
             IPicture? picture = await _pictureProvider.ComposePicture();
 
-            await strategy.SaveAsync(stream, picture);
+            await strategy.SaveAsync(stream, picture, InitialGamma, IsColored);
 
             _stateManager.UpdateSavingState(false);
         });
@@ -181,6 +197,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public Task ConvertToGammaAsync()
     {
+        InitialGamma = GammaSettings.EffectiveGamma;
         return ExecuteSafeAsync(async () =>
         {
             var operation = new GammaUpdateOperations(GammaSettings.EffectiveGamma);

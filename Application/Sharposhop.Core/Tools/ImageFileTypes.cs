@@ -5,5 +5,6 @@ public enum ImageFileTypes
     Other,
     Bmp,
     Pnm,
+    Png,
     Gradient,
 }

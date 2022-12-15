@@ -5,20 +5,20 @@ using Sharposhop.Core.Pictures;
 
 namespace Sharposhop.Core.Saving;
 
-public class P6SavingStrategy : ISavingStrategy
+public class PnmSavingStrategy : ISavingStrategy
 {
     private readonly INormalizer _normalizer;
 
-    public P6SavingStrategy(INormalizer normalizer)
+    public PnmSavingStrategy(INormalizer normalizer)
     {
         _normalizer = normalizer;
     }
 
-    public ValueTask SaveAsync(Stream stream, IPicture picture)
+    public ValueTask SaveAsync(Stream stream, IPicture picture, Gamma gamma, bool isColored)
     {
         var builder = new StringBuilder();
 
-        builder.Append("P6");
+        builder.Append(isColored ? "P6" : "P5");
         builder.Append((char)10);
         builder.Append($"{picture.Size.Width} {picture.Size.Height}");
         builder.Append((char)10);
@@ -32,13 +32,21 @@ public class P6SavingStrategy : ISavingStrategy
 
         foreach (ColorTriplet triplet in picture.AsSpan())
         {
-            var first = _normalizer.DeNormalize(triplet.First);
-            var second = _normalizer.DeNormalize(triplet.Second);
-            var third = _normalizer.DeNormalize(triplet.Third);
+            if (isColored)
+            {
+                var first = _normalizer.DeNormalize(triplet.First);
+                var second = _normalizer.DeNormalize(triplet.Second);
+                var third = _normalizer.DeNormalize(triplet.Third);
 
-            stream.WriteByte(first);
-            stream.WriteByte(second);
-            stream.WriteByte(third);
+                stream.WriteByte(first);
+                stream.WriteByte(second);
+                stream.WriteByte(third);
+            }
+            else
+            {
+                var color = _normalizer.DeNormalize(triplet.First);
+                stream.WriteByte(color);
+            }
         }
 
         return ValueTask.CompletedTask;
