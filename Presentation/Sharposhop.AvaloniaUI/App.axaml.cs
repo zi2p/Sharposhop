@@ -20,6 +20,7 @@ using Sharposhop.Core.GammaConfiguration;
 using Sharposhop.Core.LayerManagement;
 using Sharposhop.Core.Layers;
 using Sharposhop.Core.Loading;
+using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 using Sharposhop.Core.PictureManagement;
 using Sharposhop.Core.Tools;
@@ -64,7 +65,7 @@ public partial class App : Application
         var channelLayer = new ChannelFilterLayer(channelManager);
         manager.Add(channelLayer);
 
-        var gammaManager = new GammaManager(manager);
+        var gammaManager = new GammaManager(manager, Gamma.DefaultGamma);
         var gammaSettings = new GammaSettings(gammaManager);
         var gammaLayer = new GammaFilterLayer(gammaManager, appState);
         manager.Add(gammaLayer);

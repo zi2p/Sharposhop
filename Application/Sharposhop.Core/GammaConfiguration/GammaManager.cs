@@ -7,20 +7,23 @@ public class GammaManager : IGammaProvider, IGammaUpdater
 {
     private readonly IPictureParametersUpdateObserver _updateObserver;
 
-    public GammaManager(IPictureParametersUpdateObserver updateObserver)
+    public GammaManager(IPictureParametersUpdateObserver updateObserver, Gamma initialGamma)
     {
         _updateObserver = updateObserver;
-        Gamma = Gamma.DefaultGamma;
+        GammaValue = Gamma.DefaultGamma;
+        InitialGamma = initialGamma;
     }
 
-    public Gamma Gamma { get; private set; }
+    public Gamma GammaValue { get; private set; }
+
+    public Gamma InitialGamma { get; set; }
 
     public ValueTask Update(Gamma value)
     {
-        if (Gamma.Equals(value))
+        if (GammaValue.Equals(value))
             return ValueTask.CompletedTask;
 
-        Gamma = value;
+        GammaValue = value;
         return _updateObserver.OnPictureParametersUpdated();
     }
 }

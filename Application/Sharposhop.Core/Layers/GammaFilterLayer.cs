@@ -26,10 +26,10 @@ public class GammaFilterLayer : ILayer
 
         for (var i = 0; i < span.Length; i++)
         {
-            span[i] = span[i].WithoutGamma(Gamma.DefaultGamma).WithGamma(_provider.Gamma);
+            span[i] = span[i].WithoutGamma(_provider.InitialGamma).WithGamma(_provider.GammaValue);
         }
 
-        picture = new GammaPictureProxy(picture, _provider.Gamma);
+        picture = new GammaPictureProxy(picture, _provider.GammaValue);
         return ValueTask.FromResult(picture);
     }
 

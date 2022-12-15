@@ -94,7 +94,7 @@ public class PnmPictureLoader : IPictureLoader
         ArrayPool<byte>.Shared.Return(buffer);
 
         // TODO: Proper gamma value
-        return new PictureData(pictureSize, ColorScheme.Rgb, Gamma.DefaultGamma, array);
+        return new PictureData(pictureSize, ColorScheme.Rgb, Gamma.DefaultGamma, array, false);
     }
 
     private async ValueTask<PictureData> LoadP6(Stream stream, int height, int width)

@@ -63,11 +63,21 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                         Command = ReactiveCommand.CreateFromTask<Window>(viewModel.LoadImageAsync),
                         CommandParameter = this,
                     },
-                    new MenuItemViewModel("_Save")
+                    new MenuItemViewModel("_Save as PNM")
                     {
                         Command = ReactiveCommand.CreateFromTask<Window>(w =>
                         {
-                            var strategy = new P6SavingStrategy(viewModel.Normalizer);
+                            var strategy = new PnmSavingStrategy(viewModel.Normalizer);
+                            return viewModel.SaveImageAsync(w, strategy);
+                        }),
+
+                        CommandParameter = this,
+                    },
+                    new MenuItemViewModel("_Save as PNG")
+                    {
+                        Command = ReactiveCommand.CreateFromTask<Window>(w =>
+                        {
+                            var strategy = new PngSavingStrategy(viewModel.Normalizer);
                             return viewModel.SaveImageAsync(w, strategy);
                         }),
 
