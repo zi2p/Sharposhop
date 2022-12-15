@@ -9,6 +9,16 @@ public readonly struct CoordinateEnumerable
         _size = size;
     }
 
-    public CoordinateEnumerator GetEnumerator() 
+    public CoordinateEnumerator GetEnumerator()
         => new CoordinateEnumerator(_size);
+
+    public IEnumerable<PlaneCoordinate> AsEnumerable()
+    {
+        using var enumerator = GetEnumerator();
+
+        while (enumerator.MoveNext())
+        {
+            yield return enumerator.Current;
+        }
+    }
 }

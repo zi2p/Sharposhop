@@ -4,61 +4,78 @@ using Sharposhop.Core.Pictures;
 
 namespace Sharposhop.Core.Layers.Filtering.Filters;
 
-public abstract class BoxBlurFilter : ILayer
+public class BoxBlurFilter : ILayer
 {
     private readonly int _radius;
     private readonly IEnumerationStrategy _enumerationStrategy;
+    private readonly ParallelOptions _parallelOptions;
 
-
-    protected BoxBlurFilter(int radius, IEnumerationStrategy enumerationStrategy)
+    public BoxBlurFilter(int radius, IEnumerationStrategy enumerationStrategy)
     {
         _radius = radius;
         _enumerationStrategy = enumerationStrategy;
+
+        _parallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = Environment.ProcessorCount - 1,
+        };
     }
 
-    public ValueTask<IPicture> ModifyAsync(IPicture picture)
+    public async ValueTask<IPicture> ModifyAsync(IPicture picture)
+    {
+        await Parallel.ForEachAsync(
+            _enumerationStrategy.Enumerate(picture.Size).AsEnumerable(),
+            _parallelOptions,
+            (coord, _) =>
+            {
+                CalculatePixel(picture, coord);
+                return ValueTask.CompletedTask;
+            });
+
+        return picture;
+    }
+
+    private void CalculatePixel(IPicture picture, PlaneCoordinate coordinate)
     {
         Span<ColorTriplet> span = picture.AsSpan();
+        var index = _enumerationStrategy.AsContinuousIndex(coordinate, picture.Size);
+        var (x, y) = coordinate;
+
+        var xLimit = Math.Min(x + _radius, picture.Size.Width);
+        var yLimit = Math.Min(y + _radius, picture.Size.Height);
+
+        using DisposableArray<ColorTriplet> buffer = DisposableArray<ColorTriplet>.OfSize((xLimit - x) * (yLimit - y));
+        Span<ColorTriplet> bufferSpan = buffer.AsSpan();
+
+        var i = 0;
         var del = _radius * _radius;
 
-        foreach (PlaneCoordinate coordinate in _enumerationStrategy.Enumerate(picture.Size))
+        var firstSum = 0f;
+        var secondSum = 0f;
+        var thirdSum = 0f;
+
+        for (int xx = x; xx < xLimit; xx++)
         {
-            var index = _enumerationStrategy.AsContinuousIndex(coordinate, picture.Size);
-            (AxisCoordinate x, AxisCoordinate y) = coordinate;
-
-            var firstSum = 0f;
-            var secondSum = 0f;
-            var thirdSum = 0f;
-
-            for (var xx = x - _radius; xx <= x + _radius; xx++)
+            for (int yy = y; yy < yLimit; yy++)
             {
-                for (var yy = y - _radius; yy <= y + _radius; yy++)
-                {
-                    var xx1 = xx;
-                    var yy1 = yy;
-                    if (xx < 0) xx1 = 0;
-                    if (yy < 0) yy1 = 0;
+                var localIndex = _enumerationStrategy.AsContinuousIndex(new PlaneCoordinate(xx, yy), picture.Size);
+                var value = span[localIndex];
+                bufferSpan[i++] = value;
 
-                    var innerCoordinate = new PlaneCoordinate(xx1, yy1);
-                    var innerIndex = _enumerationStrategy.AsContinuousIndex(innerCoordinate, picture.Size);
-                    ColorTriplet innerTriplet = span[innerIndex];
-
-                    firstSum += innerTriplet.First;
-                    secondSum += innerTriplet.Second;
-                    thirdSum += innerTriplet.Third;
-                }
-            }
-
-            var value = (firstSum + secondSum + thirdSum) / del;
-
-            for (var xx = x - _radius; xx <= x + _radius && xx >= 0; xx++)
-            {
-                for (var yy = y - _radius; yy <= y + _radius && yy >= 0; yy++)
-                    span[index] = new ColorTriplet(value, value, value);
+                firstSum += value.First;
+                secondSum += value.Second;
+                thirdSum += value.Third;
             }
         }
 
-        return new ValueTask<IPicture>(picture);
+        bufferSpan.Sort(static (a, b) => a.Average.CompareTo(b.Average));
+        bufferSpan.Reverse();
+
+        firstSum /= del;
+        secondSum /= del;
+        thirdSum /= del;
+
+        span[index] = new ColorTriplet(firstSum, secondSum, thirdSum);
     }
 
     public void Reset() { }

@@ -4,7 +4,7 @@ using Sharposhop.Core.Pictures;
 
 namespace Sharposhop.Core.Layers.Filtering.Filters;
 
-public abstract class SobelFilter : ILayer
+public class SobelFilter : ILayer
 {
     private static readonly float[,] XMatrix =
     {
@@ -22,12 +22,10 @@ public abstract class SobelFilter : ILayer
 
     private readonly IEnumerationStrategy _enumerationStrategy;
 
-    protected SobelFilter(IEnumerationStrategy enumerationStrategy)
+    public SobelFilter(IEnumerationStrategy enumerationStrategy)
     {
         _enumerationStrategy = enumerationStrategy;
     }
-
-    public string DisplayName => "Sobel";
 
     public ValueTask<IPicture> ModifyAsync(IPicture picture)
     {
@@ -36,12 +34,12 @@ public abstract class SobelFilter : ILayer
         Span<ColorTriplet> span = picture.AsSpan();
         Span<float> bufferSpan = array.AsSpan();
 
-        foreach (PlaneCoordinate coordinate in _enumerationStrategy.Enumerate(picture.Size))
+        foreach (var coordinate in _enumerationStrategy.Enumerate(picture.Size))
         {
             var xTotal = 0f;
             var yTotal = 0f;
 
-            foreach (PlaneCoordinate innerCoordinate in _enumerationStrategy.Enumerate(new PictureSize(3, 3)))
+            foreach (var innerCoordinate in _enumerationStrategy.Enumerate(new PictureSize(3, 3)))
             {
                 var (x, y) = innerCoordinate;
                 var value = ValueAt(picture, coordinate, x - 1, y - 1);

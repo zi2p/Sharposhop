@@ -70,9 +70,6 @@ public partial class App : Application
         var gammaLayer = new GammaFilterLayer(gammaManager, appState);
         manager.Add(gammaLayer);
 
-        var layer = new OtsuFilter(normalizer);
-        manager.Add(layer);
-
         collection.AddSingleton(appState);
         collection.AddSingleton<IAppStateProvider>(x => x.GetRequiredService<AppState>());
         collection.AddSingleton<IAppStateManager>(x => x.GetRequiredService<AppState>());

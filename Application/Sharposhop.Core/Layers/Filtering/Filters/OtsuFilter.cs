@@ -16,8 +16,8 @@ public class OtsuFilter : ILayer
     public ValueTask<IPicture> ModifyAsync(IPicture picture)
     {
         Span<ColorTriplet> span = picture.AsSpan();
-        using DisposableArray<int> array = DisposableArray<int>.OfSize(256);
-        Span<int> counters = array.AsSpan();
+        using DisposableArray<double> array = DisposableArray<double>.OfSize(256);
+        Span<double> counters = array.AsSpan();
 
         for (var i = 0; i < span.Length; i++)
         {
@@ -27,64 +27,48 @@ public class OtsuFilter : ILayer
             counters[index]++;
         }
 
-        var minValue = 256;
-        var bestThreshold = 0;
+        var n = picture.Size.Height * picture.Size.Width;
+        var threshold = 0;
 
-        for (var threshold = 0; threshold < 256; threshold++)
+        const int maxIntensity = 256;
+
+        for (var i = 0; i < maxIntensity; i++)
         {
-            var a = 0f;
-            var b = 0f;
-
-            for (var index = 0; index < threshold; index++)
-                a += counters[index];
-
-            for (var index = threshold; index < 256; index++)
-                b += counters[index];
-
-            var normalizeA = 0f;
-            var normalizeB = 0f;
-
-            for (var index = 0; index < threshold; index++)
-                normalizeA += counters[index] / a;
-
-            for (var index = threshold; index < 256; index++)
-                normalizeB += counters[index] / b;
-
-            var meanA = 0f;
-            var meanB = 0f;
-
-            for (var i = 0; i < threshold; i++)
-            {
-                meanA += counters[i] * counters[i] / a;
-            }
-
-            for (var i = threshold; i < 256; i++)
-            {
-                meanB += counters[i] * counters[i] / b;
-            }
-
-            var meanMin = threshold / 2;
-            var meanMax = 3 * (256 - threshold) / 2;
-
-            // var meanA = normalizeA * meanMin;
-            // var meanB = normalizeB * meanMax;
-
-            var pow2A = Math.Pow(meanMin - meanA, 2);
-            var pow2B = Math.Pow(meanMax - meanB, 2);
-
-            var varianceA = normalizeA * pow2A;
-            var varianceB = normalizeB * pow2B;
-
-            var current = a * varianceA + b * varianceB;
-
-            if (current >= minValue)
-                continue;
-
-            minValue = (int) current;
-            bestThreshold = threshold;
+            counters[i] /= n;
         }
 
-        Fraction thresholdFraction = _normalizer.Normalize(bestThreshold);
+        double mg = 0;
+        for (var i = 0; i < 255; i++)
+        {
+            mg += i * counters[i];
+        }
+
+        double bcv = 0;
+        for (var i = 0; i < maxIntensity; i++)
+        {
+            double cs = 0;
+            double m = 0;
+            for (var j = 0; j < i; j++)
+            {
+                cs += counters[j];
+                m += j * counters[j];
+            }
+
+            if (cs == 0)
+            {
+                continue;
+            }
+
+            var oldBcv = bcv;
+            bcv = Math.Max(bcv, Math.Pow(mg * cs - m, 2) / (cs * (1 - cs)));
+
+            if (bcv > oldBcv)
+            {
+                threshold = i;
+            }
+        }
+
+        Fraction thresholdFraction = _normalizer.Normalize(threshold);
 
         for (var i = 0; i < span.Length; i++)
         {
