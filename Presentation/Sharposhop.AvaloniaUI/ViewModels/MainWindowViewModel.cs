@@ -136,8 +136,8 @@ public class MainWindowViewModel : ViewModelBase
 
             Console.WriteLine($"Start updating: {DateTime.Now:HH:mm:ss.fff}");
             await _pictureUpdater.UpdateAsync(pictureData);
-            Console.WriteLine($"End updating: {DateTime.Now:HH:mm:ss.fff}");
             await AssignGammaAsync();
+            Console.WriteLine($"End updating: {DateTime.Now:HH:mm:ss.fff}");
         });
     }
 
