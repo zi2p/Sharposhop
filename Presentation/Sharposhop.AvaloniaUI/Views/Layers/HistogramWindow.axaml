@@ -1,0 +1,16 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
+        xmlns:viewModels="clr-namespace:Sharposhop.AvaloniaUI.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Sharposhop.AvaloniaUI.Views.HistogramWindow"
+        Title="HistogramWindow"
+        Height="500"
+        Width="600"
+        Opened="OnLoad">
+    <Grid ColumnDefinitions="*" RowDefinitions="*">
+        <ScottPlot:AvaPlot Name="Histogram"/>
+    </Grid>
+</Window>
