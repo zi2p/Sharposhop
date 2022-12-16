@@ -15,17 +15,14 @@ namespace Sharposhop.AvaloniaUI.ViewModels;
 public class ImageViewModel : ViewModelBase, IPictureUpdateObserver
 {
     private readonly IPictureUpdatePublisher _updatePublisher;
-    private readonly IEnumerationStrategy _enumerationStrategy;
     private readonly INormalizer _normalizer;
 
     private Bitmap? _bitmap;
 
     public ImageViewModel(
-        IEnumerationStrategy enumerationStrategy,
         INormalizer normalizer,
         IPictureUpdatePublisher updatePublisher)
     {
-        _enumerationStrategy = enumerationStrategy;
         _normalizer = normalizer;
         _updatePublisher = updatePublisher;
 
@@ -85,18 +82,5 @@ public class ImageViewModel : ViewModelBase, IPictureUpdateObserver
             ptr[2] = _normalizer.DeNormalize(triplet.Third);
             ptr[3] = 255;
         }
-    }
-
-    private unsafe void Assign(IntPtr intPtr, IPicture picture, PlaneCoordinate coordinate)
-    {
-        var ptr = (byte*)intPtr.ToPointer();
-
-        var index = _enumerationStrategy.AsContinuousIndex(coordinate, picture.Size) * 4;
-        var triplet = picture[coordinate];
-
-        ptr[index] = _normalizer.DeNormalize(triplet.First);
-        ptr[index + 1] = _normalizer.DeNormalize(triplet.Second);
-        ptr[index + 2] = _normalizer.DeNormalize(triplet.Third);
-        ptr[index + 3] = 255;
     }
 }

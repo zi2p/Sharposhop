@@ -46,8 +46,8 @@ public class HsvSchemeConverter : ISchemeConverter
     public ColorTriplet Revert(ColorTriplet triplet)
     {
         var h = triplet.First * 360;
-        var s = triplet.Second;
-        var v = triplet.Third;
+        Fraction s = triplet.Second;
+        Fraction v = triplet.Third;
 
         var c = v * s;
         var x = c * (1 - Math.Abs(h / 60 % 2 - 1));

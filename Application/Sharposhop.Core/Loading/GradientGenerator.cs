@@ -50,7 +50,7 @@ public class GradientGenerator : IPictureLoader
         ColorTriplet[] array = ArrayPool<ColorTriplet>.Shared.Rent(width * height);
         var size = new PictureSize(width, height);
 
-        foreach (var coordinate in _enumerationStrategy.Enumerate(size))
+        foreach (PlaneCoordinate coordinate in _enumerationStrategy.Enumerate(size))
         {
             var index = _enumerationStrategy.AsContinuousIndex(coordinate, size);
             var percent = coordinate.X / (float)width;

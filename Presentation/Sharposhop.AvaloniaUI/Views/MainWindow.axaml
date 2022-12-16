@@ -1,12 +1,10 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Sharposhop.AvaloniaUI.ViewModels"
-        xmlns:v="using:Sharposhop.AvaloniaUI.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
         xmlns:converters="clr-namespace:Sharposhop.AvaloniaUI.Converters"
-        xmlns:viewModels="clr-namespace:Sharposhop.AvaloniaUI.ViewModels"
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="500"
         x:Class="Sharposhop.AvaloniaUI.Views.MainWindow"
         Icon="/Assets/logo.SH.SH.ico"
@@ -49,7 +47,7 @@
                                            Height="70"
                                            Margin="5,5,5,5"
                                            IsActive="True"
-                                           Foreground="White" />
+                                           Foreground="Gray" />
 
                 </StackPanel>
 
@@ -60,7 +58,7 @@
             </Panel>
 
             <SplitView.Pane>
-                <Grid ColumnDefinitions="*" RowDefinitions="Auto">
+                <Grid ColumnDefinitions="*" RowDefinitions="Auto, *">
                     <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto, Auto"
                           Margin="8">
 
@@ -93,6 +91,33 @@
 
                     </Grid>
 
+                    <StackPanel Grid.Row="1"
+                                Orientation="Vertical"
+                                Margin="8">
+
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+                            <TextBlock Classes="label">
+                                Layers
+                            </TextBlock>
+
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                <Menu Name="AddLayerMenu">
+                                    <Menu.Styles>
+                                        <Style Selector="MenuItem">
+                                            <Setter Property="Header" Value="{Binding Header}" />
+                                            <Setter Property="Items" Value="{Binding Items}" />
+                                            <Setter Property="Command" Value="{Binding Command}" />
+                                            <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
+                                            <Setter Property="Padding" Value="{Binding Padding}" />
+                                            <Setter Property="Margin" Value="{Binding Margin}" />
+                                        </Style>
+                                    </Menu.Styles>
+                                </Menu>
+                            </StackPanel>
+                        </Grid>
+
+                        <ContentControl Name="LayersControl" />
+                    </StackPanel>
                 </Grid>
 
 
@@ -108,7 +133,8 @@
                         <Setter Property="Items" Value="{Binding Items}" />
                         <Setter Property="Command" Value="{Binding Command}" />
                         <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
-                        <Setter Property="Padding" Value="15" />
+                        <Setter Property="Padding" Value="{Binding Padding}" />
+                        <Setter Property="VerticalAlignment" Value="Center" />
                     </Style>
                 </Menu.Styles>
             </Menu>

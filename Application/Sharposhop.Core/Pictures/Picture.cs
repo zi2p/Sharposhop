@@ -32,20 +32,6 @@ public class Picture : IUpdatePicture
         set => _layer[_enumerationStrategy.AsContinuousIndex(coordinate, Size)] = value;
     }
 
-    public IEnumerable<PositionedColorTriplet> Enumerate()
-    {
-        return _enumerationStrategy.Enumerate(Size)
-            .Select(coordinate => new PositionedColorTriplet(coordinate, this[coordinate]));
-    }
-
-    public Span<ColorTriplet> Slice(PlaneCoordinate from, PlaneCoordinate to)
-    {
-        var start = _enumerationStrategy.AsContinuousIndex(from, Size);
-        var end = _enumerationStrategy.AsContinuousIndex(to, Size);
-
-        return _layer.AsSpan(0, Size.PixelCount).Slice(start, end);
-    }
-
     public Span<ColorTriplet> AsSpan()
         => _layer.AsSpan(0, Size.PixelCount);
 

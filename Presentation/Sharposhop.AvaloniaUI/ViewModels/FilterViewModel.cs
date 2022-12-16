@@ -6,23 +6,30 @@ using ReactiveUI;
 using Sharposhop.AvaloniaUI.Tools;
 using Sharposhop.AvaloniaUI.ViewModels.Layers;
 using Sharposhop.Core.LayerManagement;
-using Sharposhop.Core.Tools;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;
 
 public sealed class FilterViewModel : ViewModelBase, IDisposable
 {
     private readonly ILayerManager _manager;
-    private readonly IExceptionSink _sink;
     private readonly SemaphoreSlim _semaphore;
+    private readonly ISelectedLayerManager _selectedLayerManager;
 
     private LayerViewModelBase? _selected;
 
-    public FilterViewModel(ILayerManager manager, IExceptionSink sink)
+    public FilterViewModel(ILayerManager manager, ISelectedLayerManager selectedLayerManager)
     {
         _manager = manager;
-        _sink = sink;
+        _selectedLayerManager = selectedLayerManager;
         _semaphore = new SemaphoreSlim(1, 1);
+
+        manager.LayersUpdated += OnManagerOnLayersUpdated;
+    }
+
+    private ValueTask OnManagerOnLayersUpdated()
+    {
+        this.RaisePropertyChanged(nameof(Items));
+        return ValueTask.CompletedTask;
     }
 
     public LayerViewModelBase? Selected
@@ -30,7 +37,11 @@ public sealed class FilterViewModel : ViewModelBase, IDisposable
         get => _selected;
         set
         {
-            _selected = value;
+            _selected = _selected?.Equals(value) is true ? null : value;
+
+            if (_selected is not null)
+                _selectedLayerManager.UpdateSelectedLayer(_selected.Layer);
+
             this.RaisePropertyChanged();
             this.RaisePropertyChanged(nameof(ButtonsEnabled));
         }
@@ -42,7 +53,7 @@ public sealed class FilterViewModel : ViewModelBase, IDisposable
     {
         get
         {
-            var visitor = new BitmapFilterViewVisitor(_sink);
+            var visitor = new BitmapFilterViewVisitor(_manager);
             _manager.Accept(visitor);
 
             return visitor.Contents;
@@ -58,7 +69,7 @@ public sealed class FilterViewModel : ViewModelBase, IDisposable
             if (Selected is null)
                 return;
 
-            _manager.Promote(Selected.Filter);
+            await _manager.Promote(Selected.Layer);
             this.RaisePropertyChanged(nameof(Items));
         }
         finally
@@ -76,7 +87,7 @@ public sealed class FilterViewModel : ViewModelBase, IDisposable
             if (Selected is null)
                 return;
 
-            _manager.Demote(Selected.Filter);
+            await _manager.Demote(Selected.Layer);
             this.RaisePropertyChanged(nameof(Items));
         }
         finally
@@ -86,5 +97,8 @@ public sealed class FilterViewModel : ViewModelBase, IDisposable
     }
 
     public void Dispose()
-        => _semaphore.Dispose();
+    {
+        _semaphore.Dispose();
+        _manager.LayersUpdated -= OnManagerOnLayersUpdated;
+    }
 }

@@ -1,14 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using ReactiveUI;
+using Sharposhop.AvaloniaUI.LayerProvider;
 using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.Core.AppStateManagement;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Loading;
+using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 using Sharposhop.Core.PictureManagement;
 using Sharposhop.Core.PictureUpdateOperations;
@@ -17,10 +22,9 @@ using Sharposhop.Core.Tools;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;
 
-public class MainWindowViewModel : ViewModelBase
+public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 {
     private readonly IPictureLoader _loader;
-    private readonly IExceptionSink _exceptionSink;
     private readonly IPictureUpdater _pictureUpdater;
     private readonly IAppStateManager _stateManager;
     private readonly IPictureProvider _pictureProvider;
@@ -28,10 +32,10 @@ public class MainWindowViewModel : ViewModelBase
 
     private bool _isEnabled;
     private bool _isSrgbChecked;
+    private GammaSettings _gammaSettings;
 
     public MainWindowViewModel(
         ImageViewModel imageViewModel,
-        FilterViewModel filterViewModel,
         IPictureLoader loader,
         IExceptionSink exceptionSink,
         INormalizer normalizer,
@@ -40,26 +44,27 @@ public class MainWindowViewModel : ViewModelBase
         IPictureUpdater pictureUpdater,
         IAppStateManager stateManager,
         IPictureProvider pictureProvider,
-        IBasePictureUpdater basePictureUpdater)
+        IBasePictureUpdater basePictureUpdater,
+        IEnumerable<ILayerProvider> layerProviders)
     {
         ImageViewModel = imageViewModel;
         _loader = loader;
-        _exceptionSink = exceptionSink;
+        ExceptionSink = exceptionSink;
         Normalizer = normalizer;
         EnumerationStrategy = enumerationStrategy;
-        FilterViewModel = filterViewModel;
-        GammaSettings = gammaSettings;
+        _gammaSettings = gammaSettings;
         _pictureUpdater = pictureUpdater;
         _stateManager = stateManager;
         _pictureProvider = pictureProvider;
         _basePictureUpdater = basePictureUpdater;
+        LayerProviders = layerProviders.ToArray();
 
         ImageViewModel.BitmapChanged += OnImageViewModelOnBitmapChanged;
 
         _isEnabled = true;
     }
 
-    ~MainWindowViewModel()
+    public void Dispose()
     {
         ImageViewModel.BitmapChanged -= OnImageViewModelOnBitmapChanged;
     }
@@ -70,12 +75,19 @@ public class MainWindowViewModel : ViewModelBase
         return ValueTask.CompletedTask;
     }
 
+    public IReadOnlyCollection<ILayerProvider> LayerProviders { get; }
+    public IExceptionSink ExceptionSink { get; }
+
     public INormalizer Normalizer { get; }
     public IEnumerationStrategy EnumerationStrategy { get; }
 
     public ImageViewModel ImageViewModel { get; }
-    public FilterViewModel FilterViewModel { get; }
-    public GammaSettings GammaSettings { get; }
+
+    public GammaSettings GammaSettings
+    {
+        get => _gammaSettings;
+        set => this.RaiseAndSetIfChanged(ref _gammaSettings, value);
+    }
 
     public bool IsEnabled
     {
@@ -100,6 +112,9 @@ public class MainWindowViewModel : ViewModelBase
 
     public static CultureInfo Culture => CultureInfo.InvariantCulture;
     public bool IsPaneOpen { get; set; }
+    public bool IsColored { get; set; }
+    public bool IsReadonly { get; set; }
+    public Gamma InitialGamma { get; set; }
 
     public Task LoadImageAsync(Window window)
     {
@@ -115,11 +130,19 @@ public class MainWindowViewModel : ViewModelBase
             await using var stream = File.OpenRead(result[0]);
             Console.WriteLine($"Start loading: {DateTime.Now:HH:mm:ss.fff}");
             var pictureData = await _loader.LoadImageAsync(stream);
+            IsColored = pictureData.IsColored;
+            IsReadonly = pictureData.IsReadOnly;
+            InitialGamma = pictureData.InitialGamma;
+            GammaSettings.GammaValue = InitialGamma;
+            IsSrgbChecked = InitialGamma == Gamma.DefaultGamma;
+            GammaSettings.GammaUpdater.InitialGamma = InitialGamma;
+            GammaSettings = new GammaSettings(GammaSettings.GammaUpdater) { GammaValue = InitialGamma };
 
             Console.WriteLine($"End loading: {DateTime.Now:HH:mm:ss.fff}");
 
             Console.WriteLine($"Start updating: {DateTime.Now:HH:mm:ss.fff}");
             await _pictureUpdater.UpdateAsync(pictureData);
+            await AssignGammaAsync();
             Console.WriteLine($"End updating: {DateTime.Now:HH:mm:ss.fff}");
         });
     }
@@ -142,7 +165,7 @@ public class MainWindowViewModel : ViewModelBase
             await using var stream = File.OpenWrite(result);
             var picture = await _pictureProvider.ComposePicture();
 
-            await strategy.SaveAsync(stream, picture);
+            await strategy.SaveAsync(stream, picture, InitialGamma, IsColored);
 
             _stateManager.UpdateSavingState(false);
         });
@@ -152,7 +175,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         return ExecuteSafeAsync(async () =>
         {
-            var image = await _loader.LoadImageAsync(data);
+            PictureData image = await _loader.LoadImageAsync(data);
             await _pictureUpdater.UpdateAsync(image);
         });
     }
@@ -166,7 +189,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (Exception e)
         {
-            _exceptionSink.Log(e);
+            ExceptionSink.Log(e);
         }
         finally
         {
@@ -179,6 +202,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public Task ConvertToGammaAsync()
     {
+        InitialGamma = GammaSettings.EffectiveGamma;
         return ExecuteSafeAsync(async () =>
         {
             var operation = new GammaUpdateOperations(GammaSettings.EffectiveGamma);

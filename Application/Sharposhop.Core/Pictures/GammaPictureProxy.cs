@@ -24,16 +24,6 @@ public class GammaPictureProxy : IPicture
         set => _picture[coordinate] = value;
     }
 
-    public IEnumerable<PositionedColorTriplet> Enumerate()
-    {
-        return _picture.Enumerate();
-    }
-
-    public Span<ColorTriplet> Slice(PlaneCoordinate from, PlaneCoordinate to)
-    {
-        return _picture.Slice(from, to);
-    }
-
     public Span<ColorTriplet> AsSpan()
     {
         return _picture.AsSpan();
