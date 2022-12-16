@@ -6,13 +6,12 @@ namespace Sharposhop.Core.Layers.Filtering.Filters;
 
 public class MedianFilter : ILayer
 {
-    private readonly int _radius;
     private readonly IEnumerationStrategy _enumerationStrategy;
     private readonly ParallelOptions _parallelOptions;
 
     public MedianFilter(int radius, IEnumerationStrategy enumerationStrategy)
     {
-        _radius = radius;
+        Radius = radius;
         _enumerationStrategy = enumerationStrategy;
 
         _parallelOptions = new ParallelOptions
@@ -20,6 +19,7 @@ public class MedianFilter : ILayer
             MaxDegreeOfParallelism = Environment.ProcessorCount - 1,
         };
     }
+    private int Radius { get; }
 
     public async ValueTask<IPicture> ModifyAsync(IPicture picture)
     {
@@ -41,8 +41,8 @@ public class MedianFilter : ILayer
         var index = _enumerationStrategy.AsContinuousIndex(coordinate, picture.Size);
         var (x, y) = coordinate;
 
-        var xLimit = Math.Min(x + _radius, picture.Size.Width);
-        var yLimit = Math.Min(y + _radius, picture.Size.Height);
+        var xLimit = Math.Min(x + Radius, picture.Size.Width);
+        var yLimit = Math.Min(y + Radius, picture.Size.Height);
 
         using DisposableArray<ColorTriplet> buffer = DisposableArray<ColorTriplet>.OfSize((xLimit - x) * (yLimit - y));
         Span<ColorTriplet> bufferSpan = buffer.AsSpan();

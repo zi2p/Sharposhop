@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:layer="clr-namespace:Sharposhop.AvaloniaUI.ViewModels.Windows.Layer"
+        xmlns:converters="clr-namespace:Sharposhop.AvaloniaUI.Converters"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Sharposhop.AvaloniaUI.Windows.Layer.ThresholdWindow"
+        Title="ThresholdWindow"
+        Width="400"
+        Height="200">
+
+    <Design.DataContext>
+        <layer:CreateThresholdViewModel />
+    </Design.DataContext>
+
+    <Window.Resources>
+        <converters:DeNormalizedFractionConverter x:Key="DeNormalizedFractionConverter" />
+    </Window.Resources>
+
+    <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto,Auto" Margin="8">
+        <TextBlock Grid.ColumnSpan="2" FontSize="18" FontStyle="Oblique">
+            Threshold
+        </TextBlock>
+
+        <TextBlock Grid.Column="0" Grid.Row="1" Classes="label">
+            Gamma
+        </TextBlock>
+
+
+        <NumericUpDown Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Classes="field"
+                       Minimum="0"
+                       Maximum="255"
+                       Increment="1"
+                       Margin="8"
+                       Value="{Binding Gamma, 
+                        Converter={StaticResource DeNormalizedFractionConverter}}" />
+
+        <Button Grid.Row="2" Grid.Column="3" Click="Button_OnClick">
+            Submit
+        </Button>
+    </Grid>
+
+</Window>

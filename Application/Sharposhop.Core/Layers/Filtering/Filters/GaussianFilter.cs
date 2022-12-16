@@ -7,15 +7,14 @@ namespace Sharposhop.Core.Layers.Filtering.Filters;
 
 public class GaussianFilter : ILayer
 {
-    private readonly int _sigma;
     private readonly int _radius;
     private readonly IEnumerationStrategy _enumerationStrategy;
     private readonly ParallelOptions _parallelOptions;
 
     public GaussianFilter(int sigma, IEnumerationStrategy enumerationStrategy)
     {
-        _sigma = sigma;
-        _radius = 4 * _sigma + 1;
+        Sigma = sigma;
+        _radius = 4 * Sigma + 1;
         _enumerationStrategy = enumerationStrategy;
 
         _parallelOptions = new ParallelOptions
@@ -23,6 +22,7 @@ public class GaussianFilter : ILayer
             MaxDegreeOfParallelism = Environment.ProcessorCount - 1,
         };
     }
+    private int Sigma { get; }
 
     public async ValueTask<IPicture> ModifyAsync(IPicture picture)
     {
@@ -101,7 +101,7 @@ public class GaussianFilter : ILayer
     public float[,] GaussianFunction()
     {
         var radius = _radius;
-        var sigma = _sigma;
+        var sigma = Sigma;
         var kernel = new float[radius, radius];
         float kernelSum = 0;
         var r = (radius - 1) / 2;

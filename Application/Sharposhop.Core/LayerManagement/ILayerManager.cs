@@ -4,8 +4,12 @@ namespace Sharposhop.Core.LayerManagement;
 
 public interface ILayerManager
 {
-    void Add(ILayer layer);
-    void Promote(ILayer layer);
-    void Demote(ILayer layer);
+    event Func<ValueTask> LayersUpdated;
+
+    ValueTask Add(ILayer layer, bool canReorder = true);
+
+    ValueTask Remove(ILayer layer);
+    ValueTask Promote(ILayer layer);
+    ValueTask Demote(ILayer layer);
     void Accept(ILayerVisitor visitor);
 }

@@ -17,13 +17,15 @@ public class PictureManager :
     IPictureProvider
 {
     private readonly IEnumerationStrategy _enumerationStrategy;
+    private readonly ISelectedLayerProvider _selectedLayerProvider;
     private readonly List<IPictureUpdateObserver> _observers;
     private BufferedPicture? _picture;
     private ILayerLink? _link;
 
-    public PictureManager(IEnumerationStrategy enumerationStrategy)
+    public PictureManager(IEnumerationStrategy enumerationStrategy, ISelectedLayerProvider selectedLayerProvider)
     {
         _enumerationStrategy = enumerationStrategy;
+        _selectedLayerProvider = selectedLayerProvider;
         _observers = new List<IPictureUpdateObserver>();
     }
 
@@ -32,9 +34,11 @@ public class PictureManager :
         _link?.Accept(visitor);
     }
 
-    public void Add(ILayer layer)
+    public event Func<ValueTask>? LayersUpdated;
+
+    public async ValueTask Add(ILayer layer, bool canReorder = true)
     {
-        var link = new LayerLink(layer);
+        var link = new LayerLink(layer, canReorder);
 
         if (_link is null)
         {
@@ -42,18 +46,43 @@ public class PictureManager :
         }
         else
         {
-            _link.AddNext(link);
+            if (_selectedLayerProvider.Layer is null)
+            {
+                _link.AddNext(link);
+            }
+            else
+            {
+                _link.AddAfter(link, _selectedLayerProvider.Layer);
+            }
         }
+
+        await OnLayersUpdated();
+        await OnPictureParametersUpdated();
     }
 
-    public void Promote(ILayer layer)
+    public async ValueTask Remove(ILayer layer)
+    {
+        if (_link is null)
+            return;
+
+        _link.Remove(layer);
+
+        await OnLayersUpdated();
+        await OnPictureParametersUpdated();
+    }
+
+    public async ValueTask Promote(ILayer layer)
     {
         _link = _link?.Promote(layer);
+        await OnLayersUpdated();
+        await OnPictureParametersUpdated();
     }
 
-    public void Demote(ILayer layer)
+    public async ValueTask Demote(ILayer layer)
     {
         _link = _link?.Demote(layer);
+        await OnLayersUpdated();
+        await OnPictureParametersUpdated();
     }
 
     public ValueTask UpdateAsync(PictureData data)
@@ -84,9 +113,9 @@ public class PictureManager :
         if (_picture is null)
             return;
 
-        IPicture? picture = await ComposePicture();
+        var picture = await ComposePicture();
 
-        foreach (IPictureUpdateObserver? observer in _observers)
+        foreach (var observer in _observers)
         {
             await observer.OnPictureUpdated(picture);
         }
@@ -97,7 +126,7 @@ public class PictureManager :
         if (_picture is null)
             throw BitmapImageProxyException.NoImageLoaded();
 
-        IPicture? picture = _picture.GetBufferPicture();
+        var picture = _picture.GetBufferPicture();
 
         return _link?.ModifyAsync(picture) ?? ValueTask.FromResult(picture);
     }
@@ -107,4 +136,7 @@ public class PictureManager :
 
     public void Unsubscribe(IPictureUpdateObserver observer)
         => _observers.Remove(observer);
+
+    protected virtual ValueTask OnLayersUpdated()
+        => LayersUpdated?.Invoke() ?? ValueTask.CompletedTask;
 }

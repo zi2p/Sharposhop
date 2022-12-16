@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.ReactiveUI;
@@ -9,6 +11,7 @@ using ReactiveUI;
 using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.AvaloniaUI.ViewModels;
 using Sharposhop.Core.ColorSchemes.Converters;
+using Sharposhop.Core.LayerManagement;
 using Sharposhop.Core.Saving;
 
 namespace Sharposhop.AvaloniaUI.Views;
@@ -18,7 +21,11 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     // ReSharper disable once UnusedMember.Global
     public MainWindow() { }
 
-    public MainWindow(SchemeContext schemeContext, MainWindowViewModel viewModel)
+    public MainWindow(
+        SchemeContext schemeContext,
+        MainWindowViewModel viewModel,
+        ILayerManager layerManager,
+        ISelectedLayerManager selectedLayerManager)
     {
         InitializeComponent();
 
@@ -56,6 +63,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         {
             new MenuItemViewModel("_File")
             {
+                Padding = new Thickness(15),
                 Items =
                 {
                     new MenuItemViewModel("_Open..")
@@ -100,6 +108,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             },
             new MenuItemViewModel("_Scheme")
             {
+                Padding = new Thickness(15),
                 Items =
                 {
                     ToItem(rgb),
@@ -112,6 +121,26 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 },
             },
         };
+
+        ViewModelBase[] providerItems = viewModel.LayerProviders.Select(provider =>
+        {
+            return (ViewModelBase)new MenuItemViewModel($"_{provider.DisplayName}")
+            {
+                Command = provider.Create(layerManager),
+            };
+        }).ToArray();
+
+        AddLayerMenu.Items = new[]
+        {
+            new MenuItemViewModel("_+")
+            {
+                Items = providerItems,
+                Padding = new Thickness(5),
+                Margin = new Thickness(2),
+            },
+        };
+
+        LayersControl.Content = new FilterViewModel(layerManager, selectedLayerManager);
     }
 
     private MenuItemViewModel ToItem(SchemeSelectorComponent component)
@@ -153,7 +182,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
     private async void Assign(object? sender, RoutedEventArgs routedEventArgs)
         => await (ViewModel?.AssignGammaAsync() ?? Task.CompletedTask);
-    
+
     private async void ConvertTo(object? sender, RoutedEventArgs routedEventArgs)
-        => await (ViewModel?.ConvertToGammaAsync() ?? Task.CompletedTask);  
+        => await (ViewModel?.ConvertToGammaAsync() ?? Task.CompletedTask);
 }

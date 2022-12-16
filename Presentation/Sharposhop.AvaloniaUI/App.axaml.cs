@@ -5,7 +5,9 @@ using Avalonia.Markup.Xaml;
 using FluentScanning;
 using FluentScanning.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using Sharposhop.AvaloniaUI.FilterProvider;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sharposhop.AvaloniaUI.Converters;
+using Sharposhop.AvaloniaUI.LayerProvider;
 using Sharposhop.AvaloniaUI.Models;
 using Sharposhop.AvaloniaUI.Tools;
 using Sharposhop.AvaloniaUI.ViewModels;
@@ -19,7 +21,6 @@ using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.GammaConfiguration;
 using Sharposhop.Core.LayerManagement;
 using Sharposhop.Core.Layers;
-using Sharposhop.Core.Layers.Filtering.Filters;
 using Sharposhop.Core.Loading;
 using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
@@ -56,27 +57,37 @@ public partial class App : Application
 
         var appState = new AppState();
 
-        var manager = new PictureManager(enumerationStrategy);
+        var selectedLayerManager = new SelectedLayerManager();
+
+        var manager = new PictureManager(enumerationStrategy, selectedLayerManager);
 
         var schemeManager = new SchemeConverterManager(new PassthroughSchemeConverter(), manager);
         var schemeLayer = new SchemeConverterLayer(schemeManager);
-        manager.Add(schemeLayer);
+        manager.Add(schemeLayer, false).GetAwaiter().GetResult();
 
         var channelManager = new ChannelFilterManager(new PassthroughChannelFilter(), manager);
         var channelLayer = new ChannelFilterLayer(channelManager);
-        manager.Add(channelLayer);
+        manager.Add(channelLayer, false).GetAwaiter().GetResult();
 
         var gammaManager = new GammaManager(manager, Gamma.DefaultGamma);
         var gammaSettings = new GammaSettings(gammaManager);
         var gammaLayer = new GammaFilterLayer(gammaManager, appState);
-        manager.Add(gammaLayer);
+        manager.Add(gammaLayer, false).GetAwaiter().GetResult();
+
+        collection.AddSingleton<ISelectedLayerProvider>(selectedLayerManager);
+        collection.AddSingleton<ISelectedLayerManager>(selectedLayerManager);
 
         collection.AddSingleton(appState);
         collection.AddSingleton<IAppStateProvider>(x => x.GetRequiredService<AppState>());
         collection.AddSingleton<IAppStateManager>(x => x.GetRequiredService<AppState>());
 
         collection.AddSingleton(manager);
-        collection.AddSingleton<ILayerManager>(x => x.GetRequiredService<PictureManager>());
+        collection.AddSingleton<ILayerManager>(x => new LayerManagerSafeExecutionProxy
+        (
+            x.GetRequiredService<PictureManager>(),
+            x.GetRequiredService<MainWindowViewModel>()
+        ));
+
         collection.AddSingleton<IPictureParametersUpdateObserver>(x => x.GetRequiredService<PictureManager>());
         collection.AddSingleton<IPictureUpdatePublisher>(x => x.GetRequiredService<PictureManager>());
         collection.AddSingleton<IPictureUpdater>(x => x.GetRequiredService<PictureManager>());
@@ -95,6 +106,14 @@ public partial class App : Application
         collection.AddSingleton(gammaSettings);
         collection.AddSingleton<IGammaProvider>(x => x.GetRequiredService<GammaManager>());
         collection.AddSingleton<IGammaUpdater>(x => x.GetRequiredService<GammaManager>());
+
+        collection.TryAddEnumerable(ServiceDescriptor.Singleton<ILayerProvider, BoxBlurLayerProvider>());
+        collection.TryAddEnumerable(ServiceDescriptor.Singleton<ILayerProvider, CASLayerProvider>());
+        collection.TryAddEnumerable(ServiceDescriptor.Singleton<ILayerProvider, GaussianLayerProvider>());
+        collection.TryAddEnumerable(ServiceDescriptor.Singleton<ILayerProvider, MedianLayerProvider>());
+        collection.TryAddEnumerable(ServiceDescriptor.Singleton<ILayerProvider, OtsuLayerProvider>());
+        collection.TryAddEnumerable(ServiceDescriptor.Singleton<ILayerProvider, SobelLayerProvider>());
+        collection.TryAddEnumerable(ServiceDescriptor.Singleton<ILayerProvider, ThresholdLayerProvider>());
 
         collection.AddSingleton<SchemeContext>();
 
@@ -124,10 +143,12 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var schemeContext = _provider.GetRequiredService<SchemeContext>();
             var viewModel = _provider.GetRequiredService<MainWindowViewModel>();
-            var context = _provider.GetRequiredService<SchemeContext>();
+            var layerManager = _provider.GetRequiredService<ILayerManager>();
+            var selectedLayerManager = _provider.GetRequiredService<ISelectedLayerManager>();
 
-            var window = new MainWindow(context, viewModel);
+            var window = new MainWindow(schemeContext, viewModel, layerManager, selectedLayerManager);
 
             desktop.MainWindow = window;
         }

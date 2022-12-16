@@ -15,7 +15,7 @@ public class GammaValueConverter : IValueConverter
         return model.Value;
     }
 
-    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)  
     {
         if (value is not double d)
             throw new NotSupportedException("Value must be of type double");

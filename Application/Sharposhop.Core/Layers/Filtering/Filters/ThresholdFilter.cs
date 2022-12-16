@@ -5,11 +5,17 @@ namespace Sharposhop.Core.Layers.Filtering.Filters;
 
 public class ThresholdFilter : ILayer
 {
-    private readonly Fraction _gamma;
+    private Fraction _gamma;
 
     public ThresholdFilter(Fraction gamma)
     {
-        _gamma = gamma;
+        Gamma = gamma;
+    }
+
+    public Fraction Gamma
+    {
+        get => _gamma;
+        set => _gamma = value;
     }
 
     public ValueTask<IPicture> ModifyAsync(IPicture picture)
@@ -20,9 +26,9 @@ public class ThresholdFilter : ILayer
         {
             ColorTriplet triplet = span[i];
 
-            float first = triplet.First > _gamma ? 1 : 0;
-            float second = triplet.Second > _gamma ? 1 : 0;
-            float third = triplet.Third > _gamma ? 1 : 0;
+            float first = triplet.First > Gamma ? 1 : 0;
+            float second = triplet.Second > Gamma ? 1 : 0;
+            float third = triplet.Third > Gamma ? 1 : 0;
 
             span[i] = new ColorTriplet(first, second, third);
         }
