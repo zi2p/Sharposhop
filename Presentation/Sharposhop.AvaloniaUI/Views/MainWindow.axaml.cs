@@ -120,6 +120,20 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     ToItem(cmy),
                 },
             },
+            new MenuItemViewModel("_Histogram")
+            {
+                Padding = new Thickness(15),
+                Command = ReactiveCommand.CreateFromTask(() =>
+                {
+                    var window = new HistogramWindow
+                    {
+                        ViewModel = new HistogramViewModel(viewModel),
+                    };
+
+                    Dispatcher.UIThread.Post(window.Show);
+                    return Task.CompletedTask;
+                }),
+            },
         };
 
         ViewModelBase[] providerItems = viewModel.LayerProviders.Select(provider =>

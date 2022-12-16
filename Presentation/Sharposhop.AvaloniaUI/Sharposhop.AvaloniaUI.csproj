@@ -44,4 +44,10 @@
       <UpToDateCheckInput Remove="Controls\NumericInputControl.axaml" />
       <UpToDateCheckInput Remove="Controls\NumericInputControl.axaml" />
     </ItemGroup>
+    <ItemGroup>
+      <Compile Update="Views\HistogramWindow.axaml.cs">
+        <DependentUpon>HistogramWindow.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
 </Project>
