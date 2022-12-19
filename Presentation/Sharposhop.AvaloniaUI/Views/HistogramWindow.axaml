@@ -7,10 +7,27 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Sharposhop.AvaloniaUI.Views.HistogramWindow"
         Title="HistogramWindow"
-        Height="500"
-        Width="600"
+        Height="800"
+        Width="800"
+        CanResize="False"
         Opened="OnLoad">
-    <Grid ColumnDefinitions="*" RowDefinitions="*">
-        <ScottPlot:AvaPlot Name="Histogram"/>
+    <Grid ColumnDefinitions="150, *, *" RowDefinitions="*, *, *, 50" Name="Grid">
+        <ScottPlot:AvaPlot Grid.Row="0" Grid.ColumnSpan="3" Name="HistogramRed"/>
+        <ScottPlot:AvaPlot Grid.Row="1" Grid.ColumnSpan="3" Name="HistogramGreen"/>
+        <ScottPlot:AvaPlot Grid.Row="2" Grid.ColumnSpan="3" Name="HistogramBlue"/>
+        <Button Grid.Row="3" Grid.Column="0" Click="Button_OnClick" Margin="30, 5, 0, 5">
+            Auto-correct
+        </Button>
+        <TextBlock Grid.Column="1" Grid.Row="3" Classes="label" Margin="30, 5, 0, 5" TextAlignment="Right">
+            Ignore fraction:
+        </TextBlock>
+        <NumericUpDown Grid.Row="3" Grid.Column="2" Classes="field" Margin="0, 5, 0, 5"
+                       Padding="2"
+                       Width="250"
+                       Minimum="0"
+                       Maximum="0.5"
+                       Increment="0.01"
+                       CultureInfo="{Binding CultureInfo}"
+                       Value="{Binding Ignore}"/>
     </Grid>
 </Window>

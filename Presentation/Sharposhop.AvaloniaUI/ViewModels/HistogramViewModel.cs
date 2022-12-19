@@ -23,12 +23,12 @@ public class HistogramViewModel : ViewModelBase
         {
             return new[]
             {
-                new ColorHistogram(picture, ComponentType.Red, _mainWindowViewModel.Normalizer),
-                new ColorHistogram(picture, ComponentType.Green, _mainWindowViewModel.Normalizer),
-                new ColorHistogram(picture, ComponentType.Blue, _mainWindowViewModel.Normalizer)
+                new ColorHistogram(picture, ComponentType.Red),
+                new ColorHistogram(picture, ComponentType.Green),
+                new ColorHistogram(picture, ComponentType.Blue)
             };
         }
 
-        return new[] { new ColorHistogram(picture, ComponentType.Red, _mainWindowViewModel.Normalizer) };
+        return new[] { new ColorHistogram(picture, ComponentType.Red) };
     }
 }

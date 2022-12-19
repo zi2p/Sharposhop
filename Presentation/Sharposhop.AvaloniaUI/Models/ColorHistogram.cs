@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sharposhop.Core.Model;
 using Sharposhop.Core.Normalization;
 using Sharposhop.Core.Pictures;
 
@@ -10,7 +11,7 @@ public class ColorHistogram
 {
     private readonly Dictionary<int, int> _colors;
 
-    public ColorHistogram(IPicture picture, ComponentType type, INormalizer normalizer)
+    public ColorHistogram(IPicture picture, ComponentType type)
     {
         var data = picture.AsSpan();
         _colors = new Dictionary<int, int>();
@@ -18,14 +19,20 @@ public class ColorHistogram
         {
             var color = type switch
             {
-                ComponentType.Red => normalizer.DeNormalize(colorTriplet.First),
-                ComponentType.Green => normalizer.DeNormalize(colorTriplet.Second),
-                ComponentType.Blue => normalizer.DeNormalize(colorTriplet.Third),
+                ComponentType.Red => DeNormalize(colorTriplet.First),
+                ComponentType.Green => DeNormalize(colorTriplet.Second),
+                ComponentType.Blue => DeNormalize(colorTriplet.Third),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Incorrect type of component")
             };
 
             this[color]++;
         }
+    }
+
+    private int DeNormalize(Fraction color)
+    {
+        var value = color * 255;
+        return (int)Math.Round(value, 0);
     }
 
     public int this[int key]
