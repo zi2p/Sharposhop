@@ -32,6 +32,14 @@ public sealed class BufferPicture : IPicture, IDisposable
     public Span<ColorTriplet> AsSpan()
         => _layer.AsSpan(0, Size.PixelCount);
 
+    public void CopyFrom(Span<ColorTriplet> span)
+    {
+        if (_layer.Length < span.Length)
+            throw new ArgumentException("The span is too large for the buffer.");
+
+        span.CopyTo(_layer);
+    }
+
     public void Reload()
         => _picture.AsSpan().CopyTo(_layer.AsSpan(0, Size.PixelCount));
 

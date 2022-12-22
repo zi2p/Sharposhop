@@ -35,6 +35,14 @@ public class Picture : IUpdatePicture
     public Span<ColorTriplet> AsSpan()
         => _layer.AsSpan(0, Size.PixelCount);
 
+    public void CopyFrom(Span<ColorTriplet> span)
+    {
+        if (span.Length != Size.PixelCount)
+            throw new ArgumentException("Span length must match picture size", nameof(span));
+
+        span.CopyTo(_layer);
+    }
+
     public void UpdateGamma(Gamma value)
     {
         Gamma = value;

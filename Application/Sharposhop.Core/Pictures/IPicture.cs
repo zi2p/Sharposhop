@@ -11,4 +11,6 @@ public interface IPicture
     ColorTriplet this[PlaneCoordinate coordinate] { get; set; }
 
     Span<ColorTriplet> AsSpan();
+
+    void CopyFrom(Span<ColorTriplet> span);
 }
