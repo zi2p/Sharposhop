@@ -28,4 +28,7 @@ public class GammaPictureProxy : IPicture
     {
         return _picture.AsSpan();
     }
+
+    public void CopyFrom(Span<ColorTriplet> span)
+        => _picture.CopyFrom(span);
 }
