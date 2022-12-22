@@ -127,7 +127,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 {
                     var window = new HistogramWindow
                     {
-                        ViewModel = new HistogramViewModel(viewModel),
+                        ViewModel = new HistogramViewModel(viewModel, layerManager),
                     };
 
                     Dispatcher.UIThread.Post(window.Show);

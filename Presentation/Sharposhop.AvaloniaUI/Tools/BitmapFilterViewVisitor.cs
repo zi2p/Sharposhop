@@ -65,4 +65,6 @@ public class BitmapFilterViewVisitor : ILayerVisitor
         var vm = new ContrastAdaptiveSharpeningLayerViewModel(layer, _layerManager);
         Contents.Add(vm);
     }
+
+    public void Visit(AutoCorrectionLayer layer) { }
 }

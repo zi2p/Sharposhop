@@ -24,11 +24,17 @@ public partial class HistogramWindow : ReactiveWindow<HistogramViewModel>
     public AvaPlot HistogramPlotRed => this.Find<AvaPlot>("HistogramRed");
     public AvaPlot HistogramPlotGreen => this.Find<AvaPlot>("HistogramGreen");
     public AvaPlot HistogramPlotBlue => this.Find<AvaPlot>("HistogramBlue");
+    public Button EnableButton => this.Find<Button>("ButtonEnable");
+    public Button DisableButton => this.Find<Button>("ButtonDisable");
 
 
     private async void OnLoad(object? sender, EventArgs e)
     {
         await GenerateNewHists();
+        if (ViewModel!.Layer is not null)
+            ToggleButtonsNonAddable();
+        else
+            ToggleButtonsAddable();
     }
 
     private async Task GenerateNewHists()
@@ -80,5 +86,18 @@ public partial class HistogramWindow : ReactiveWindow<HistogramViewModel>
     {
         await (ViewModel?.RemoveAutoCorrection() ?? ValueTask.CompletedTask);
         await GenerateNewHists();
+        ToggleButtonsAddable();
+    }
+
+    private void ToggleButtonsAddable()
+    {
+        EnableButton.IsEnabled = true;
+        DisableButton.IsEnabled = false;
+    }
+    
+    private void ToggleButtonsNonAddable()
+    {
+        EnableButton.IsEnabled = false;
+        DisableButton.IsEnabled = true;
     }
 }

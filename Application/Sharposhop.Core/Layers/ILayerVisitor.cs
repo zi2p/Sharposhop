@@ -17,4 +17,5 @@ public interface ILayerVisitor
 
     void Visit(SchemeConverterLayer layer);
     void Visit(ContrastAdaptiveSharpening layer);
+    void Visit(AutoCorrectionLayer layer);
 }

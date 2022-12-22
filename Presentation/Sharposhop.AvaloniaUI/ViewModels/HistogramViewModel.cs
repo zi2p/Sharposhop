@@ -2,24 +2,30 @@
 using System.Threading.Tasks;
 using ReactiveUI;
 using Sharposhop.AvaloniaUI.Models;
+using Sharposhop.Core.LayerManagement;
+using Sharposhop.Core.Layers;
 
 namespace Sharposhop.AvaloniaUI.ViewModels;
 
 public class HistogramViewModel : ViewModelBase
 {
     private readonly MainWindowViewModel _mainWindowViewModel;
-    private float _ignore;
+    private readonly ILayerManager _layerManager;
+    private decimal _ignore;
 
 #pragma warning disable CS8618
     public HistogramViewModel() { }
 #pragma warning restore CS8618
 
-    public HistogramViewModel(MainWindowViewModel mainWindowViewModel)
+    public HistogramViewModel(
+        MainWindowViewModel mainWindowViewModel,
+        ILayerManager layerManager)
     {
         _mainWindowViewModel = mainWindowViewModel;
+        _layerManager = layerManager;
     }
 
-    public float Ignore
+    public decimal Ignore
     {
         get => _ignore;
         set
@@ -30,6 +36,7 @@ public class HistogramViewModel : ViewModelBase
     }
 
     public static CultureInfo CultureInfo => CultureInfo.InvariantCulture;
+    public AutoCorrectionLayer? Layer { get; private set; }
 
     public async Task<ColorHistogram[]> GenerateHistograms()
     {
@@ -49,11 +56,24 @@ public class HistogramViewModel : ViewModelBase
 
     public ValueTask AddAutoCorrection()
     {
-        return ValueTask.CompletedTask;
+        if (Layer is not null)
+            RemoveAutoCorrection();
+
+        var (min, max) = GetMinMaxValues();
+        Layer = new AutoCorrectionLayer(min, max);
+        return _layerManager.Add(Layer, false);
     }
 
     public ValueTask RemoveAutoCorrection()
     {
+        if (Layer is null) return ValueTask.CompletedTask;
+        _layerManager.Remove(Layer);
+        Layer = null;
         return ValueTask.CompletedTask;
+    }
+
+    private (int min, int max) GetMinMaxValues()
+    {
+        throw new System.NotImplementedException();
     }
 }
