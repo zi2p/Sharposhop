@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
-using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -24,11 +24,14 @@ public partial class HistogramWindow : ReactiveWindow<HistogramViewModel>
     public AvaPlot HistogramPlotRed => this.Find<AvaPlot>("HistogramRed");
     public AvaPlot HistogramPlotGreen => this.Find<AvaPlot>("HistogramGreen");
     public AvaPlot HistogramPlotBlue => this.Find<AvaPlot>("HistogramBlue");
-    public static CultureInfo Culture => CultureInfo.InvariantCulture;
-    public float Ignore { get; set; }
 
 
     private async void OnLoad(object? sender, EventArgs e)
+    {
+        await GenerateNewHists();
+    }
+
+    private async Task GenerateNewHists()
     {
         var hists = await ViewModel!.GenerateHistograms();
         if (hists.Length == 3)
@@ -67,8 +70,15 @@ public partial class HistogramWindow : ReactiveWindow<HistogramViewModel>
         AvaloniaXamlLoader.Load(this);
     }
 
-    private void Button_OnClick(object? sender, RoutedEventArgs e)
+    private async void ButtonCorrect_OnClick(object? sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        Close();
+        await (ViewModel?.AddAutoCorrection() ?? ValueTask.CompletedTask);
+    }
+
+    private async void ButtonDisable_OnClick(object? sender, RoutedEventArgs e)
+    {
+        await (ViewModel?.RemoveAutoCorrection() ?? ValueTask.CompletedTask);
+        await GenerateNewHists();
     }
 }

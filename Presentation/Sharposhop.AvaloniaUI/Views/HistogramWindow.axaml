@@ -3,7 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
-        xmlns:viewModels="clr-namespace:Sharposhop.AvaloniaUI.ViewModels"
+        xmlns:vm="using:Sharposhop.AvaloniaUI.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Sharposhop.AvaloniaUI.Views.HistogramWindow"
         Title="HistogramWindow"
@@ -11,17 +11,24 @@
         Width="800"
         CanResize="False"
         Opened="OnLoad">
-    <Grid ColumnDefinitions="150, *, *" RowDefinitions="*, *, *, 50" Name="Grid">
-        <ScottPlot:AvaPlot Grid.Row="0" Grid.ColumnSpan="3" Name="HistogramRed"/>
-        <ScottPlot:AvaPlot Grid.Row="1" Grid.ColumnSpan="3" Name="HistogramGreen"/>
-        <ScottPlot:AvaPlot Grid.Row="2" Grid.ColumnSpan="3" Name="HistogramBlue"/>
-        <Button Grid.Row="3" Grid.Column="0" Click="Button_OnClick" Margin="30, 5, 0, 5">
+    <Design.DataContext>
+        <vm:HistogramViewModel />
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="150, 150, *, *" RowDefinitions="*, *, *, 50" Name="Grid">
+        <ScottPlot:AvaPlot Grid.Row="0" Grid.ColumnSpan="4" Name="HistogramRed"/>
+        <ScottPlot:AvaPlot Grid.Row="1" Grid.ColumnSpan="4" Name="HistogramGreen"/>
+        <ScottPlot:AvaPlot Grid.Row="2" Grid.ColumnSpan="4" Name="HistogramBlue"/>
+        <Button Grid.Row="3" Grid.Column="0" Click="ButtonCorrect_OnClick" Margin="30, 5, 0, 5">
             Auto-correct
         </Button>
-        <TextBlock Grid.Column="1" Grid.Row="3" Classes="label" Margin="30, 5, 0, 5" TextAlignment="Right">
+        <Button Grid.Row="3" Grid.Column="1" Click="ButtonDisable_OnClick" Margin="0, 5, 0, 5">
+            Remove correction
+        </Button>
+        <TextBlock Grid.Column="2" Grid.Row="3" Classes="label" Margin="30, 5, 0, 5" TextAlignment="Right">
             Ignore fraction:
         </TextBlock>
-        <NumericUpDown Grid.Row="3" Grid.Column="2" Classes="field" Margin="0, 5, 0, 5"
+        <NumericUpDown Grid.Row="3" Grid.Column="3" Classes="field" Margin="0, 5, 0, 5"
                        Padding="2"
                        Width="250"
                        Minimum="0"
