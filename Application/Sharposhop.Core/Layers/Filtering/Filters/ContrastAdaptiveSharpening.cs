@@ -38,6 +38,21 @@ public class ContrastAdaptiveSharpening : ILayer
     {
         Span<ColorTriplet> span = picture.AsSpan();
 
+        var first = CasBy(picture, coordinate, span, static x => x.First);
+        var second = CasBy(picture, coordinate, span, static x => x.Second);
+        var third = CasBy(picture, coordinate, span, static x => x.Third);
+
+        var index = _enumerationStrategy.AsContinuousIndex(coordinate, picture.Size);
+
+        destination.AsSpan()[index] = new ColorTriplet(first, second, third);
+    }
+
+    private Fraction CasBy(
+        IPicture picture,
+        PlaneCoordinate coordinate,
+        Span<ColorTriplet> span,
+        Func<ColorTriplet, float> selector)
+    {
         var aCoordinate = PlaneCoordinate.Padded(coordinate.X - 1, coordinate.Y - 1, picture.Size);
         var bCoordinate = PlaneCoordinate.Padded(coordinate.X, coordinate.Y - 1, picture.Size);
         var cCoordinate = PlaneCoordinate.Padded(coordinate.X + 1, coordinate.Y - 1, picture.Size);
@@ -58,15 +73,15 @@ public class ContrastAdaptiveSharpening : ILayer
         var hIndex = _enumerationStrategy.AsContinuousIndex(hCoordinate, picture.Size);
         var iIndex = _enumerationStrategy.AsContinuousIndex(iCoordinate, picture.Size);
 
-        var a = span[aIndex].Average;
-        var b = span[bIndex].Average;
-        var c = span[cIndex].Average;
-        var d = span[dIndex].Average;
-        var e = span[eIndex].Average;
-        var f = span[fIndex].Average;
-        var g = span[gIndex].Average;
-        var h = span[hIndex].Average;
-        var i = span[iIndex].Average;
+        var a = selector.Invoke(span[aIndex]);
+        var b = selector.Invoke(span[bIndex]);
+        var c = selector.Invoke(span[cIndex]);
+        var d = selector.Invoke(span[dIndex]);
+        var e = selector.Invoke(span[eIndex]);
+        var f = selector.Invoke(span[fIndex]);
+        var g = selector.Invoke(span[gIndex]);
+        var h = selector.Invoke(span[hIndex]);
+        var i = selector.Invoke(span[iIndex]);
 
         Span<float> cross = stackalloc float[]
         {
@@ -102,24 +117,20 @@ public class ContrastAdaptiveSharpening : ILayer
         minCross += minSides;
         maxCross += maxSides;
 
-        var amplification = Math.Clamp(Math.Min(minCross, 2f - maxCross) / maxCross, 0f, 1f);
+        Fraction amplification = Math.Min(minCross, 2f - maxCross) / maxCross;
         amplification = MathF.Sqrt(amplification);
 
-        float Mix(float x, float y, float w)
+        float Mix(float x, float y, Fraction w)
             => x * (1 - w) + y * w;
 
-        var peak = -Mix(8f, 5f, Math.Clamp(Sharpness, 0f, 1f));
-
+        var peak = -Mix(8f, 5f, Sharpness);
         var wL = amplification / peak;
-
         var weight = 1f + 4f * wL;
+
         var pixel = (b + d + f + h) * wL + e;
         pixel /= weight;
-        pixel = Math.Clamp(pixel, 0f, 1f);
 
-        var index = _enumerationStrategy.AsContinuousIndex(coordinate, picture.Size);
-
-        destination.AsSpan()[index] = new ColorTriplet(pixel, pixel, pixel);
+        return pixel;
     }
 
     public void Reset() { }
