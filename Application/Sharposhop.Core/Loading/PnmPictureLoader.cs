@@ -72,7 +72,7 @@ public class PnmPictureLoader : IPictureLoader
     {
         const int size = 1;
 
-        ColorTriplet[] array = ArrayPool<ColorTriplet>.Shared.Rent(width * height);
+        DisposableArray<ColorTriplet> array = DisposableArray<ColorTriplet>.OfSize(width * height);
         var buffer = ArrayPool<byte>.Shared.Rent(size);
         var pictureSize = new PictureSize(width, height);
 
@@ -88,7 +88,7 @@ public class PnmPictureLoader : IPictureLoader
             Fraction normalized = _normalizer.Normalize(buffer[0]);
             var triplet = new ColorTriplet(normalized, normalized, normalized);
 
-            array[index] = _schemeConverterProvider.Converter.Revert(triplet);
+            array.AsSpan()[index] = _schemeConverterProvider.Converter.Revert(triplet);
         }
 
         ArrayPool<byte>.Shared.Return(buffer);
@@ -100,11 +100,11 @@ public class PnmPictureLoader : IPictureLoader
     {
         const int size = 3;
 
-        ColorTriplet[] array = ArrayPool<ColorTriplet>.Shared.Rent(width * height);
+        DisposableArray<ColorTriplet> array = DisposableArray<ColorTriplet>.OfSize(width * height);
         var buffer = ArrayPool<byte>.Shared.Rent(size);
         var pictureSize = new PictureSize(width, height);
 
-        foreach (PlaneCoordinate coordinate in _enumerationStrategy.Enumerate(pictureSize))
+        foreach (var coordinate in _enumerationStrategy.Enumerate(pictureSize))
         {
             var index = _enumerationStrategy.AsContinuousIndex(coordinate, pictureSize);
 
@@ -113,12 +113,12 @@ public class PnmPictureLoader : IPictureLoader
             if (count is not size)
                 throw LoadingException.UnexpectedStreamEnd();
 
-            Fraction first = _normalizer.Normalize(buffer[0]);
-            Fraction second = _normalizer.Normalize(buffer[1]);
-            Fraction third = _normalizer.Normalize(buffer[2]);
+            var first = _normalizer.Normalize(buffer[0]);
+            var second = _normalizer.Normalize(buffer[1]);
+            var third = _normalizer.Normalize(buffer[2]);
             var triplet = new ColorTriplet(first, second, third);
 
-            array[index] = _schemeConverterProvider.Converter.Revert(triplet);
+            array.AsSpan()[index] = _schemeConverterProvider.Converter.Revert(triplet);
         }
 
         ArrayPool<byte>.Shared.Return(buffer);

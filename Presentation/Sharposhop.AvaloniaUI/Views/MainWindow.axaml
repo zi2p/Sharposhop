@@ -54,7 +54,8 @@
                 <Image Source="{Binding ImageViewModel.Bitmap}"
                        Stretch="Uniform"
                        StretchDirection="DownOnly"
-                       Margin="15" />
+                       Margin="15"
+                       RenderOptions.BitmapInterpolationMode="Default" />
             </Panel>
 
             <SplitView.Pane>

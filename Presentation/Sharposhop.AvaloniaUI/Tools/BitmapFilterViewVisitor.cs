@@ -3,6 +3,7 @@ using Sharposhop.AvaloniaUI.ViewModels.Layers;
 using Sharposhop.Core.LayerManagement;
 using Sharposhop.Core.Layers;
 using Sharposhop.Core.Layers.Filtering.Filters;
+using Sharposhop.Core.Layers.Scaling;
 
 namespace Sharposhop.AvaloniaUI.Tools;
 
@@ -63,6 +64,36 @@ public class BitmapFilterViewVisitor : ILayerVisitor
     public void Visit(ContrastAdaptiveSharpening layer)
     {
         var vm = new ContrastAdaptiveSharpeningLayerViewModel(layer, _layerManager);
+        Contents.Add(vm);
+    }
+
+    public void Visit(ShiftLayer layer)
+    {
+        var vm = new ShiftLayerViewModel(layer, _layerManager);
+        Contents.Add(vm);
+    }
+
+    public void Visit(CropLayer layer)
+    {
+        var vm = new CropLayerViewModel(_layerManager, layer);
+        Contents.Add(vm);
+    }
+
+    public void Visit(NearestNeighbourScalingLayer layer)
+    {
+        var vm = new ScaleLayerViewModel(_layerManager, layer, "Nearest Neighbour");
+        Contents.Add(vm);
+    }
+
+    public void Visit(BilinearScalingLayer layer)
+    {
+        var vm = new ScaleLayerViewModel(_layerManager, layer, "Bilinear");
+        Contents.Add(vm);
+    }
+
+    public void Visit(Lanczos3ScalingLayer layer)
+    {
+        var vm = new ScaleLayerViewModel(_layerManager, layer, "Lanczos 3");
         Contents.Add(vm);
     }
 

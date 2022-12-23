@@ -90,7 +90,7 @@ public class PictureManager :
         _picture?.Dispose();
         _link?.Reset();
 
-        _picture = new BufferedPicture(data.Size, data.Scheme, data.Gamma, _enumerationStrategy, data.Data);
+        _picture = new BufferedPicture(data.Size, data.Scheme, data.Gamma, data.Data);
 
         return OnPictureParametersUpdated();
     }

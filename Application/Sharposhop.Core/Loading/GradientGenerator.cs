@@ -47,10 +47,10 @@ public class GradientGenerator : IPictureLoader
 
     private PictureData Generate(int width, int height, ColorTriplet targetColor)
     {
-        ColorTriplet[] array = ArrayPool<ColorTriplet>.Shared.Rent(width * height);
+        DisposableArray<ColorTriplet> array = DisposableArray<ColorTriplet>.OfSize(width * height);
         var size = new PictureSize(width, height);
 
-        foreach (PlaneCoordinate coordinate in _enumerationStrategy.Enumerate(size))
+        foreach (var coordinate in _enumerationStrategy.Enumerate(size))
         {
             var index = _enumerationStrategy.AsContinuousIndex(coordinate, size);
             var percent = coordinate.X / (float)width;
@@ -60,7 +60,7 @@ public class GradientGenerator : IPictureLoader
             var third = percent * targetColor.Third;
             var triplet = new ColorTriplet(first, second, third);
 
-            array[index] = triplet;
+            array.AsSpan()[index] = triplet;
         }
 
         return new PictureData(size, ColorScheme.Rgb, Gamma.DefaultGamma, array);

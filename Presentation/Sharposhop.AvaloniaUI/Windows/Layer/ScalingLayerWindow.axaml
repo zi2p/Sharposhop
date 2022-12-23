@@ -1,0 +1,58 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:layer="clr-namespace:Sharposhop.AvaloniaUI.ViewModels.Windows.Layer"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Sharposhop.AvaloniaUI.Windows.Layer.ScalingLayerWindow"
+        Title="ScalingLayerWindow">
+
+
+    <Design.DataContext>
+        <layer:CreateScaleLayerViewModel />
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" Margin="8">
+        <TextBlock Grid.ColumnSpan="2" FontSize="18" FontStyle="Oblique">
+            Box Blur
+        </TextBlock>
+        
+        
+        <TextBlock Grid.Column="0" Grid.Row="1" Classes="label">
+            Type
+        </TextBlock>
+        
+        <ComboBox Grid.Column="1" Grid.Row="1" Classes="field"
+                  Items="{Binding ScaleTypes}"
+                  SelectedItem="{Binding Type}"/>
+
+        <TextBlock Grid.Column="0" Grid.Row="2" Classes="label">
+            Size
+        </TextBlock>
+
+        <TextBlock Grid.Column="0" Grid.Row="3" Classes="label">
+            Width
+        </TextBlock>
+
+        <NumericUpDown Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="3" Classes="field"
+                       Minimum="0"
+                       Increment="1"
+                       Margin="8"
+                       Value="{Binding Width}" />
+
+        <TextBlock Grid.Column="0" Grid.Row="4" Classes="label">
+            Height
+        </TextBlock>
+
+        <NumericUpDown Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="3" Classes="field"
+                       Minimum="0"
+                       Increment="1"
+                       Margin="8"
+                       Value="{Binding Height}" />
+
+        <Button Grid.Row="5" Grid.Column="3" Click="Button_OnClick">
+            Submit
+        </Button>
+    </Grid>
+
+</Window>

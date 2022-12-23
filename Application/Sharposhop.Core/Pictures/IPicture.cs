@@ -2,13 +2,11 @@ using Sharposhop.Core.Model;
 
 namespace Sharposhop.Core.Pictures;
 
-public interface IPicture
+public interface IPicture : IDisposable
 {
     PictureSize Size { get; }
     ColorScheme Scheme { get; }
     Gamma Gamma { get; }
-
-    ColorTriplet this[PlaneCoordinate coordinate] { get; set; }
 
     Span<ColorTriplet> AsSpan();
 

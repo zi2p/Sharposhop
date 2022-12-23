@@ -1,19 +1,16 @@
 using System.Buffers;
-using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Model;
 
 namespace Sharposhop.Core.Pictures;
 
 public sealed class BufferPicture : IPicture, IDisposable
 {
-    private readonly IEnumerationStrategy _enumerationStrategy;
     private readonly IPicture _picture;
     private readonly ColorTriplet[] _layer;
 
-    public BufferPicture(IPicture picture, IEnumerationStrategy enumerationStrategy)
+    public BufferPicture(IPicture picture)
     {
         _picture = picture;
-        _enumerationStrategy = enumerationStrategy;
         _layer = ArrayPool<ColorTriplet>.Shared.Rent(picture.Size.PixelCount);
     }
 
@@ -22,12 +19,6 @@ public sealed class BufferPicture : IPicture, IDisposable
     public ColorScheme Scheme => _picture.Scheme;
 
     public Gamma Gamma => _picture.Gamma;
-
-    public ColorTriplet this[PlaneCoordinate coordinate]
-    {
-        get => _layer[_enumerationStrategy.AsContinuousIndex(coordinate, Size)];
-        set => _layer[_enumerationStrategy.AsContinuousIndex(coordinate, Size)] = value;
-    }
 
     public Span<ColorTriplet> AsSpan()
         => _layer.AsSpan(0, Size.PixelCount);
