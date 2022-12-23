@@ -36,39 +36,39 @@ public class BilinearScalingLayer : IScaleLayer
         foreach (var coordinate in _enumerationStrategy.Enumerate(Size))
         {
             var x = (int)(coordinate.X * widthRatio);
-                var y = (int)(coordinate.Y * heightRatio);
+            var y = (int)(coordinate.Y * heightRatio);
 
-                var xDiff = coordinate.X * widthRatio - x;
-                var yDiff = coordinate.Y * heightRatio - y;
+            var xDiff = coordinate.X * widthRatio - x;
+            var yDiff = coordinate.Y * heightRatio - y;
 
-                var topLeftCoordinate = PlaneCoordinate.Padded(x, y, picture.Size);
-                var topRightCoordinate = PlaneCoordinate.Padded(x + 1, y, picture.Size);
-                var bottomLeftCoordinate = PlaneCoordinate.Padded(x, y + 1, picture.Size);
-                var bottomRightCoordinate = PlaneCoordinate.Padded(x + 1, y + 1, picture.Size);
+            var topLeftCoordinate = PlaneCoordinate.Padded(x, y, picture.Size);
+            var topRightCoordinate = PlaneCoordinate.Padded(x + 1, y, picture.Size);
+            var bottomLeftCoordinate = PlaneCoordinate.Padded(x, y + 1, picture.Size);
+            var bottomRightCoordinate = PlaneCoordinate.Padded(x + 1, y + 1, picture.Size);
 
-                var topLeftIndex = _enumerationStrategy.AsContinuousIndex(topLeftCoordinate, picture.Size);
-                var topRightIndex = _enumerationStrategy.AsContinuousIndex(topRightCoordinate, picture.Size);
-                var bottomLeftIndex = _enumerationStrategy.AsContinuousIndex(bottomLeftCoordinate, picture.Size);
-                var bottomRightIndex = _enumerationStrategy.AsContinuousIndex(bottomRightCoordinate, picture.Size);
+            var topLeftIndex = _enumerationStrategy.AsContinuousIndex(topLeftCoordinate, picture.Size);
+            var topRightIndex = _enumerationStrategy.AsContinuousIndex(topRightCoordinate, picture.Size);
+            var bottomLeftIndex = _enumerationStrategy.AsContinuousIndex(bottomLeftCoordinate, picture.Size);
+            var bottomRightIndex = _enumerationStrategy.AsContinuousIndex(bottomRightCoordinate, picture.Size);
 
-                var topLeft = span[topLeftIndex];
-                var topRight = span[topRightIndex];
-                var bottomLeft = span[bottomLeftIndex];
-                var bottomRight = span[bottomRightIndex];
+            var topLeft = span[topLeftIndex];
+            var topRight = span[topRightIndex];
+            var bottomLeft = span[bottomLeftIndex];
+            var bottomRight = span[bottomRightIndex];
 
-                var first = topLeft.First * (1 - xDiff) * (1 - yDiff) + topRight.First * xDiff * (1 - yDiff) +
-                            bottomLeft.First * yDiff * (1 - xDiff) + bottomRight.First * xDiff * yDiff;
+            var first = topLeft.First * (1 - xDiff) * (1 - yDiff) + topRight.First * xDiff * (1 - yDiff) +
+                        bottomLeft.First * yDiff * (1 - xDiff) + bottomRight.First * xDiff * yDiff;
 
-                var second = topLeft.Second * (1 - xDiff) * (1 - yDiff) + topRight.Second * xDiff * (1 - yDiff) +
-                             bottomLeft.Second * yDiff * (1 - xDiff) + bottomRight.Second * xDiff * yDiff;
+            var second = topLeft.Second * (1 - xDiff) * (1 - yDiff) + topRight.Second * xDiff * (1 - yDiff) +
+                         bottomLeft.Second * yDiff * (1 - xDiff) + bottomRight.Second * xDiff * yDiff;
 
-                var third = topLeft.Third * (1 - xDiff) * (1 - yDiff) + topRight.Third * xDiff * (1 - yDiff) +
-                            bottomLeft.Third * yDiff * (1 - xDiff) + bottomRight.Third * xDiff * yDiff;
+            var third = topLeft.Third * (1 - xDiff) * (1 - yDiff) + topRight.Third * xDiff * (1 - yDiff) +
+                        bottomLeft.Third * yDiff * (1 - xDiff) + bottomRight.Third * xDiff * yDiff;
 
-                var triplet = new ColorTriplet((float)first, (float)second, (float)third);
-                var index = _enumerationStrategy.AsContinuousIndex(coordinate, Size);
+            var triplet = new ColorTriplet((float)first, (float)second, (float)third);
+            var index = _enumerationStrategy.AsContinuousIndex(coordinate, Size);
 
-                bufferSpan[index] = triplet;
+            bufferSpan[index] = triplet;
         }
 
         picture = new Picture(Size, picture.Scheme, picture.Gamma, _buffer);
