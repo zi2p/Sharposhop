@@ -54,9 +54,9 @@ public class Lanczos3ScalingLayer : IScaleLayer
 
                     var localTriplet = span[index];
 
-                    first += localTriplet.First * Lanczos(xDiff - k) * Lanczos(yDiff - l);
-                    second += localTriplet.Second * Lanczos(xDiff - k) * Lanczos(yDiff - l);
-                    third += localTriplet.Third * Lanczos(xDiff - k) * Lanczos(yDiff - l);
+                    first += localTriplet.First * Lanczos3(xDiff - k) * Lanczos3(yDiff - l);
+                    second += localTriplet.Second * Lanczos3(xDiff - k) * Lanczos3(yDiff - l);
+                    third += localTriplet.Third * Lanczos3(xDiff - k) * Lanczos3(yDiff - l);
                 }
             }
 
@@ -82,7 +82,7 @@ public class Lanczos3ScalingLayer : IScaleLayer
         visitor.Visit(this);
     }
 
-    private double Lanczos(double x)
+    private double Lanczos3(double x)
     {
         return x switch
         {
