@@ -32,43 +32,60 @@ public class SplineScalingLayer : IScaleLayer
             _buffer = DisposableArray<ColorTriplet>.OfSize(Size.PixelCount);
         }
 
-        var widthRatio = (float)(picture.Size.Width - 1) / Size.Width;
-        var heightRatio = (float)(picture.Size.Height - 1) / Size.Height;
-
-        Span<ColorTriplet> span = picture.AsSpan();
-        Span<ColorTriplet> bufferSpan = _buffer.AsSpan();
-
-        foreach (var coordinate in _enumerationStrategy.Enumerate(picture.Size))
+        foreach (var coordinate in _enumerationStrategy.Enumerate(Size))
         {
-            var x = (int)(coordinate.X * widthRatio);
-            var y = (int)(coordinate.Y * heightRatio);
+            var (x, y) = coordinate;
 
-            var xDiff = (coordinate.X * widthRatio) - x;
-            var yDiff = (coordinate.Y * heightRatio) - y;
+            var mappedX = (x + 0.5f) * picture.Size.Width / Size.Width - 0.5f;
+            var mappedY = (y + 0.5f) * picture.Size.Height / Size.Height - 0.5f;
 
-            double first = 0;
-            double second = 0;
-            double third = 0;
+            var intLeft = (int)Math.Floor(mappedX - 2);
+            var intRight = (int)Math.Ceiling(mappedX + 2);
+            var intTop = (int)Math.Floor(mappedY - 2);
+            var intBottom = (int)Math.Ceiling(mappedY + 2);
 
-            for (var k = -2; k <= 2; k++)
+            using DisposableArray<float> xWeights = DisposableArray<float>.OfSize(intRight - intLeft + 1);
+            using DisposableArray<float> yWeights = DisposableArray<float>.OfSize(intBottom - intTop + 1);
+
+            Span<float> xWeightSpan = xWeights.AsSpan();
+            Span<float> yWeightSpan = yWeights.AsSpan();
+
+            for (var i = intLeft; i <= intRight; i++)
             {
-                for (var l = -2; l <= 2; l++)
+                xWeightSpan[i - intLeft] = MNF(mappedX - i);
+            }
+
+            for (var i = intTop; i <= intBottom; i++)
+            {
+                yWeightSpan[i - intTop] = MNF(mappedY - i);
+            }
+
+            float weight = 0;
+
+            float accFirst = 0;
+            float accSecond = 0;
+            float accThird = 0;
+
+            for (var yy = intTop; yy <= intBottom; yy++)
+            {
+                for (var xx = intLeft; xx <= intRight; xx++)
                 {
-                    var localCoordinate = PlaneCoordinate.Padded(x + k, y + l, picture.Size);
-                    var index = _enumerationStrategy.AsContinuousIndex(localCoordinate, picture.Size);
+                    var curW = xWeightSpan[xx - intLeft] * yWeightSpan[yy - intTop];
 
-                    var localTriplet = span[index];
+                    var coord = PlaneCoordinate.Padded(xx, yy, picture.Size);
+                    var index = _enumerationStrategy.AsContinuousIndex(coord, picture.Size);
+                    var triplet = picture.AsSpan()[index];
 
-                    first += localTriplet.First * MNF(xDiff - k) * MNF(yDiff - l);
-                    second += localTriplet.Second * MNF(xDiff - k) * MNF(yDiff - l);
-                    third += localTriplet.Third * MNF(xDiff - k) * MNF(yDiff - l);
+                    accFirst += triplet.First * curW;
+                    accSecond += triplet.Second * curW;
+                    accThird += triplet.Third * curW;
+
+                    weight += curW;
                 }
             }
 
-            var triplet = new ColorTriplet((float)first, (float)second, (float)third);
-            var bufferIndex = _enumerationStrategy.AsContinuousIndex(coordinate, Size);
-
-            bufferSpan[bufferIndex] = triplet;
+            var indexAll = _enumerationStrategy.AsContinuousIndex(coordinate, Size);
+            _buffer.AsSpan()[indexAll] = new ColorTriplet(accFirst / weight, accSecond / weight, accThird / weight);
         }
 
         picture = new Picture(Size, picture.Scheme, picture.Gamma, _buffer);
