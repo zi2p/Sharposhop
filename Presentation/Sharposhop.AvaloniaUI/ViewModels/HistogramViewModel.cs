@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using ReactiveUI;
 using Sharposhop.AvaloniaUI.Models;
@@ -36,7 +38,7 @@ public class HistogramViewModel : ViewModelBase
     }
 
     public static CultureInfo CultureInfo => CultureInfo.InvariantCulture;
-    public AutoCorrectionLayer? Layer { get; private set; }
+    public static AutoCorrectionLayer? Layer { get; private set; }
 
     public async Task<ColorHistogram[]> GenerateHistograms()
     {
@@ -54,14 +56,14 @@ public class HistogramViewModel : ViewModelBase
         return new[] { new ColorHistogram(picture, ComponentType.Red) };
     }
 
-    public ValueTask AddAutoCorrection()
+    public async ValueTask AddAutoCorrection()
     {
         if (Layer is not null)
-            RemoveAutoCorrection();
+            await RemoveAutoCorrection();
 
-        var (min, max) = GetMinMaxValues();
+        var (min, max) = await GetMinMaxValues();
         Layer = new AutoCorrectionLayer(min, max);
-        return _layerManager.Add(Layer, false);
+        await _layerManager.Add(Layer, false);
     }
 
     public ValueTask RemoveAutoCorrection()
@@ -72,8 +74,21 @@ public class HistogramViewModel : ViewModelBase
         return ValueTask.CompletedTask;
     }
 
-    private (int min, int max) GetMinMaxValues()
+    private async Task<(int min, int max)> GetMinMaxValues()
     {
-        throw new System.NotImplementedException();
+        var hists = await GenerateHistograms();
+        var mins = new double[hists.Length];
+        var maxs = new double[hists.Length];
+
+        for (var i = 0; i < hists.Length; i++)
+        {
+            var (values, _) = hists[i].GetCounts();
+            Array.Sort(values);
+            var index = (int)Math.Floor(_ignore * values.Length);
+            mins[i] = values[index];
+            maxs[i] = values[^(index + 1)];
+        }
+
+        return ((int)mins.Min(), (int)maxs.Max());
     }
 }

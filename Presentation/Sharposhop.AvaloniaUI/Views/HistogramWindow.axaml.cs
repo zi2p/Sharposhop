@@ -31,7 +31,7 @@ public partial class HistogramWindow : ReactiveWindow<HistogramViewModel>
     private async void OnLoad(object? sender, EventArgs e)
     {
         await GenerateNewHists();
-        if (ViewModel!.Layer is not null)
+        if (HistogramViewModel.Layer is not null)
             ToggleButtonsNonAddable();
         else
             ToggleButtonsAddable();
@@ -59,6 +59,7 @@ public partial class HistogramWindow : ReactiveWindow<HistogramViewModel>
     private void PlotHistogram(ColorHistogram histogram, AvaPlot plot, Color color)
     {
         plot.IsVisible = true;
+        plot.Plot.Clear();
         var (values, max) = histogram.GetCounts();
         
         var (hist, binEdges) = Common.Histogram(values, 0, max, 1);
@@ -78,8 +79,9 @@ public partial class HistogramWindow : ReactiveWindow<HistogramViewModel>
 
     private async void ButtonCorrect_OnClick(object? sender, RoutedEventArgs e)
     {
-        Close();
         await (ViewModel?.AddAutoCorrection() ?? ValueTask.CompletedTask);
+        ToggleButtonsNonAddable();
+        await GenerateNewHists();
     }
 
     private async void ButtonDisable_OnClick(object? sender, RoutedEventArgs e)
@@ -87,6 +89,7 @@ public partial class HistogramWindow : ReactiveWindow<HistogramViewModel>
         await (ViewModel?.RemoveAutoCorrection() ?? ValueTask.CompletedTask);
         await GenerateNewHists();
         ToggleButtonsAddable();
+        await GenerateNewHists();
     }
 
     private void ToggleButtonsAddable()

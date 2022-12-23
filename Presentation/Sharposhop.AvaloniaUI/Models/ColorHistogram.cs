@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sharposhop.Core.Model;
-using Sharposhop.Core.Normalization;
 using Sharposhop.Core.Pictures;
+using Sharposhop.Core.Tools;
 
 namespace Sharposhop.AvaloniaUI.Models;
 
@@ -19,20 +18,14 @@ public class ColorHistogram
         {
             var color = type switch
             {
-                ComponentType.Red => DeNormalize(colorTriplet.First),
-                ComponentType.Green => DeNormalize(colorTriplet.Second),
-                ComponentType.Blue => DeNormalize(colorTriplet.Third),
+                ComponentType.Red => PreciseOperations.DeNormalize(colorTriplet.First),
+                ComponentType.Green => PreciseOperations.DeNormalize(colorTriplet.Second),
+                ComponentType.Blue => PreciseOperations.DeNormalize(colorTriplet.Third),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Incorrect type of component")
             };
 
             this[color]++;
         }
-    }
-
-    private int DeNormalize(Fraction color)
-    {
-        var value = color * 255;
-        return (int)Math.Round(value, 0);
     }
 
     public int this[int key]
