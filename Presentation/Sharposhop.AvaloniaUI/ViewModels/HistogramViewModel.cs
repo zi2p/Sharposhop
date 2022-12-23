@@ -85,7 +85,7 @@ public class HistogramViewModel : ViewModelBase
             var (values, _) = hists[i].GetCounts();
             Array.Sort(values);
             var index = (int)Math.Floor(_ignore * values.Length);
-            mins[i] = values[index];
+            mins[i] = values[index + 1];
             maxs[i] = values[^(index + 1)];
         }
 
