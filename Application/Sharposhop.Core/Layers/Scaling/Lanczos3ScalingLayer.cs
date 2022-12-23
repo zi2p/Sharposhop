@@ -38,8 +38,8 @@ public class Lanczos3ScalingLayer : IScaleLayer
             var x = (int)(coordinate.X * widthRatio);
             var y = (int)(coordinate.Y * heightRatio);
 
-            var xDiff = (coordinate.X * widthRatio) - x;
-            var yDiff = (coordinate.Y * heightRatio) - y;
+            var xDiff = coordinate.X * widthRatio - x;
+            var yDiff = coordinate.Y * heightRatio - y;
 
             double first = 0;
             double second = 0;
