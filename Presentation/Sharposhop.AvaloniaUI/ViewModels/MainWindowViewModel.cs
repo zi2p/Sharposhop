@@ -80,6 +80,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     public INormalizer Normalizer { get; }
     public IEnumerationStrategy EnumerationStrategy { get; }
+    public IPictureProvider PictureProvider => _pictureProvider;
 
     public ImageViewModel ImageViewModel { get; }
 

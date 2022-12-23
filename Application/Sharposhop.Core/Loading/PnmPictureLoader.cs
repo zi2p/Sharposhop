@@ -93,7 +93,6 @@ public class PnmPictureLoader : IPictureLoader
 
         ArrayPool<byte>.Shared.Return(buffer);
 
-        // TODO: Proper gamma value
         return new PictureData(pictureSize, ColorScheme.Rgb, Gamma.DefaultGamma, array, false);
     }
 
@@ -124,7 +123,6 @@ public class PnmPictureLoader : IPictureLoader
 
         ArrayPool<byte>.Shared.Return(buffer);
 
-        // TODO: Proper gamma value
         return new PictureData(pictureSize, ColorScheme.Rgb, Gamma.DefaultGamma, array);
     }
 

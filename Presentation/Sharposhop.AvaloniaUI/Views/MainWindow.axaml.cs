@@ -120,6 +120,20 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     ToItem(cmy),
                 },
             },
+            new MenuItemViewModel("_Histogram")
+            {
+                Padding = new Thickness(15),
+                Command = ReactiveCommand.CreateFromTask(() =>
+                {
+                    var window = new HistogramWindow
+                    {
+                        ViewModel = new HistogramViewModel(viewModel, layerManager),
+                    };
+
+                    Dispatcher.UIThread.Post(window.Show);
+                    return Task.CompletedTask;
+                }),
+            },
         };
 
         ViewModelBase[] providerItems = viewModel.LayerProviders.Select(provider =>
@@ -157,19 +171,35 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         {
             new MenuItemViewModel("_All")
             {
-                Command = ReactiveCommand.CreateFromTask(() => ExecuteSafeAsync(component.SchemeSelectedAsync)),
+                Command = ReactiveCommand.CreateFromTask(() =>
+                {
+                    ViewModel!.IsColored = true;
+                    return ExecuteSafeAsync(component.SchemeSelectedAsync);
+                }),
             },
             new MenuItemViewModel($"_{component.FirstComponentName}")
             {
-                Command = ReactiveCommand.CreateFromTask(() => ExecuteSafeAsync(component.FirstChannelSelectedAsync)),
+                Command = ReactiveCommand.CreateFromTask(() =>
+                {
+                    ViewModel!.IsColored = false;
+                    return ExecuteSafeAsync(component.FirstChannelSelectedAsync);
+                }),
             },
             new MenuItemViewModel($"_{component.SecondComponentName}")
             {
-                Command = ReactiveCommand.CreateFromTask(() => ExecuteSafeAsync(component.SecondChannelSelectedAsync)),
+                Command = ReactiveCommand.CreateFromTask(() =>
+                {
+                    ViewModel!.IsColored = false;
+                    return ExecuteSafeAsync(component.SecondChannelSelectedAsync);
+                }),
             },
             new MenuItemViewModel($"_{component.ThirdComponentName}")
             {
-                Command = ReactiveCommand.CreateFromTask(() => ExecuteSafeAsync(component.ThirdChannelSelectedAsync)),
+                Command = ReactiveCommand.CreateFromTask(() =>
+                {
+                    ViewModel!.IsColored = false;
+                    return ExecuteSafeAsync(component.ThirdChannelSelectedAsync);
+                }),
             },
         };
     }
