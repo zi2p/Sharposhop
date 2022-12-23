@@ -12,19 +12,21 @@
         <layer:CreateScaleLayerViewModel />
     </Design.DataContext>
 
-    <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" Margin="8">
+    <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" Margin="8">
         <TextBlock Grid.ColumnSpan="2" FontSize="18" FontStyle="Oblique">
             Box Blur
         </TextBlock>
-        
-        
+
+
         <TextBlock Grid.Column="0" Grid.Row="1" Classes="label">
             Type
         </TextBlock>
-        
-        <ComboBox Grid.Column="1" Grid.Row="1" Classes="field"
+
+        <ComboBox Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3"
+                  Classes="field"
                   Items="{Binding ScaleTypes}"
-                  SelectedItem="{Binding Type}"/>
+                  Margin="8"
+                  SelectedItem="{Binding Type}" />
 
         <TextBlock Grid.Column="0" Grid.Row="2" Classes="label">
             Size
@@ -50,7 +52,33 @@
                        Margin="8"
                        Value="{Binding Height}" />
 
-        <Button Grid.Row="5" Grid.Column="3" Click="Button_OnClick">
+        <TextBlock Grid.Column="0" Grid.Row="5" IsVisible="{Binding IsSpline}" Classes="label">
+            Spline config
+        </TextBlock>
+
+        <TextBlock Grid.Column="0" Grid.Row="6" IsVisible="{Binding IsSpline}" Classes="label">
+            B
+        </TextBlock>
+
+        <NumericUpDown Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="3" Classes="field"
+                       IsVisible="{Binding IsSpline}"
+                       Minimum="0"
+                       Increment="1"
+                       Margin="8"
+                       Value="{Binding B}" />
+
+        <TextBlock Grid.Column="0" Grid.Row="7" IsVisible="{Binding IsSpline}" Classes="label">
+            C
+        </TextBlock>
+
+        <NumericUpDown Grid.Column="1" Grid.Row="7" Grid.ColumnSpan="3" Classes="field"
+                       IsVisible="{Binding IsSpline}"
+                       Minimum="0"
+                       Increment="1"
+                       Margin="8"
+                       Value="{Binding C}" />
+
+        <Button Grid.Row="8" Grid.Column="3" Click="Button_OnClick">
             Submit
         </Button>
     </Grid>

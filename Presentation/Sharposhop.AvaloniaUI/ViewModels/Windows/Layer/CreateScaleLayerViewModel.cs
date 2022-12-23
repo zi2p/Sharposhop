@@ -18,12 +18,17 @@ public class CreateScaleLayerViewModel : ViewModelBase
 
     private int _width;
     private int _height;
+    private float _b;
+    private float _c;
     private ScaleType _type;
 
     public CreateScaleLayerViewModel(ILayerManager layerManager, IEnumerationStrategy enumerationStrategy)
     {
         _layerManager = layerManager;
         _enumerationStrategy = enumerationStrategy;
+
+        B = 0;
+        C = 0.5f;
     }
 
     public int Width
@@ -38,11 +43,29 @@ public class CreateScaleLayerViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _height, value);
     }
 
+    public float B
+    {
+        get => _b;
+        set => this.RaiseAndSetIfChanged(ref _b, value);
+    }
+
+    public float C
+    {
+        get => _c;
+        set => this.RaiseAndSetIfChanged(ref _c, value);
+    }
+
     public ScaleType Type
     {
         get => _type;
-        set => this.RaiseAndSetIfChanged(ref _type, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _type, value);
+            this.RaisePropertyChanged(nameof(IsSpline));
+        }
     }
+
+    public bool IsSpline => Type is ScaleType.Spline;
 
     public IEnumerable<ScaleType> ScaleTypes => Enum.GetValues<ScaleType>();
 
@@ -55,7 +78,8 @@ public class CreateScaleLayerViewModel : ViewModelBase
             ScaleType.Bilinear => new BilinearScalingLayer(_enumerationStrategy, size),
             ScaleType.Lanczos => new Lanczos3ScalingLayer(_enumerationStrategy, size),
             ScaleType.NearestNeighbor => new NearestNeighbourScalingLayer(_enumerationStrategy, size),
-            _ => throw new ArgumentOutOfRangeException()
+            ScaleType.Spline => new SplineScalingLayer(_enumerationStrategy, size, _b, _c),
+            _ => throw new ArgumentOutOfRangeException(),
         };
 
         return _layerManager.Add(layer);

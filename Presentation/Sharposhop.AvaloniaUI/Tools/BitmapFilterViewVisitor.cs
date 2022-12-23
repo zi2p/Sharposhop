@@ -98,4 +98,10 @@ public class BitmapFilterViewVisitor : ILayerVisitor
     }
 
     public void Visit(AutoCorrectionLayer layer) { }
+
+    public void Visit(SplineScalingLayer layer)
+    {
+        var vm = new SplineScalingViewModel(_layerManager, layer);
+        Contents.Add(vm);
+    }
 }

@@ -21,4 +21,5 @@ public interface ILayerVisitor
     void Visit(BilinearScalingLayer layer);
     void Visit(Lanczos3ScalingLayer layer);
     void Visit(AutoCorrectionLayer layer);
+    void Visit(SplineScalingLayer layer);
 }
