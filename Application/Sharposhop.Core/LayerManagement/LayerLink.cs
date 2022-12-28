@@ -112,7 +112,7 @@ public class LayerLink : ILayerLink
 
     public async ValueTask<IPicture> ModifyAsync(IPicture picture)
     {
-        await Layer.ModifyAsync(picture);
+        picture = await Layer.ModifyAsync(picture);
         return _next is null ? picture : await _next.ModifyAsync(picture);
     }
 

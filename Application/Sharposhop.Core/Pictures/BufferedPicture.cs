@@ -1,9 +1,8 @@
-using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.Model;
 
 namespace Sharposhop.Core.Pictures;
 
-public sealed class BufferedPicture : Picture, IDisposable
+public sealed class BufferedPicture : Picture
 {
     private readonly BufferPicture _bufferPicture;
 
@@ -11,11 +10,10 @@ public sealed class BufferedPicture : Picture, IDisposable
         PictureSize size,
         ColorScheme scheme,
         Gamma gamma,
-        IEnumerationStrategy enumerationStrategy,
-        ColorTriplet[] layer)
-        : base(size, scheme, gamma, enumerationStrategy, layer)
+        DisposableArray<ColorTriplet> layer)
+        : base(size, scheme, gamma, layer)
     {
-        _bufferPicture = new BufferPicture(this, enumerationStrategy);
+        _bufferPicture = new BufferPicture(this);
     }
 
     public IPicture GetBufferPicture()
@@ -24,6 +22,9 @@ public sealed class BufferedPicture : Picture, IDisposable
         return _bufferPicture;
     }
 
-    public void Dispose()
-        => _bufferPicture.Dispose();
+    public override void Dispose()
+    {
+        base.Dispose();
+        _bufferPicture.Dispose();
+    }
 }

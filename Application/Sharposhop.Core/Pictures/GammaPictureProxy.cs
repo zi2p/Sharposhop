@@ -18,12 +18,6 @@ public class GammaPictureProxy : IPicture
 
     public Gamma Gamma { get; }
 
-    public ColorTriplet this[PlaneCoordinate coordinate]
-    {
-        get => _picture[coordinate];
-        set => _picture[coordinate] = value;
-    }
-
     public Span<ColorTriplet> AsSpan()
     {
         return _picture.AsSpan();
@@ -31,4 +25,7 @@ public class GammaPictureProxy : IPicture
 
     public void CopyFrom(Span<ColorTriplet> span)
         => _picture.CopyFrom(span);
+
+    public void Dispose()
+        => _picture.Dispose();
 }

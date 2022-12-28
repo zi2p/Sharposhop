@@ -35,4 +35,7 @@ public readonly record struct PlaneCoordinate(AxisCoordinate X, AxisCoordinate Y
 
         return new PlaneCoordinate(xCoordinate, yCoordinate);
     }
+    
+    public static PlaneCoordinate operator +(PlaneCoordinate left, PlaneCoordinate right)
+        => new PlaneCoordinate(left.X + right.X, left.Y + right.Y);
 }
