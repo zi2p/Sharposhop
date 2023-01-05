@@ -19,6 +19,6 @@ public class OtsuLayerProvider : ILayerProvider
 
     public ICommand Create(ILayerManager layerManager)
     {
-        return ReactiveCommand.Create(() => layerManager.Add(new OtsuFilter(_normalizer)));
+        return ReactiveCommand.CreateFromTask(async () => await layerManager.Add(new OtsuFilter(_normalizer)));
     }
 }
