@@ -50,5 +50,8 @@
         <DependentUpon>HistogramWindow.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\Layers\DitheringView.axaml.cs">
+        <DependentUpon>DitheringView.axaml</DependentUpon>
+      </Compile>
     </ItemGroup>
 </Project>

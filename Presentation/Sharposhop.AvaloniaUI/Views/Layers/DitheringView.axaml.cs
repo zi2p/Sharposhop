@@ -6,9 +6,9 @@ using Sharposhop.AvaloniaUI.ViewModels.Layers;
 
 namespace Sharposhop.AvaloniaUI.Views.Layers;
 
-public partial class ParameterlessLayerView : ReactiveUserControl<DitheringViewModel>
+public partial class DitheringView : ReactiveUserControl<DitheringViewModel>
 {
-    public ParameterlessLayerView()
+    public DitheringView()
     {
         InitializeComponent();
     }
