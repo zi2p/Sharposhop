@@ -71,7 +71,23 @@ public class OrderedDithering : IDitheringLayer
             var triplet = span[localIndex];
 
             var value = 1f / 64 * triplet.Average * Matrix[xx, yy];
+            value = NormalizeValue(value);
             span[index] = new ColorTriplet(value, value, value);
         }
+    }
+    
+    private float NormalizeValue(float value)
+    {
+        var size = 8 / Depth; 
+        var threshold = 1 / size;
+
+        for (var i = 0; i < size; i++)
+        {
+            if (!(value >= i * threshold) || !(value < (i + 1) * threshold)) continue;
+            value = i * threshold;
+            break;
+        }
+
+        return value;
     }
 }

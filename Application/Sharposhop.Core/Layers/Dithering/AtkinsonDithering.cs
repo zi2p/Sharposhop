@@ -19,8 +19,8 @@ public class AtkinsonDithering : IDitheringLayer
             MaxDegreeOfParallelism = Environment.ProcessorCount - 1,
         };
     }
-    
-    public int Depth { get; }
+
+    public int Depth { get; set; }
 
     public async ValueTask<IPicture> ModifyAsync(IPicture picture)
     {
@@ -36,7 +36,9 @@ public class AtkinsonDithering : IDitheringLayer
         return picture;
     }
 
-    public void Reset() { }
+    public void Reset()
+    {
+    }
 
     public void Accept(ILayerVisitor visitor)
         => visitor.Visit(this);
@@ -84,9 +86,24 @@ public class AtkinsonDithering : IDitheringLayer
         CalculateSpan(span, yPlus2, quantumError);
     }
 
-    private static void CalculateSpan(Span<ColorTriplet> span, int index, float error)
+    private void CalculateSpan(Span<ColorTriplet> span, int index, float error)
     {
         var value = span[index].First + error * 1f / 8;
+        value = NormalizeValue(value);
         span[index] = new ColorTriplet(value, value, value);
+    }
+
+    private float NormalizeValue(float value)
+    {
+        // for (var i = 0; i < Depth; i++)
+        // {
+        //     if ((value >= i * threshold) && (value < (i + 1) * threshold))
+        //     {
+        //         value = i * threshold;
+        //         break;
+        //     }
+        // }
+        //
+        // return value;
     }
 }
