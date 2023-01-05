@@ -87,17 +87,10 @@ public class FloydSteinbergDithering : IDitheringLayer
     }
     
     private float NormalizeValue(float value)
-    {
-        var size = 8 / Depth; 
-        var threshold = 1 / size;
-
-        for (var i = 0; i < size; i++)
         {
-            if (!(value >= i * threshold) || !(value < (i + 1) * threshold)) continue;
-            value = i * threshold;
-            break;
+            var step = (float)(1 / Math.Pow(2, Depth));
+            var level = (int)(value / step);
+    
+            return step * level;
         }
-
-        return value;
-    }
 }
