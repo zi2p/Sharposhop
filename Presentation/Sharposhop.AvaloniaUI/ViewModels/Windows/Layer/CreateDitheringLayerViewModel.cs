@@ -19,6 +19,8 @@ public class CreateDitheringLayerViewModel : ViewModelBase
         _layerManager = layerManager;
         _layerFactory = layerFactory;
         Name = name;
+
+        _depth = 1;
     }
     
     public string Name { get; }
