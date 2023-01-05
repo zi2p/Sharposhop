@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Sharposhop.AvaloniaUI.ViewModels.Layers;
 using Sharposhop.Core.LayerManagement;
 using Sharposhop.Core.Layers;
+using Sharposhop.Core.Layers.Dithering;
 using Sharposhop.Core.Layers.Filtering.Filters;
 using Sharposhop.Core.Layers.Scaling;
 
@@ -102,6 +103,30 @@ public class BitmapFilterViewVisitor : ILayerVisitor
     public void Visit(SplineScalingLayer layer)
     {
         var vm = new SplineScalingViewModel(_layerManager, layer);
+        Contents.Add(vm);
+    }
+
+    public void Visit(AtkinsonDithering layer)
+    {
+        var vm = new ParameterlessLayerViewModel("Dithering (Atkinson)", _layerManager, layer);
+        Contents.Add(vm);
+    }
+
+    public void Visit(FloydSteinbergDithering layer)
+    {
+        var vm = new ParameterlessLayerViewModel("Dithering (Floyd-Steinberg)", _layerManager, layer);
+        Contents.Add(vm);
+    }
+
+    public void Visit(OrderedDithering layer)
+    {
+        var vm = new ParameterlessLayerViewModel("Dithering (Ordered)", _layerManager, layer);
+        Contents.Add(vm);
+    }
+
+    public void Visit(RandomDithering layer)
+    {
+        var vm = new ParameterlessLayerViewModel("Dithering (Random)", _layerManager, layer);
         Contents.Add(vm);
     }
 }
