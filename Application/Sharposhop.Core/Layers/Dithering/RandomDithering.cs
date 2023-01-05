@@ -12,12 +12,9 @@ public class RandomDithering : ILayer
         for (var i = 0; i < span.Length; i++)
         {
             var triplet = span[i];
+            float value = triplet.Average > (float)Random.Shared.NextDouble() ? 1 : 0;
 
-            float first = triplet.First > (float)Random.Shared.NextDouble() ? 1 : 0;
-            float second = triplet.Second > (float)Random.Shared.NextDouble() ? 1 : 0;
-            float third = triplet.Third > (float)Random.Shared.NextDouble() ? 1 : 0;
-
-            span[i] = new ColorTriplet(first, second, third);
+            span[i] = new ColorTriplet(value, value, value);
         }
 
         return ValueTask.FromResult(picture);

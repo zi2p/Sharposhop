@@ -41,6 +41,7 @@ public class AtkinsonDithering : ILayer
     private void CalculatePixel(IPicture picture, PlaneCoordinate coordinate)
     {
         Span<ColorTriplet> span = picture.AsSpan();
+
         var index = _enumerationStrategy.AsContinuousIndex(coordinate, picture.Size);
         var (x, y) = coordinate;
 
@@ -48,18 +49,15 @@ public class AtkinsonDithering : ILayer
             return;
 
         var oldTriplet = span[index];
+        var oldAverage = oldTriplet.Average;
 
-        float first = oldTriplet.First > 0.5 ? 1 : 0;
-        float second = oldTriplet.Second > 0.5 ? 1 : 0;
-        float third = oldTriplet.Third > 0.5 ? 1 : 0;
+        var value = oldAverage > 0.5 ? 1 : 0;
 
-        var newTriplet = new ColorTriplet(first, second, third);
-
+        var newTriplet = new ColorTriplet(value, value, value);
+        var newAverage = newTriplet.Average;
         span[index] = newTriplet;
 
-        var quantumErrorFirst = oldTriplet.First - newTriplet.First;
-        var quantumErrorSecond = oldTriplet.Second - newTriplet.Second;
-        var quantumErrorThird = oldTriplet.Third - newTriplet.Third;
+        var quantumError = oldAverage - newAverage;
 
         var xPlus1Coordinate = PlaneCoordinate.Padded(x + 1, y, picture.Size);
         var xPlus2Coordinate = PlaneCoordinate.Padded(x + 2, y, picture.Size);
@@ -75,20 +73,17 @@ public class AtkinsonDithering : ILayer
         var xPlus1YPlus1 = _enumerationStrategy.AsContinuousIndex(xPlus1YPlus1Coordinate, picture.Size);
         var yPlus2 = _enumerationStrategy.AsContinuousIndex(yPlus2Coordinate, picture.Size);
 
-        CalculateSpan(span, xPlus1, quantumErrorFirst, quantumErrorSecond, quantumErrorThird);
-        CalculateSpan(span, xPlus2, quantumErrorFirst, quantumErrorSecond, quantumErrorThird);
-        CalculateSpan(span, xMinus1YPlus1, quantumErrorFirst, quantumErrorSecond, quantumErrorThird);
-        CalculateSpan(span, yPlus1, quantumErrorFirst, quantumErrorSecond, quantumErrorThird);
-        CalculateSpan(span, xPlus1YPlus1, quantumErrorFirst, quantumErrorSecond, quantumErrorThird);
-        CalculateSpan(span, yPlus2, quantumErrorFirst, quantumErrorSecond, quantumErrorThird);
+        CalculateSpan(span, xPlus1, quantumError);
+        CalculateSpan(span, xPlus2, quantumError);
+        CalculateSpan(span, xMinus1YPlus1, quantumError);
+        CalculateSpan(span, yPlus1, quantumError);
+        CalculateSpan(span, xPlus1YPlus1, quantumError);
+        CalculateSpan(span, yPlus2, quantumError);
     }
 
-    private static void CalculateSpan(Span<ColorTriplet> span, int index, float f, float s, float t)
+    private static void CalculateSpan(Span<ColorTriplet> span, int index, float error)
     {
-        var first = span[index].First + f * 1f / 8;
-        var second = span[index].Second + s * 1f / 8;
-        var third = span[index].Third + t * 1f / 8;
-
-        span[index] = new ColorTriplet(first, second, third);
+        var value = span[index].First + error * 1f / 8;
+        span[index] = new ColorTriplet(value, value, value);
     }
 }

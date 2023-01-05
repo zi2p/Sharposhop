@@ -65,13 +65,10 @@ public class OrderedDithering : ILayer
             var localCoordinate = PlaneCoordinate.Padded(x + xx, y + yy, picture.Size);
 
             var localIndex = _enumerationStrategy.AsContinuousIndex(localCoordinate, picture.Size);
-            var value = span[localIndex];
+            var triplet = span[localIndex];
 
-            var first = 1f / 64 * value.First * Matrix[xx, yy];
-            var second = 1f / 64 * value.Second * Matrix[xx, yy];
-            var third = 1f / 64 * value.Third * Matrix[xx, yy];
-
-            span[index] = new ColorTriplet(first, second, third);
+            var value = 1f / 64 * triplet.Average * Matrix[xx, yy];
+            span[index] = new ColorTriplet(value, value, value);
         }
     }
 }
