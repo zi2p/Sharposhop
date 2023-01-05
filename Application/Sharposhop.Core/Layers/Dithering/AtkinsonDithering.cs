@@ -36,9 +36,7 @@ public class AtkinsonDithering : IDitheringLayer
         return picture;
     }
 
-    public void Reset()
-    {
-    }
+    public void Reset() { }
 
     public void Accept(ILayerVisitor visitor)
         => visitor.Visit(this);
@@ -88,22 +86,16 @@ public class AtkinsonDithering : IDitheringLayer
 
     private void CalculateSpan(Span<ColorTriplet> span, int index, float error)
     {
-        var value = span[index].First + error * 1f / 8;
+        var value = span[index].Average + error * 1f / 8;
         value = NormalizeValue(value);
         span[index] = new ColorTriplet(value, value, value);
     }
 
     private float NormalizeValue(float value)
     {
-        // for (var i = 0; i < Depth; i++)
-        // {
-        //     if ((value >= i * threshold) && (value < (i + 1) * threshold))
-        //     {
-        //         value = i * threshold;
-        //         break;
-        //     }
-        // }
-        //
-        // return value;
+        var step = (float)(1 / Math.Pow(2, Depth));
+        var level = (int)(value / step);
+
+        return step * level;
     }
 }

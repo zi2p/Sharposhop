@@ -4,6 +4,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:layer="clr-namespace:Sharposhop.AvaloniaUI.ViewModels.Windows.Layer"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        Width="500"
+        Height="250"
         x:Class="Sharposhop.AvaloniaUI.Windows.Layer.DitheringLayerWindow"
         Title="DitheringLayerWindow">
 
