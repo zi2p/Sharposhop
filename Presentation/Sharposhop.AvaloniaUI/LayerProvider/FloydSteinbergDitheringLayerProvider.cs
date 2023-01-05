@@ -1,5 +1,7 @@
 using System.Windows.Input;
 using ReactiveUI;
+using Sharposhop.AvaloniaUI.ViewModels.Windows.Layer;
+using Sharposhop.AvaloniaUI.Windows.Layer;
 using Sharposhop.Core.Enumeration;
 using Sharposhop.Core.LayerManagement;
 using Sharposhop.Core.Layers.Dithering;
@@ -19,7 +21,20 @@ public class FloydSteinbergDitheringLayerProvider : ILayerProvider
 
     public ICommand Create(ILayerManager layerManager)
     {
-        return ReactiveCommand.CreateFromTask(
-            async () => await layerManager.Add(new FloydSteinbergDithering(_enumerationStrategy)));
+        return ReactiveCommand.Create(
+            () =>
+            {
+                var viewModel = new CreateDitheringLayerViewModel(
+                    "Dithering (Floyd-Steinberg)",
+                    layerManager,
+                    depth => new FloydSteinbergDithering(depth, _enumerationStrategy));
+
+                var window = new DitheringLayerWindow
+                {
+                    ViewModel = viewModel,
+                };
+
+                window.Show();
+            });
     }
 }

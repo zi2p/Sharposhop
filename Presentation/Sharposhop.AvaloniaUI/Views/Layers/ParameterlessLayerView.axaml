@@ -6,7 +6,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Sharposhop.AvaloniaUI.Views.Layers.ParameterlessLayerView">
     <Design.DataContext>
-        <layers:ParameterlessLayerViewModel />
+        <layers:DitheringViewModel />
     </Design.DataContext>
 
     <Grid RowDefinitions="Auto,*"

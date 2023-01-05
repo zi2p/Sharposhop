@@ -9,6 +9,7 @@
         <Configurations>Release;Debug</Configurations>
         <Platforms>64-bit</Platforms>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ImplicitUsings>true</ImplicitUsings>
     </PropertyGroup>
     <ItemGroup>
         <Folder Include="Models\" />

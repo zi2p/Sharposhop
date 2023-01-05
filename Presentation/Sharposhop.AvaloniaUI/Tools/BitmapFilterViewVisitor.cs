@@ -108,25 +108,25 @@ public class BitmapFilterViewVisitor : ILayerVisitor
 
     public void Visit(AtkinsonDithering layer)
     {
-        var vm = new ParameterlessLayerViewModel("Dithering (Atkinson)", _layerManager, layer);
+        var vm = new DitheringViewModel("Dithering (Atkinson)", layer, _layerManager);
         Contents.Add(vm);
     }
 
     public void Visit(FloydSteinbergDithering layer)
     {
-        var vm = new ParameterlessLayerViewModel("Dithering (Floyd-Steinberg)", _layerManager, layer);
+        var vm = new DitheringViewModel("Dithering (Floyd-Steinberg)", layer, _layerManager);
         Contents.Add(vm);
     }
 
     public void Visit(OrderedDithering layer)
     {
-        var vm = new ParameterlessLayerViewModel("Dithering (Ordered)", _layerManager, layer);
+        var vm = new DitheringViewModel("Dithering (Ordered)", layer, _layerManager);
         Contents.Add(vm);
     }
 
     public void Visit(RandomDithering layer)
     {
-        var vm = new ParameterlessLayerViewModel("Dithering (Random)", _layerManager, layer);
+        var vm = new DitheringViewModel("Dithering (Random)", layer, _layerManager);
         Contents.Add(vm);
     }
 }

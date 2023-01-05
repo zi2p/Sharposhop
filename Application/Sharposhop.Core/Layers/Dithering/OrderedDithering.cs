@@ -4,22 +4,9 @@ using Sharposhop.Core.Pictures;
 
 namespace Sharposhop.Core.Layers.Dithering;
 
-public class OrderedDithering : ILayer
+public class OrderedDithering : IDitheringLayer
 {
     private const int Radius = 8;
-
-    private readonly IEnumerationStrategy _enumerationStrategy;
-    private readonly ParallelOptions _parallelOptions;
-
-    public OrderedDithering(IEnumerationStrategy enumerationStrategy)
-    {
-        _enumerationStrategy = enumerationStrategy;
-
-        _parallelOptions = new ParallelOptions
-        {
-            MaxDegreeOfParallelism = Environment.ProcessorCount - 1,
-        };
-    }
 
     private static readonly float[,] Matrix =
     {
@@ -32,6 +19,22 @@ public class OrderedDithering : ILayer
         { 15, 47, 7, 39, 13, 45, 5, 37 },
         { 63, 31, 55, 23, 61, 29, 53, 21 },
     };
+
+    private readonly IEnumerationStrategy _enumerationStrategy;
+    private readonly ParallelOptions _parallelOptions;
+
+    public OrderedDithering(int depth, IEnumerationStrategy enumerationStrategy)
+    {
+        Depth = depth;
+        _enumerationStrategy = enumerationStrategy;
+
+        _parallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = Environment.ProcessorCount - 1,
+        };
+    }
+    
+    public int Depth { get; }
 
     public async ValueTask<IPicture> ModifyAsync(IPicture picture)
     {

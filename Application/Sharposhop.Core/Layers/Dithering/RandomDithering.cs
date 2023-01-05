@@ -3,8 +3,15 @@ using Sharposhop.Core.Pictures;
 
 namespace Sharposhop.Core.Layers.Dithering;
 
-public class RandomDithering : ILayer
+public class RandomDithering : IDitheringLayer
 {
+    public RandomDithering(int depth)
+    {
+        Depth = depth;
+    }
+
+    public int Depth { get; }
+
     public ValueTask<IPicture> ModifyAsync(IPicture picture)
     {
         Span<ColorTriplet> span = picture.AsSpan();

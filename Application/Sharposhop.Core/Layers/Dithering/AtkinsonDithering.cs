@@ -4,20 +4,23 @@ using Sharposhop.Core.Pictures;
 
 namespace Sharposhop.Core.Layers.Dithering;
 
-public class AtkinsonDithering : ILayer
+public class AtkinsonDithering : IDitheringLayer
 {
     private readonly IEnumerationStrategy _enumerationStrategy;
     private readonly ParallelOptions _parallelOptions;
 
-    public AtkinsonDithering(IEnumerationStrategy enumerationStrategy)
+    public AtkinsonDithering(int depth, IEnumerationStrategy enumerationStrategy)
     {
         _enumerationStrategy = enumerationStrategy;
+        Depth = depth;
 
         _parallelOptions = new ParallelOptions
         {
             MaxDegreeOfParallelism = Environment.ProcessorCount - 1,
         };
     }
+    
+    public int Depth { get; }
 
     public async ValueTask<IPicture> ModifyAsync(IPicture picture)
     {
