@@ -33,7 +33,7 @@ public class ThresholdFilter : ILayer
             span[i] = new ColorTriplet(first, second, third);
         }
 
-        return new ValueTask<IPicture>(picture);
+        return ValueTask.FromResult(picture);
     }
 
     public void Reset() { }
