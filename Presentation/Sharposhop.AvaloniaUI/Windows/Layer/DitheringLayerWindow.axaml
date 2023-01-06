@@ -1,0 +1,40 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:layer="clr-namespace:Sharposhop.AvaloniaUI.ViewModels.Windows.Layer"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        Width="500"
+        Height="250"
+        x:Class="Sharposhop.AvaloniaUI.Windows.Layer.DitheringLayerWindow"
+        Title="DitheringLayerWindow">
+
+    <Design.DataContext>
+        <layer:CreateDitheringLayerViewModel />
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto,Auto" Margin="8">
+        <TextBlock Grid.ColumnSpan="2"
+                   FontSize="18"
+                   FontStyle="Oblique"
+                   Text="{Binding Name }" />
+
+
+        <TextBlock Grid.Column="0" Grid.Row="1" Classes="label">
+            Depth
+        </TextBlock>
+
+
+        <NumericUpDown Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Classes="field"
+                       Minimum="1"
+                       Maximum="8"
+                       Increment="1"
+                       Margin="8"
+                       Value="{Binding Depth}" />
+
+        <Button Grid.Row="2" Grid.Column="3" Click="Button_OnClick">
+            Submit
+        </Button>
+    </Grid>
+
+</Window>

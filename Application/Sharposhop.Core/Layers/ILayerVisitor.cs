@@ -1,3 +1,4 @@
+using Sharposhop.Core.Layers.Dithering;
 using Sharposhop.Core.Layers.Filtering.Filters;
 using Sharposhop.Core.Layers.Scaling;
 
@@ -22,4 +23,8 @@ public interface ILayerVisitor
     void Visit(Lanczos3ScalingLayer layer);
     void Visit(AutoCorrectionLayer layer);
     void Visit(SplineScalingLayer layer);
+    void Visit(AtkinsonDithering layer);
+    void Visit(FloydSteinbergDithering layer);
+    void Visit(OrderedDithering layer);
+    void Visit(RandomDithering layer);
 }

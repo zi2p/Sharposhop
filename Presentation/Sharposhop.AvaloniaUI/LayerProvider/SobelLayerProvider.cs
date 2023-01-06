@@ -19,6 +19,6 @@ public class SobelLayerProvider : ILayerProvider
 
     public ICommand Create(ILayerManager layerManager)
     {
-        return ReactiveCommand.Create(() => layerManager.Add(new SobelFilter(_enumerationStrategy)));
+        return ReactiveCommand.CreateFromTask(async () => await layerManager.Add(new SobelFilter(_enumerationStrategy)));
     }
 }

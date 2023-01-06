@@ -57,7 +57,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         _stateManager = stateManager;
         _pictureProvider = pictureProvider;
         _basePictureUpdater = basePictureUpdater;
-        LayerProviders = layerProviders.ToArray();
+        LayerProviders = layerProviders.OrderBy(x => x.DisplayName).ToArray();
 
         ImageViewModel.BitmapChanged += OnImageViewModelOnBitmapChanged;
 

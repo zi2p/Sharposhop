@@ -9,6 +9,7 @@
         <Configurations>Release;Debug</Configurations>
         <Platforms>64-bit</Platforms>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ImplicitUsings>true</ImplicitUsings>
     </PropertyGroup>
     <ItemGroup>
         <Folder Include="Models\" />
@@ -48,6 +49,9 @@
       <Compile Update="Views\HistogramWindow.axaml.cs">
         <DependentUpon>HistogramWindow.axaml</DependentUpon>
         <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Layers\DitheringView.axaml.cs">
+        <DependentUpon>DitheringView.axaml</DependentUpon>
       </Compile>
     </ItemGroup>
 </Project>
