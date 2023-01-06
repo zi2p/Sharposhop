@@ -30,19 +30,23 @@ public class HuffmanTable
     public TypeOfHuffmanTable Type { get; }
     public byte[] NumbersOfCodes { get; }
 
-    public byte[] GetCode(int binaryAscii)
+    public byte GetCode(BitData data)
     {
-        var res = Find(binaryAscii);
-        if (res is byte[] bytes) return bytes;
-        return Array.Empty<byte>();
+        var res = Find(data);
+        if (res is byte val)
+        {
+            return val;
+        }
+
+        return 0;
     }
 
-    private object Find(int binaryAscii)
+    private object Find(BitData data)
     {
-        var r = _root;
-        while (r[binaryAscii] is List<object> leaf)
+        object r = _root;
+        while (r is List<object> leaf)
         {
-            r = leaf;
+            r = leaf[data.GetBit()];
         }
 
         return r;
@@ -55,7 +59,7 @@ public class HuffmanTable
             if (root is not List<object> list) return false;
             if (pos == 0)
             {
-                if (list.Count != 0) return false;
+                if (list.Count >= 2) return false;
                 list.Add(element);
                 return true;
             }

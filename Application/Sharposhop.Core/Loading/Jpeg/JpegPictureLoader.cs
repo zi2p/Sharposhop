@@ -85,21 +85,21 @@ public class JpegPictureLoader : IPictureLoader
         }
 
         if (header is null)
-            throw new InvalidOperationException("Application default header is not found");
+            throw new InvalidOperationException("Application default header was not found");
 
         if (quantizationTables.Count == 0)
-            throw new InvalidOperationException("Quantization tables are not found");
+            throw new InvalidOperationException("Quantization tables were not found");
 
         if (startOfFrame is null)
-            throw new InvalidOperationException("Start of frame is not found");
+            throw new InvalidOperationException("Start of frame was not found");
 
         if (huffmanTables.Count == 0)
-            throw new InvalidOperationException("Huffman tables are not found");
+            throw new InvalidOperationException("Huffman tables were not found");
 
         if (startOfScan is null)
-            throw new InvalidOperationException("Start of scan is not found");
+            throw new InvalidOperationException("Start of scan was not found");
 
-        var jpeg = new JpegPicture(header, quantizationTables.ToArray(), startOfFrame, huffmanTables.ToArray(), startOfScan);
-        return new PictureData();
+        var jpeg = new JpegPicture(header, quantizationTables.ToArray(), startOfFrame, huffmanTables.ToArray(), startOfScan, data);
+        return jpeg.DecodePicture(_normalizer, _schemeConverter, _enumerationStrategy);
     }
 }

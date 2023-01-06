@@ -16,7 +16,6 @@ public class InverseDiscreteCosineTransformation
     };
 
     private readonly double[][] _zigZag;
-    private readonly double[] _baseMatrix = new double[IdctSize * IdctSize];
     private readonly double[,] _idctMatrix = new double[IdctSize, IdctSize];
 
     public InverseDiscreteCosineTransformation()
@@ -31,13 +30,15 @@ public class InverseDiscreteCosineTransformation
         }
     }
 
+    public double[] BaseMatrix { get; set; } = new double[IdctSize * IdctSize];
+
     public void PerformZigZag()
     {
         for (var i = 0; i < IdctSize; i++)
         {
             for (var j = 0; j < IdctSize; j++)
             {
-                _zigZag[i][j] = _baseMatrix[(int)_zigZag[i][j]];
+                _zigZag[i][j] = BaseMatrix[(int)_zigZag[i][j]];
             }
         }
     }

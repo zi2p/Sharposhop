@@ -29,7 +29,7 @@ public class StartOfFrame
     public int Height { get; }
     public int Width { get; }
     public int Components { get; }
-    public IReadOnlyCollection<Component> ComponentList => _components;
+    public IReadOnlyList<Component> ComponentList => _components;
     
     public record struct Component (byte Id, byte SamplingFactor, byte QuantizationTableId);
 }

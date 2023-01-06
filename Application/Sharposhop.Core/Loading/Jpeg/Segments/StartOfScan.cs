@@ -31,16 +31,16 @@ public class StartOfScan
                 trimmedData.Add(rawData[i]);
             }
         }
-        Data = trimmedData.ToArray();
+        Data = new BitData(trimmedData.ToArray());
     }
     
     public int Length { get; }
     public int NumberOfComponents { get; }
-    public IReadOnlyCollection<ComponentSelector> ComponentSelectors => _componentSelectors;
+    public IReadOnlyList<ComponentSelector> ComponentSelectors => _componentSelectors;
     public int StartOfSpectralSelection { get; }
     public int EndOfSpectralSelection { get; }
     public int SuccessiveApproximation { get; }
-    public byte[] Data { get; }
+    public BitData Data { get; }
 
     public record struct ComponentSelector(int ComponentId, int DcTable, int AcTable);
 }
