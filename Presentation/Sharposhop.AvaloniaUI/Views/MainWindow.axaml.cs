@@ -106,7 +106,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     },
                 },
             },
-            new MenuItemViewModel("_Scheme")
+            new MenuItemViewModel("_Color space")
             {
                 Padding = new Thickness(15),
                 Items =

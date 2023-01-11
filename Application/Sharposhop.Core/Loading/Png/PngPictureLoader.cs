@@ -54,46 +54,38 @@ public class PngPictureLoader : IPictureLoader
                 throw new InvalidOperationException(
                     $"Cannot read {header.Length} bytes for the {header} header, only found. Ong is incorrect");
 
-            if (header.IsCritical)
+            switch (header.Name)
             {
-                switch (header.Name)
-                {
-                    case "PLTE":
-                        if (header.Length % 3 != 0)
-                            throw new InvalidOperationException($"Palette lenght must be multiple of 3.");
+                case "PLTE":
+                    if (header.Length % 3 != 0)
+                        throw new InvalidOperationException("Palette lenght must be multiple of 3.");
 
-                        if (imageHeader.Color.HasFlag(PngColor.Palette))
-                            palette = new Palette(bytes);
-                        break;
-                    case "IDAT":
-                        memoryStream.Write(bytes, 0, bytes.Length);
-                        break;
-                    case "IEND":
-                        isNotEnd = false;
-                        break;
-                    default:
-                        throw new NotSupportedException($"{header} critical header is not supported.");
-                }
-            }
-            else
-            {
-                switch (header.Name)
+                    if (imageHeader.Color.HasFlag(PngColor.Palette))
+                        palette = new Palette(bytes);
+                    break;
+                case "IDAT":
+                    memoryStream.Write(bytes, 0, bytes.Length);
+                    break;
+                case "IEND":
+                    isNotEnd = false;
+                    break;
+                case "tRNS":
+                    throw new NotSupportedException("Transparency is not supported");
+                case "gAMA":
                 {
-                    case "tRNS":
-                        throw new NotSupportedException("Transparency is not supported");
-                    case "gAMA":
-                    {
-                        var value = GetInt32FromBytes(bytes, 0);
-                        gamma = new Gamma(1f / (value / 100000f));
-                        break;
-                    }
+                    var value = GetInt32FromBytes(bytes, 0);
+                    gamma = new Gamma(1f / (value / 100000f));
+                    break;
                 }
+                default:
+                    if (header.IsCritical) throw new NotSupportedException($"{header} critical header is not supported.");
+                    break;
             }
 
             read = await stream.ReadAsync(crc);
             if (read != 4)
             {
-                throw new InvalidOperationException($"CRC was read incorrectly.");
+                throw new InvalidOperationException("CRC was read incorrectly.");
             }
         }
 
