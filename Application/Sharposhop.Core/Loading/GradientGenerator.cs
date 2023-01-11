@@ -63,7 +63,8 @@ public class GradientGenerator : IPictureLoader
             array.AsSpan()[index] = triplet;
         }
 
-        return new PictureData(size, ColorScheme.Rgb, Gamma.DefaultGamma, array);
+        return new PictureData(size, ColorScheme.Rgb, Gamma.DefaultGamma, array, 
+            !(targetColor.First == targetColor.Second && targetColor.First == targetColor.Third));
     }
 
     private static void SkipSpaceChar(Stream content)

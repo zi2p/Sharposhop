@@ -93,9 +93,9 @@ public class AtkinsonDithering : IDitheringLayer
 
     private float NormalizeValue(float value)
     {
-        var step = (float)(1 / Math.Pow(2, Depth));
+        var step = 1 / (Math.Pow(2, Depth) - 1);
         var level = (int)(value / step);
 
-        return step * level;
+        return (float)(step * level);
     }
 }
