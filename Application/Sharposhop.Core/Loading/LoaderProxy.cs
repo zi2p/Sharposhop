@@ -10,6 +10,7 @@ public class LoaderProxy : IPictureLoader
     private const int BmpHeaderFieldLength = 2;
     private const int PnmHeaderLength = 2;
     public static readonly byte[] PngHeader = { 137, 80, 78, 71, 13, 10, 26, 10 };
+    public static readonly byte[] JpegHeader = { 255, 216 };
 
     private readonly LoaderFactory _loaderFactory;
 
@@ -35,6 +36,8 @@ public class LoaderProxy : IPictureLoader
             return ImageFileTypes.Pnm;
         if (await IsImageTypePng(data))
             return ImageFileTypes.Png;
+        if (await IsImageTypeJpeg(data))
+            return ImageFileTypes.Jpeg;
         if (await IsImageTypeBmp(data))
             return ImageFileTypes.Bmp;
 
@@ -84,6 +87,19 @@ public class LoaderProxy : IPictureLoader
         var pngHeader = new byte[pngHeaderLength];
         _ = await data.ReadAsync(pngHeader.AsMemory(0, pngHeaderLength));
         return pngHeader.SequenceEqual(PngHeader);
+    }
+
+    private async ValueTask<bool> IsImageTypeJpeg(Stream data)
+    {
+        data.Position = 0;
+        var jpegHeaderLength = JpegHeader.Length;
+
+        if (data.Length <= jpegHeaderLength)
+            return false;
+
+        var jpegHeader = new byte[jpegHeaderLength];
+        _ = await data.ReadAsync(jpegHeader.AsMemory(0, jpegHeaderLength));
+        return jpegHeader.SequenceEqual(JpegHeader);
     }
 
     private async ValueTask<bool> IsImageTypePnm(Stream data)
