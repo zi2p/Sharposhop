@@ -8,16 +8,16 @@ public class OrderedDithering : IDitheringLayer
 {
     private const int Radius = 8;
 
-    private static readonly float[,] Matrix =
+    private readonly float[,] _matrix =
     {
-        { 3, 32, 8, 40, 2, 34, 10, 42 },
-        { 48, 16, 56, 24, 50, 18, 58, 26 },
-        { 12, 44, 4, 36, 14, 46, 6, 38 },
-        { 60, 28, 52, 20, 62, 30, 54, 22 },
-        { 3, 35, 11, 43, 1, 33, 9, 41 },
-        { 51, 47, 7, 39, 13, 45, 5, 37 },
-        { 15, 47, 7, 39, 13, 45, 5, 37 },
-        { 63, 31, 55, 23, 61, 29, 53, 21 },
+        { 0f, 48f, 12f, 60f, 3f, 51f, 15f, 63f },
+        { 32f, 16f, 44f, 28f, 35f, 19f, 47f, 31f },
+        { 8f, 56f, 4f, 52f, 11f, 59f, 7f, 55f },
+        { 40f, 24f, 36f, 20f, 43f, 27f, 39f, 23f },
+        { 2f, 50f, 14f, 62f, 1f, 49f, 13f, 61f },
+        { 34f, 18f, 46f, 30f, 33f, 17f, 45f, 29f },
+        { 10f, 58f, 6f, 54f, 9f, 57f, 5f, 53f },
+        { 42f, 26f, 38f, 22f, 41f, 25f, 37f, 21f }
     };
 
     private readonly IEnumerationStrategy _enumerationStrategy;
@@ -32,6 +32,14 @@ public class OrderedDithering : IDitheringLayer
         {
             MaxDegreeOfParallelism = Environment.ProcessorCount - 1,
         };
+
+        for (var i = 0; i < Radius; i++)
+        {
+            for (var j = 0; j < Radius; j++)
+            {
+                _matrix[i, j] = (float) ((_matrix[i, j] + 1) / (Radius * Radius) - 0.5);
+            }
+        }
     }
     
     public int Depth { get; }
@@ -61,26 +69,18 @@ public class OrderedDithering : IDitheringLayer
         var index = _enumerationStrategy.AsContinuousIndex(coordinate, picture.Size);
         var (x, y) = coordinate;
 
-        var frameSize = new PictureSize(Radius, Radius);
-
-        foreach (var (xx, yy) in _enumerationStrategy.Enumerate(frameSize))
-        {
-            var localCoordinate = PlaneCoordinate.Padded(x + xx, y + yy, picture.Size);
-
-            var localIndex = _enumerationStrategy.AsContinuousIndex(localCoordinate, picture.Size);
-            var triplet = span[localIndex];
-
-            var value = 1f / 64 * triplet.Average * Matrix[xx, yy];
-            value = NormalizeValue(value);
-            span[index] = new ColorTriplet(value, value, value);
-        }
+        var triplet = span[index];
+        var valueR = triplet.First + _matrix[x % Radius, y % Radius];
+        var valueG = triplet.Second + _matrix[x % Radius, y % Radius];
+        var valueB = triplet.Third + _matrix[x % Radius, y % Radius];
+        span[index] = new ColorTriplet(NormalizeValue(valueR), NormalizeValue(valueG), NormalizeValue(valueB));
     }
     
     private float NormalizeValue(float value)
     {
-        var step = (float)(1 / Math.Pow(2, Depth));
+        var step = 1 / (Math.Pow(2, Depth) - 1);
         var level = (int)(value / step);
 
-        return step * level;
+        return (float)(step * level);
     }
 }
