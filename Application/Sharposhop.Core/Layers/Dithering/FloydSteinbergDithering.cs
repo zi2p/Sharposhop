@@ -13,22 +13,26 @@ public class FloydSteinbergDithering : IDitheringLayer
         _enumerationStrategy = enumerationStrategy;
         Depth = depth;
     }
-    
+
     public int Depth { get; }
 
     public ValueTask<IPicture> ModifyAsync(IPicture picture)
     {
         Span<ColorTriplet> span = picture.AsSpan();
         var (width, height) = picture.Size;
-        foreach (var coordinate in _enumerationStrategy.Enumerate(picture.Size).AsEnumerable())
+
+        foreach (var coordinate in _enumerationStrategy.Enumerate(picture.Size))
         {
             var (x, y) = coordinate;
-            var index = y * width + x;
+            var index = _enumerationStrategy.AsContinuousIndex(coordinate, picture.Size);
+
             var (oldR, oldG, oldB) = span[index];
+
             var newPixel = new ColorTriplet(
                 NormalizeValue(oldR),
                 NormalizeValue(oldG),
                 NormalizeValue(oldB));
+
             span[index] = newPixel;
             var quantError = (oldR - newPixel.First, oldG - newPixel.Second, oldB - newPixel.Third);
 
@@ -43,8 +47,14 @@ public class FloydSteinbergDithering : IDitheringLayer
     public void Accept(ILayerVisitor visitor)
         => visitor.Visit(this);
 
-    private void ApplyError((float r, float g , float b) error,
-        int x, int y, int index, int width, int height, Span<ColorTriplet> span)
+    private void ApplyError(
+        (float r, float g, float b) error,
+        int x,
+        int y,
+        int index,
+        int width,
+        int height,
+        Span<ColorTriplet> span)
     {
         if (x + 1 < width)
             span[index + 1] = new ColorTriplet(
@@ -52,7 +62,8 @@ public class FloydSteinbergDithering : IDitheringLayer
                 span[index + 1].Second + error.g * 7f / 16,
                 span[index + 1].Third + error.b * 7f / 16);
 
-        if (y + 1 >= height) return;
+        if (y + 1 >= height)
+            return;
         if (x > 0)
             span[index + width - 1] = new ColorTriplet(
                 span[index + width - 1].First + error.r * 3f / 16,
@@ -73,9 +84,7 @@ public class FloydSteinbergDithering : IDitheringLayer
 
     private float NormalizeValue(float value)
     {
-        var step = 1 / (Math.Pow(2, Depth) - 1);
-        var level = (int)(value / step);
-
-        return (float)(step * level);
+        byte newR = (byte)(Math.Round(Depth * value) * (255f / Depth));
+        return newR / 255f;
     }
 }

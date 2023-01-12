@@ -25,6 +25,10 @@ public readonly struct Fraction
     public static implicit operator Fraction(float value)
         => new Fraction(value);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Fraction(double value)
+        => new Fraction((float)value);
+
     public override string ToString()
         => Value.ToString(CultureInfo.InvariantCulture);
 }

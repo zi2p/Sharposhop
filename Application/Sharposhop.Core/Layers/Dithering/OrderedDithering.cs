@@ -17,7 +17,7 @@ public class OrderedDithering : IDitheringLayer
         { 2f, 50f, 14f, 62f, 1f, 49f, 13f, 61f },
         { 34f, 18f, 46f, 30f, 33f, 17f, 45f, 29f },
         { 10f, 58f, 6f, 54f, 9f, 57f, 5f, 53f },
-        { 42f, 26f, 38f, 22f, 41f, 25f, 37f, 21f }
+        { 42f, 26f, 38f, 22f, 41f, 25f, 37f, 21f },
     };
 
     private readonly IEnumerationStrategy _enumerationStrategy;
@@ -37,11 +37,11 @@ public class OrderedDithering : IDitheringLayer
         {
             for (var j = 0; j < Radius; j++)
             {
-                _matrix[i, j] = (float) ((_matrix[i, j] + 1) / (Radius * Radius) - 0.5);
+                _matrix[i, j] = (float)((_matrix[i, j] + 1) / (Radius * Radius) - 0.5);
             }
         }
     }
-    
+
     public int Depth { get; }
 
     public async ValueTask<IPicture> ModifyAsync(IPicture picture)
@@ -75,12 +75,10 @@ public class OrderedDithering : IDitheringLayer
         var valueB = triplet.Third + _matrix[x % Radius, y % Radius];
         span[index] = new ColorTriplet(NormalizeValue(valueR), NormalizeValue(valueG), NormalizeValue(valueB));
     }
-    
+
     private float NormalizeValue(float value)
     {
-        var step = 1 / (Math.Pow(2, Depth) - 1);
-        var level = (int)(value / step);
-
-        return (float)(step * level);
+        byte newR = (byte)(Math.Round(Depth * value) * (255f / Depth));
+        return newR / 255f;
     }
 }
